@@ -1,0 +1,71 @@
+name: farmdirect
+
+description: "FarmDirect"
+
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^6.0.0
+
+  flutter_native_splash: ^2.4.8
+  flutter_launcher_icons: ^0.14.4
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+
+# --------------------------------
+# NATIVE SPLASH SCREEN
+# --------------------------------
+flutter_native_splash:
+  color: "#005238"
+  image: assets/images/logo.png
+
+  android: true
+  ios: true
+
+  android_12:
+    color: "#005238"
+    image: assets/images/logo.png
+
+# --------------------------------
+# APP ICON
+# --------------------------------
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+
+  image_path: "assets/images/logo.png"
+
+  min_sdk_android: 21
+
+  web:
+    generate: true
+    image_path: "assets/images/logo.png"
+    background_color: "#005238"
+    theme_color: "#005238"
+
+  windows:
+    generate: true
+    image_path: "assets/images/logo.png"
+    icon_size: 48
+
+  macos:
+    generate: true
+    image_path: "assets/images/logo.png"
