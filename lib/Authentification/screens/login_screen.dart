@@ -1,5 +1,7 @@
+import 'package:farmdirect/Authentification/screens/comming_soon.dart';
 import 'package:farmdirect/Authentification/screens/forget_password_screen.dart';
 import 'package:farmdirect/Authentification/screens/select_role_screen.dart';
+import 'package:farmdirect/features/farmer/dashboard/dashboard_screen.dart';
 import 'package:flutter/material.dart';
 
 class LoginPage extends StatefulWidget {
@@ -59,7 +61,7 @@ class _LoginPageState extends State<LoginPage> {
                         child: Text(
                           'Login',
                           style: TextStyle(
-                            fontSize: 20,
+                            fontSize: 23,
                             fontWeight: FontWeight.w700,
                             color: darkGreen,
                           ),
@@ -74,17 +76,18 @@ class _LoginPageState extends State<LoginPage> {
                     const Text(
                       'Phone Number / Email',
                       style: TextStyle(
-                        fontSize: 10,
+                        fontSize: 13,
                         fontWeight: FontWeight.w600,
                         color: Color(0xFF28313D),
                       ),
                     ),
 
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 4),
 
                     _inputField(
                       controller: phoneController,
                       hintText: 'e.g.+91 9876543210',
+                    
                       prefixIcon: Icons.phone_outlined,
                       keyboardType: TextInputType.emailAddress,
                       validator: (value) {
@@ -101,7 +104,7 @@ class _LoginPageState extends State<LoginPage> {
                     const Text(
                       'Password',
                       style: TextStyle(
-                        fontSize: 10,
+                        fontSize: 12,
                         fontWeight: FontWeight.w600,
                         color: Color(0xFF28313D),
                       ),
@@ -150,6 +153,7 @@ class _LoginPageState extends State<LoginPage> {
                             onChanged: (value) {
                               setState(() {
                                 rememberMe = value ?? false;
+                                
                               });
                             },
                             activeColor: primaryGreen,
@@ -176,7 +180,7 @@ class _LoginPageState extends State<LoginPage> {
 
                         GestureDetector(
                           onTap: () {
-                            // Forgot password
+                            Navigator.push(context, MaterialPageRoute(builder: (context)=>ComingSoonScreen()));
                           },
                           child: InkWell(
                             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context)=> ResetPasswordScreen())),
@@ -254,7 +258,7 @@ class _LoginPageState extends State<LoginPage> {
                       height: 34,
                       child: OutlinedButton(
                         onPressed: () {
-                          // Google login
+                          Navigator.push(context, MaterialPageRoute(builder: (context)=>ComingSoonScreen()));
                         },
                         style: OutlinedButton.styleFrom(
                           backgroundColor: Colors.white,
@@ -339,15 +343,16 @@ class _LoginPageState extends State<LoginPage> {
     TextInputType? keyboardType,
     bool obscureText = false,
     Widget? suffixIcon,
+    
     String? Function(String?)? validator,
   }) {
     return SizedBox(
-      height: 35,
-      child: TextFormField(
+      height: 40,
+      child: TextField(
         controller: controller,
         keyboardType: keyboardType,
         obscureText: obscureText,
-        validator: validator,
+        // validator: validator,
         style: const TextStyle(
           fontSize: 10,
           color: Color(0xFF303640),
@@ -409,6 +414,7 @@ class _LoginPageState extends State<LoginPage> {
     if (_formKey.currentState!.validate()) {
       debugPrint('Phone/Email: ${phoneController.text}');
       debugPrint('Password: ${passwordController.text}');
+      Navigator.push(context,MaterialPageRoute(builder: (context)=>FarmerDashboard()));
     }
   }
 }

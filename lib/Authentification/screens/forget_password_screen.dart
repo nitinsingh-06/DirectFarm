@@ -38,16 +38,10 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           child: Stack(
             children: [
               SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(
-                  15,
-                  18,
-                  15,
-                  100,
-                ),
+                padding: const EdgeInsets.fromLTRB(15, 18, 15, 100),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-
                     // =========================
                     // TITLE
                     // =========================
@@ -113,14 +107,16 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                     // PHONE FIELD
                     // =========================
                     SizedBox(
-                      height: 34,
+                      height: 35,
                       child: TextFormField(
                         controller: phoneController,
                         keyboardType: TextInputType.phone,
+
                         style: const TextStyle(
                           fontSize: 10.5,
                           color: Color(0xFF374151),
                         ),
+
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
                             return "Please enter your phone number";
@@ -132,10 +128,12 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
                           return null;
                         },
+
                         decoration: InputDecoration(
                           hintText: "e.g. +91 9876543210",
+
                           hintStyle: const TextStyle(
-                            fontSize: 10.5,
+                            fontSize: 12.5,
                             color: Color(0xFF8B949E),
                           ),
 
@@ -153,9 +151,10 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                           filled: true,
                           fillColor: Colors.white,
 
+                          // Controls the actual TextFormField height
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 10,
-                            vertical: 0,
+                            vertical: 9,
                           ),
 
                           border: OutlineInputBorder(
@@ -186,6 +185,21 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                               color: Colors.redAccent,
                             ),
                           ),
+
+                          focusedErrorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(
+                              color: Colors.redAccent,
+                              width: 1.2,
+                            ),
+                          ),
+
+                          // Prevents the error text from changing the input's layout unexpectedly
+                          errorStyle: const TextStyle(
+                            fontSize: 10,
+                            height: 0.1,
+                          
+                          ),
                         ),
                       ),
                     ),
@@ -210,8 +224,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF80D000)
-                              .withOpacity(0.25),
+                          color: const Color(0xFF80D000).withOpacity(0.25),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),

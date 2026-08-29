@@ -1,3 +1,4 @@
+import 'package:farmdirect/Authentification/screens/Register_screen/successful_screen.dart';
 import 'package:farmdirect/core/widgets/farmer_crop_selector_widgets.dart';
 import 'package:farmdirect/core/widgets/farmer_input_field_widgets.dart';
 import 'package:flutter/material.dart';
@@ -284,7 +285,7 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
 
   void registerFarmer() {
     if (!_formKey.currentState!.validate()) {
-      return;
+      return ;
     }
 
     debugPrint(
@@ -311,12 +312,12 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
 
     // Example:
     //
-    // Navigator.push(
-    //   context,
-    //   MaterialPageRoute(
-    //     builder: (_) => const FarmerRegisterStep2(),
-    //   ),
-    // );
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const SuccessScreen(),
+      ),
+    );
   }
 }
 

@@ -1,4 +1,6 @@
-import 'package:farmdirect/Authentification/screens/currently_working_screen.dart';
+// ignore_for_file: unused_element
+
+import 'package:farmdirect/Authentification/screens/Register_screen/successful_screen.dart';
 import 'package:flutter/material.dart';
 
 class BuyerRegisterScreen extends StatefulWidget {
@@ -306,7 +308,7 @@ class _BuyerRegisterScreenState extends State<BuyerRegisterScreen> {
                 bottom: 18,
                 child: GestureDetector(
                   onTap: (){
-                    Navigator.push(context, MaterialPageRoute(builder: (context)=>CurrentlyWorkingScreen()));
+                    Navigator.push(context, MaterialPageRoute(builder: (context)=>SuccessScreen()));
                   },
                   child: Container(
                     height: 40,
