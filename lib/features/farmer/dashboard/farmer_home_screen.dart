@@ -170,7 +170,7 @@ class HomeScreen extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(icon, size: 12, color: const Color(0xFF0B765B)),
+              Icon(icon, size: 14, color: const Color(0xFF0B765B)),
 
               const SizedBox(width: 4),
 
@@ -178,7 +178,7 @@ class HomeScreen extends StatelessWidget {
                 child: Text(
                   title,
                   style: const TextStyle(
-                    fontSize: 8,
+                    fontSize: 2,
                     color: Color(0xFF6B7280),
                     fontWeight: FontWeight.w500,
                   ),

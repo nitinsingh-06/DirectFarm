@@ -181,7 +181,7 @@ class _EarningsScreenState extends State<EarningsScreen> {
               child: Text(
                 filters[index],
                 style: TextStyle(
-                  fontSize: 7.5,
+                  fontSize: 9,
                   fontWeight:
                       selected ? FontWeight.w600 : FontWeight.w500,
                   color: selected
@@ -205,16 +205,16 @@ class _EarningsScreenState extends State<EarningsScreen> {
       26,
       34,
       30,
-      53,
+      75,
       38,
-      49,
+      70,
       53,
       58,
     ];
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 9),
-      height: 68,
+      height: 100,
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(
         7,
@@ -276,7 +276,7 @@ class _EarningsScreenState extends State<EarningsScreen> {
           const Text(
             'Recent Withdrawals',
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 18,
               fontWeight: FontWeight.bold,
               color: Color(0xFF075640),
             ),
@@ -335,10 +335,12 @@ class _EarningsScreenState extends State<EarningsScreen> {
               children: [
                 Text(
                   title,
+
+
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    fontSize: 8,
+                    fontSize: 11,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF374151),
                   ),

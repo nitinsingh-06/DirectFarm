@@ -1,64 +1,152 @@
 import 'package:flutter/material.dart';
+import 'order_details_screen.dart';
 
-class OrdersScreen extends StatefulWidget {
-  const OrdersScreen({super.key});
+class MyOrdersScreen extends StatefulWidget {
+  const MyOrdersScreen({super.key});
 
   @override
-  State<OrdersScreen> createState() => _OrdersScreenState();
+  State<MyOrdersScreen> createState() => _MyOrdersScreenState();
 }
 
-class _OrdersScreenState extends State<OrdersScreen> {
+class _MyOrdersScreenState extends State<MyOrdersScreen> {
   int selectedTab = 0;
 
-  final List<String> tabs = [
-    'Pending (3)',
-    'Confirmed',
-    'Shipped',
+  // ============================================================
+  // ORDER DATA
+  // ============================================================
+
+  final List<Map<String, String>> pendingOrders = [
+    {
+      'orderId': 'FD1234',
+      'buyer': 'Suresh Kumar',
+      'quantity': '50 kg',
+      'product': 'Basmati Rice',
+      'amount': '₹4,250',
+      'date': 'Today, 10:15 AM',
+      'status': 'Pending Accept',
+      'address': 'Sector 15, Rohini, New Delhi, 110085',
+      'price': '₹4,250',
+      'logistics': '₹150',
+      'total': '₹4,400',
+    },
+    {
+      'orderId': 'FD1190',
+      'buyer': 'Aggarwal Sweet House',
+      'quantity': '100 kg',
+      'product': 'Cow Ghee',
+      'amount': '₹65,000',
+      'date': 'Yesterday',
+      'status': 'Pending Accept',
+      'address': 'New Delhi, India',
+      'price': '₹65,000',
+      'logistics': '₹0',
+      'total': '₹65,000',
+    },
   ];
 
+  final List<Map<String, String>> confirmedOrders = [
+    {
+      'orderId': 'FD1180',
+      'buyer': 'Sharma Foods',
+      'quantity': '75 kg',
+      'product': 'Organic Wheat',
+      'amount': '₹3,750',
+      'date': 'Yesterday',
+      'status': 'Confirmed',
+      'address': 'Gurugram, Haryana, India',
+      'price': '₹3,750',
+      'logistics': '₹150',
+      'total': '₹3,900',
+    },
+  ];
+
+  final List<Map<String, String>> shippedOrders = [
+    {
+      'orderId': 'FD1145',
+      'buyer': 'Fresh Mart',
+      'quantity': '40 kg',
+      'product': 'Organic Rice',
+      'amount': '₹3,400',
+      'date': '25 Aug, 2026',
+      'status': 'Shipped',
+      'address': 'New Delhi, India',
+      'price': '₹3,400',
+      'logistics': '₹150',
+      'total': '₹3,550',
+    },
+  ];
+
+  // ============================================================
+  // GET CURRENT ORDERS
+  // ============================================================
+
+  List<Map<String, String>> get currentOrders {
+    switch (selectedTab) {
+      case 1:
+        return confirmedOrders;
+
+      case 2:
+        return shippedOrders;
+
+      default:
+        return pendingOrders;
+    }
+  }
+
+  // ============================================================
+  // BUILD
+  // ============================================================
+
   @override
-  Widget build(BuildContext context) {
+Widget build(BuildContext context) {
     return SafeArea(
       child: Column(
         children: [
-          // =====================================================
-          // HEADER
-          // =====================================================
-
           _buildHeader(),
 
-          // =====================================================
-          // ORDER STATUS TABS
-          // =====================================================
-
-          _buildOrderTabs(),
-
-          // =====================================================
-          // ORDERS
-          // =====================================================
+          _buildTabs(),
 
           Expanded(
-            child: _buildOrdersList(),
+            child: currentOrders.isEmpty
+                ? _buildEmptyState()
+                : ListView.builder(
+                    padding: const EdgeInsets.fromLTRB(
+                      5,
+                      14,
+                      5,
+                      20,
+                    ),
+                    itemCount: currentOrders.length,
+                    itemBuilder: (context, index) {
+                      final order = currentOrders[index];
+
+                      return _buildOrderCard(order);
+                    },
+                  ),
           ),
         ],
       ),
     );
   }
 
-  // ===========================================================
+  // ============================================================
   // HEADER
-  // ===========================================================
+  // ============================================================
 
   Widget _buildHeader() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(11, 13, 11, 9),
+      padding: const EdgeInsets.fromLTRB(
+        0,
+        10,
+        0,
+        12,
+      ),
       decoration: const BoxDecoration(
         color: Colors.white,
         border: Border(
           bottom: BorderSide(
             color: Color(0xFFE8ECEF),
-            width: 1,
           ),
         ),
       ),
@@ -67,63 +155,69 @@ class _OrdersScreenState extends State<OrdersScreen> {
         child: Text(
           'My Orders',
           style: TextStyle(
-            fontSize: 17,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF075640),
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF075B47),
           ),
         ),
       ),
     );
   }
 
-  // ===========================================================
-  // ORDER TABS
-  // ===========================================================
+  // ============================================================
+  // TABS
+  // ============================================================
 
-  Widget _buildOrderTabs() {
+  Widget _buildTabs() {
+    final tabs = [
+      'Pending (${pendingOrders.length})',
+      'Confirmed',
+      'Shipped',
+    ];
+
     return Container(
       height: 42,
       width: double.infinity,
       color: Colors.white,
-      padding: const EdgeInsets.symmetric(horizontal: 8),
       child: Row(
         children: List.generate(
           tabs.length,
           (index) {
-            final bool isSelected = selectedTab == index;
+            final isSelected = selectedTab == index;
 
-            return GestureDetector(
-              onTap: () {
-                setState(() {
-                  selectedTab = index;
-                });
-              },
-              child: Container(
-                margin: const EdgeInsets.only(
-                  right: 5,
-                  top: 7,
-                  bottom: 6,
-                ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 11,
-                ),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? const Color(0xFFE8F8F1)
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(14),
-                ),
+            return Expanded(
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    selectedTab = index;
+                  });
+                },
                 child: Center(
-                  child: Text(
-                    tabs[index],
-                    style: TextStyle(
-                      fontSize: 8.5,
-                      fontWeight: isSelected
-                          ? FontWeight.w600
-                          : FontWeight.w500,
+                  child: AnimatedContainer(
+                    duration: const Duration(
+                      milliseconds: 200,
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
                       color: isSelected
-                          ? const Color(0xFF168653)
-                          : const Color(0xFF7A8491),
+                          ? const Color(0xFFE5F7F1)
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      tabs[index],
+                      style: TextStyle(
+                        fontSize: 9,
+                        fontWeight: isSelected
+                            ? FontWeight.w700
+                            : FontWeight.w500,
+                        color: isSelected
+                            ? const Color(0xFF075B47)
+                            : const Color(0xFF737B82),
+                      ),
                     ),
                   ),
                 ),
@@ -135,257 +229,282 @@ class _OrdersScreenState extends State<OrdersScreen> {
     );
   }
 
-  // ===========================================================
-  // ORDERS LIST
-  // ===========================================================
-
-  Widget _buildOrdersList() {
-    if (selectedTab == 0) {
-      return ListView(
-        padding: const EdgeInsets.fromLTRB(
-          10,
-          8,
-          10,
-          20,
-        ),
-        children: [
-          _buildOrderCard(
-            orderId: '#FD1234',
-            buyer: 'Suresh Kumar',
-            quantity: '50 kg',
-            product: 'Basmati Rice',
-            total: '₹4,250',
-            time: 'Today, 10:15 AM',
-            status: 'Pending Accept',
-            statusBackground: const Color(0xFFFFF1C9),
-            statusText: const Color(0xFFE59B00),
-          ),
-
-          const SizedBox(height: 8),
-
-          _buildOrderCard(
-            orderId: '#FD1190',
-            buyer: 'Aggarwal Sweet House',
-            quantity: '100 kg',
-            product: 'Pure Cow Ghee',
-            total: '₹65,000',
-            time: 'Yesterday',
-            status: 'Pending Accept',
-            statusBackground: const Color(0xFFFFF1C9),
-            statusText: const Color(0xFFE59B00),
-          ),
-        ],
-      );
-    }
-
-    if (selectedTab == 1) {
-      return ListView(
-        padding: const EdgeInsets.fromLTRB(
-          10,
-          8,
-          10,
-          20,
-        ),
-        children: [
-          _buildOrderCard(
-            orderId: '#FD1178',
-            buyer: 'FreshMart Agra',
-            quantity: '200 kg',
-            product: 'Red Potatoes',
-            total: '₹8,400',
-            time: 'Yesterday',
-            status: 'Confirmed',
-            statusBackground: const Color(0xFFE1F4FF),
-            statusText: const Color(0xFF2585C7),
-          ),
-        ],
-      );
-    }
-
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(
-        10,
-        8,
-        10,
-        20,
-      ),
-      children: [
-        _buildOrderCard(
-          orderId: '#FD1102',
-          buyer: 'Organic Hub Delhi',
-          quantity: '50 kg',
-          product: 'Fresh Tomatoes',
-          total: '₹3,000',
-          time: '2 days ago',
-          status: 'Shipped',
-          statusBackground: const Color(0xFFE0ECFF),
-          statusText: const Color(0xFF3B82F6),
-        ),
-      ],
-    );
-  }
-
-  // ===========================================================
+  // ============================================================
   // ORDER CARD
-  // ===========================================================
+  // ============================================================
 
-  Widget _buildOrderCard({
-    required String orderId,
-    required String buyer,
-    required String quantity,
-    required String product,
-    required String total,
-    required String time,
-    required String status,
-    required Color statusBackground,
-    required Color statusText,
-  }) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(
-        10,
-        9,
-        10,
-        10,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(9),
-        border: Border.all(
-          color: const Color(0xFFE1E6EA),
-          width: 1,
+  Widget _buildOrderCard(
+    Map<String, String> order,
+  ) {
+    return GestureDetector(
+      onTap: () {
+        _openOrderDetails(order);
+      },
+      child: Container(
+        margin: const EdgeInsets.only(
+          bottom: 10,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 3,
-            offset: const Offset(0, 1),
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(9),
+          border: Border.all(
+            color: const Color(0xFFE4E8EB),
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // ---------------------------------------------------
-          // ORDER ID + STATUS
-          // ---------------------------------------------------
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ====================================================
+            // ORDER ID + STATUS
+            // ====================================================
 
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(
-                child: Text(
-                  'Order $orderId',
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Order #${order['orderId']}',
                   style: const TextStyle(
-                    fontSize: 9.5,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF075640),
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF075B47),
                   ),
                 ),
-              ),
 
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 7,
-                  vertical: 4,
+                _buildStatusBadge(
+                  order['status'] ?? '',
                 ),
-                decoration: BoxDecoration(
-                  color: statusBackground,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  status,
-                  style: TextStyle(
-                    fontSize: 7,
-                    fontWeight: FontWeight.w600,
-                    color: statusText,
-                  ),
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 8),
-
-          // ---------------------------------------------------
-          // DIVIDER
-          // ---------------------------------------------------
-
-          Container(
-            height: 1,
-            width: double.infinity,
-            color: const Color(0xFFE7EAED),
-          ),
-
-          const SizedBox(height: 8),
-
-          // ---------------------------------------------------
-          // BUYER
-          // ---------------------------------------------------
-
-          Text(
-            buyer,
-            style: const TextStyle(
-              fontSize: 9.5,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF374151),
+              ],
             ),
-          ),
 
-          const SizedBox(height: 2),
+            const SizedBox(height: 11),
 
-          // ---------------------------------------------------
-          // PRODUCT
-          // ---------------------------------------------------
+            // ====================================================
+            // BUYER
+            // ====================================================
 
-          Text(
-            '$quantity • $product',
-            style: const TextStyle(
-              fontSize: 8,
-              color: Color(0xFF7A8491),
+            Text(
+              order['buyer'] ?? '',
+              style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF303840),
+              ),
             ),
-          ),
 
-          const SizedBox(height: 7),
+            const SizedBox(height: 4),
 
-          // ---------------------------------------------------
-          // TOTAL + TIME
-          // ---------------------------------------------------
+            // ====================================================
+            // PRODUCT
+            // ====================================================
 
-          Row(
-            children: [
-              RichText(
-                text: TextSpan(
+            Text(
+              '${order['quantity']} • ${order['product']}',
+              style: const TextStyle(
+                fontSize: 9.5,
+                color: Color(0xFF7D858D),
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            // ====================================================
+            // BOTTOM ROW
+            // ====================================================
+
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
                   children: [
-                    const TextSpan(
-                      text: 'Total: ',
+                    const Text(
+                      'Total: ',
                       style: TextStyle(
-                        fontSize: 8,
-                        color: Color(0xFF7A8491),
+                        fontSize: 9,
+                        color: Color(0xFF8A939B),
                       ),
                     ),
-                    TextSpan(
-                      text: total,
+                    Text(
+                      order['amount'] ?? '',
                       style: const TextStyle(
-                        fontSize: 9,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF374151),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF39434B),
                       ),
                     ),
                   ],
                 ),
-              ),
 
-              const Spacer(),
-
-              Text(
-                time,
-                style: const TextStyle(
-                  fontSize: 7.5,
-                  color: Color(0xFF7A8491),
+                Text(
+                  order['date'] ?? '',
+                  style: const TextStyle(
+                    fontSize: 8.5,
+                    color: Color(0xFF8A939B),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ============================================================
+  // STATUS BADGE
+  // ============================================================
+
+  Widget _buildStatusBadge(String status) {
+    Color backgroundColor;
+    Color textColor;
+
+   switch (status) {
+    case 'Accepted':
+      backgroundColor = const Color(0xFFE3F6EE);
+      textColor = const Color(0xFF08795D);
+      break;
+
+    case 'Rejected':
+      backgroundColor = const Color(0xFFFFE1E1);
+      textColor = const Color(0xFFE55353);
+      break;
+
+    case 'Confirmed':
+      backgroundColor = const Color(0xFFE3F6EE);
+      textColor = const Color(0xFF08795D);
+      break;
+
+    case 'Shipped':
+      backgroundColor = const Color(0xFFE7F0FF);
+      textColor = const Color(0xFF3569B8);
+      break;
+
+    case 'Pending Accept':
+    default:
+      backgroundColor = const Color(0xFFFFF0C2);
+      textColor = const Color(0xFFC48A00);
+      break;
+  }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 8,
+        vertical: 4,
+      ),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        status,
+        style: TextStyle(
+          fontSize: 8,
+          fontWeight: FontWeight.w600,
+          color: textColor,
+        ),
+      ),
+    );
+  }
+
+  // ============================================================
+  // OPEN ORDER DETAILS
+  // ============================================================
+Future<void> _openOrderDetails(
+  Map<String, String> order,
+) async {
+  final result = await Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) {
+        return OrderDetailsScreen(
+          orderId: order['orderId'] ?? '',
+          buyerName: order['buyer'] ?? '',
+          buyerAddress: order['address'] ?? '',
+          productName: order['product'] ?? '',
+          quantity: order['quantity'] ?? '',
+          price: order['price'] ?? '',
+          logistics: order['logistics'] ?? '',
+          totalAmount: order['total'] ?? '',
+        );
+      },
+    ),
+  );
+
+  // ============================================================
+  // ACCEPTED
+  // ============================================================
+
+  if (result == 'accepted') {
+    setState(() {
+      order['status'] = 'Accepted';
+    });
+  }
+
+  // ============================================================
+  // REJECTED
+  // ============================================================
+
+  if (result == 'rejected') {
+    setState(() {
+      order['status'] = 'Rejected';
+
+    });
+  }
+}
+
+  // ============================================================
+  // EMPTY STATE
+  // ============================================================
+
+  Widget _buildEmptyState() {
+    String message;
+
+    switch (selectedTab) {
+      case 1:
+        message = 'No confirmed orders';
+        break;
+
+      case 2:
+        message = 'No shipped orders';
+        break;
+
+      default:
+        message = 'No pending orders';
+    }
+
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              color: Color(0xFFEAF5F1),
+            ),
+            child: const Icon(
+              Icons.inventory_2_outlined,
+              size: 28,
+              color: Color(0xFF075B47),
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          Text(
+            message,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF4B5560),
+            ),
           ),
         ],
       ),

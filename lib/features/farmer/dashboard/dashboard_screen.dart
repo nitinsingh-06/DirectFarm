@@ -41,11 +41,17 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
 
       const ProductScreen(),
 
-      const OrdersScreen(),
+      const MyOrdersScreen(),
 
       const EarningsScreen(),
 
-      const ProfileScreen(),
+    ProfileScreen(
+  onBottomNavTap: (index) {
+    setState(() {
+      _currentIndex = index;
+    });
+  },
+),
     ];
   }
 
