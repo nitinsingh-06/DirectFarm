@@ -245,11 +245,13 @@ class _HomeScreenState extends State<HomeScreen> {
               Row(
                 children: const [
                   Expanded(
-                    child: _ProductCard(
-                      image: "assets/images/tomatoes.png",
-                      name: "Organic Tomatoes",
-                      price: "₹40 / kg",
-                      farm: "By Ramgarh Farms",
+                    child: InkWell(
+                      child: _ProductCard(
+                        image: "assets/images/tomatoes.png",
+                        name: "Organic Tomatoes",
+                        price: "₹40 / kg",
+                        farm: "By Ramgarh Farms",
+                      ),
                     ),
                   ),
 

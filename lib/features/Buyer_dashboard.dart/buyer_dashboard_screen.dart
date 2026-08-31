@@ -1,5 +1,7 @@
+import 'package:farmdirect/Authentification/screens/comming_soon.dart';
 import 'package:farmdirect/features/Buyer_dashboard.dart/home_screen.dart';
 import 'package:farmdirect/features/Buyer_dashboard.dart/market_place_screen.dart';
+import 'package:farmdirect/features/Buyer_dashboard.dart/marketplace/add_to_cart.dart';
 import 'package:flutter/material.dart';
 
 class BuyerDashboard extends StatefulWidget {
@@ -72,19 +74,14 @@ class _BuyerDashboardState extends State<BuyerDashboard> {
       
 
       case 2:
-        return const Center(
-          child: Text("Cart"),
-        );
+        return const CartScreen();
+      
 
       case 3:
-        return const Center(
-          child: Text("Orders"),
-        );
+        return const ComingSoonScreen();
 
       case 4:
-        return const Center(
-          child: Text("Profile"),
-        );
+        return const ComingSoonScreen();
 
       default:
         return const HomeScreen();
