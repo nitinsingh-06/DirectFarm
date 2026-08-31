@@ -2,7 +2,7 @@
 // HOME SCREEN
 // ============================================================
 
-import 'package:farmdirect/core/provider/profile_provider.dart';
+import 'package:farmdirect/core/provider/farmer_profile_provider.dart';
 import 'package:farmdirect/core/widgets/farmer/profile_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

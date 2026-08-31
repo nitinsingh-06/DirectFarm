@@ -1,5 +1,5 @@
 import 'package:farmdirect/core/widgets/animations/successful_register.dart';
-import 'package:farmdirect/features/Buyer_dashboard.dart/buyer_dashboard_screen.dart';
+import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/buyer_dashboard_screen.dart';
 import 'package:flutter/material.dart';
 
 class SuccessScreen extends StatelessWidget {

@@ -1,3 +1,4 @@
+import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/cheakout/cheakout_screen.dart';
 import 'package:flutter/material.dart';
 
 class CartScreen extends StatefulWidget {
@@ -160,33 +161,25 @@ class _CartScreenState extends State<CartScreen> {
   // ============================================================
   // CHECKOUT
   // ============================================================
-
-  void _proceedToCheckout() {
-    if (_cartItems.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Your cart is empty'),
-        ),
-      );
-      return;
-    }
-
+void _proceedToCheckout() {
+  if (_cartItems.isEmpty) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Proceeding to checkout...'),
+        content: Text('Your cart is empty'),
       ),
     );
-
-    // Later:
-    //
-    // Navigator.push(
-    //   context,
-    //   MaterialPageRoute(
-    //     builder: (_) => const CheckoutScreen(),
-    //   ),
-    // );
+    return;
   }
 
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => CheckoutScreen(
+        totalAmount: grandTotal,
+      ),
+    ),
+  );
+}
   // ============================================================
   // BUILD
   // ============================================================

@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:farmdirect/Authentification/screens/comming_soon.dart';
 import 'package:farmdirect/Authentification/screens/login_screen.dart';
-import 'package:farmdirect/core/provider/profile_provider.dart';
+import 'package:farmdirect/core/provider/farmer_profile_provider.dart';
 import 'package:farmdirect/core/widgets/farmer/profile_image.dart';
 import 'package:farmdirect/features/farmer/dashboard/farmer_profile/about_us_screen.dart';
 import 'package:farmdirect/features/farmer/dashboard/farmer_profile/farm_details_screen.dart';

@@ -1,4 +1,4 @@
-import 'package:farmdirect/features/Buyer_dashboard.dart/product_details_screen.dart';
+import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/product_details_screen.dart';
 import 'package:flutter/material.dart';
 
 class MarketplaceScreen extends StatelessWidget {
