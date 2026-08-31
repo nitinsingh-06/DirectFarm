@@ -1,8 +1,16 @@
 import 'dart:io';
 
 import 'package:farmdirect/Authentification/screens/comming_soon.dart';
+import 'package:farmdirect/Authentification/screens/login_screen.dart';
+import 'package:farmdirect/core/provider/profile_provider.dart';
+import 'package:farmdirect/core/widgets/farmer/profile_image.dart';
+import 'package:farmdirect/features/farmer/dashboard/farmer_profile/about_us_screen.dart';
+import 'package:farmdirect/features/farmer/dashboard/farmer_profile/farm_details_screen.dart';
+import 'package:farmdirect/features/farmer/dashboard/farmer_profile/farm_help_section.dart';
+import 'package:farmdirect/features/farmer/dashboard/farmer_profile/farmer_profile_setting.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 
 class ProfileScreen extends StatefulWidget {
   final Function(int) onBottomNavTap;
@@ -21,23 +29,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   final ImagePicker _picker = ImagePicker();
 
-  // ============================================================
-  // PICK PROFILE IMAGE
-  // ============================================================
-
-  Future<void> _pickProfileImage() async {
-    final XFile? image = await _picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 85,
-      
-    );
-
-    if (image == null) return;
-
-    setState(() {
-      _profileImage = File(image.path);
-    });
-  }
 
   // ============================================================
   // BUILD
@@ -90,7 +81,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             context,
                             MaterialPageRoute(
                               builder: (_) =>
-                                  const ComingSoonScreen(),
+                                  const FarmerProfileSettings(),
                             ),
                           );
                         },
@@ -106,7 +97,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             context,
                             MaterialPageRoute(
                               builder: (_) =>
-                                  const ComingSoonScreen(),
+                                  const FarmDetailsScreen(),
                             ),
                           );
                         },
@@ -258,7 +249,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             context,
                             MaterialPageRoute(
                               builder: (_) =>
-                                  const ComingSoonScreen(),
+                                  const HelpSupportScreen(),
                             ),
                           );
                         },
@@ -278,7 +269,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             context,
                             MaterialPageRoute(
                               builder: (_) =>
-                                  const ComingSoonScreen(),
+                                  const AboutUsScreen(),
                             ),
                           );
                         },
@@ -316,131 +307,77 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // ============================================================
   // PROFILE HEADER
   // ============================================================
+Widget _buildProfileHeader() {
+  return Consumer<ProfileProvider>(
+    builder: (context, profile, child) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 9,
+        ),
+        color: const Color(0xFF075B47),
 
-  Widget _buildProfileHeader() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(
-        horizontal: 14,
-        vertical: 9,
-      ),
-      color: const Color(0xFF075B47),
-      child: Row(
-        children: [
-          // ========================================================
-          // PROFILE PICTURE
-          // ========================================================
+        child: Row(
+          children: [
 
-          GestureDetector(
-            onTap: _pickProfileImage,
-            child: Stack(
+            // ====================================================
+            // PROFILE IMAGE
+            // ====================================================
+
+            Container(
+              width: 44,
+              height: 44,
+              padding: const EdgeInsets.all(2),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: const Color(0xFFB8D9A8),
+                  width: 2,
+                ),
+              ),
+
+              child: const ProfileImage(
+                size: 36,
+              ),
+            ),
+
+            const SizedBox(width: 10),
+
+            // ====================================================
+            // PROFILE NAME
+            // ====================================================
+
+            Column(
+              crossAxisAlignment:
+                  CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  padding: const EdgeInsets.all(2),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: const Color(0xFFB8D9A8),
-                      width: 2,
-                    ),
-                  ),
-                  child: ClipOval(
-                    child: _profileImage != null
-                        ? Image.file(
-                            _profileImage!,
-                            width: 40,
-                            height: 40,
-                            fit: BoxFit.cover,
-                          )
-                        : Image.asset(
-                            'assets/images/profile.png',
-                            width: 40,
-                            height: 40,
-                            fit: BoxFit.cover,
-                            errorBuilder:
-                                (
-                                  context,
-                                  error,
-                                  stackTrace,
-                                ) {
-                              return Container(
-                                color:
-                                    const Color(0xFFE7F2ED),
-                                child: const Icon(
-                                  Icons.person,
-                                  color:
-                                      Color(0xFF075B47),
-                                  size: 25,
-                                ),
-                              );
-                            },
-                          ),
+                Text(
+                  profile.name,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
                   ),
                 ),
 
-                // Small camera icon
-                Positioned(
-                  right: 0,
-                  bottom: 0,
-                  child: Container(
-                    width: 16,
-                    height: 16,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: const Color(0xFF075B47),
-                        width: 1,
-                      ),
-                    ),
-                    child: const Icon(
-                      Icons.camera_alt,
-                      size: 9,
-                      color: Color(0xFF075B47),
-                    ),
+                const SizedBox(height: 2),
+
+                const Text(
+                  'Farm ID: #83422',
+                  style: TextStyle(
+                    fontSize: 8,
+                    color: Color(0xFFD1E8E1),
                   ),
                 ),
               ],
             ),
-          ),
-
-          const SizedBox(width: 10),
-
-          // ========================================================
-          // NAME
-          // ========================================================
-
-          const Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Romesh Kumar',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                ),
-              ),
-
-              SizedBox(height: 2),
-
-              Text(
-                'Farm ID: #83422',
-                style: TextStyle(
-                  fontSize: 8,
-                  color: Color(0xFFD1E8E1),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
+          ],
+        ),
+      );
+    },
+  );
+}
   // ============================================================
   // SECTION TITLE
   // ============================================================
@@ -718,6 +655,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             TextButton(
               onPressed: () {
                 Navigator.pop(dialogContext);
+                
               },
               child: const Text('Cancel'),
             ),
@@ -725,7 +663,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onPressed: () {
                 Navigator.pop(dialogContext);
 
-                // Add your actual logout logic here.
+                //  actual logout logic here.
+                Navigator.push(context, MaterialPageRoute(builder: (_)=>LoginPage()));
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor:

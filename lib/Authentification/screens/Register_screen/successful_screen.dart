@@ -1,5 +1,5 @@
-import 'package:farmdirect/Authentification/screens/comming_soon.dart';
 import 'package:farmdirect/core/widgets/animations/successful_register.dart';
+import 'package:farmdirect/features/Buyer_dashboard.dart/buyer_dashboard_screen.dart';
 import 'package:flutter/material.dart';
 
 class SuccessScreen extends StatelessWidget {
@@ -50,7 +50,7 @@ class SuccessScreen extends StatelessWidget {
                 height: 44,
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context)=>ComingSoonScreen()));
+                    Navigator.push(context, MaterialPageRoute(builder: (context)=>BuyerDashboard()));
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF8DD500),

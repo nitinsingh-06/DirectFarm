@@ -2,7 +2,10 @@
 // HOME SCREEN
 // ============================================================
 
+import 'package:farmdirect/core/provider/profile_provider.dart';
+import 'package:farmdirect/core/widgets/farmer/profile_image.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class HomeScreen extends StatelessWidget {
   final VoidCallback onAddProduct;
@@ -39,74 +42,81 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   }
+// ============================================================
+// HEADER
+// ============================================================
 
-  // ============================================================
-  // HEADER
-  // ============================================================
+Widget _buildHeader() {
+  return Consumer<ProfileProvider>(
+    builder: (context, profile, child) {
+      return Container(
+        width: double.infinity,
+        height: 62,
+        color: const Color(0xFF075640),
+        padding: const EdgeInsets.symmetric(horizontal: 13),
 
-  Widget _buildHeader() {
-    return Container(
-      width: double.infinity,
-      height: 62,
-      color: const Color(0xFF075640),
-      padding: const EdgeInsets.symmetric(horizontal: 13),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                Text(
-                  'Namaste, Ramesh! 🌾',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+        child: Row(
+          children: [
+
+            // ==================================================
+            // NAME
+            // ==================================================
+
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Namaste, ${profile.name}! 🌾',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-                SizedBox(height: 3),
-                Text(
-                  'Farm ID: #88432',
-                  style: TextStyle(
-                    color: Color(0xFF9ACB51),
-                    fontSize: 9,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
 
-          // Profile image
-          // Profile image
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: const Color(0xFFB5D56A), width: 2),
-            ),
-            child: ClipOval(
-              child: Image.asset(
-                'assets/images/farmer_profile_image.png',
-                width: 36,
-                height: 36,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return const Icon(
-                    Icons.person,
-                    color: Colors.white,
-                    size: 23,
-                  );
-                },
+                  const SizedBox(height: 3),
+
+                  const Text(
+                    'Farm ID: #88432',
+                    style: TextStyle(
+                      color: Color(0xFF9ACB51),
+                      fontSize: 9,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
+
+            // ==================================================
+            // PROFILE IMAGE
+            // ==================================================
+
+            Container(
+              width: 40,
+              height: 40,
+              padding: const EdgeInsets.all(2),
+
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: const Color(0xFFB5D56A),
+                  width: 2,
+                ),
+              ),
+
+              child: const ProfileImage(
+                size: 36,
+              ),
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
 
   // ============================================================
   // STATISTICS
