@@ -37,39 +37,44 @@ class BuyerProfileProvider extends ChangeNotifier {
   // ============================================================
   // LOAD DATA
   // ============================================================
+Future<void> loadProfile() async {
+  final prefs =
+      await SharedPreferences.getInstance();
 
-  Future<void> loadProfile() async {
-    final prefs = await SharedPreferences.getInstance();
+  _name = prefs.getString('buyer_name') ??
+      'Priya Sharma';
 
-    _name = prefs.getString('buyer_name') ??
-        'Priya Sharma';
+  _email = prefs.getString('buyer_email') ??
+      'priya.sharma@gmail.com';
 
-    _email = prefs.getString('buyer_email') ??
-        'priya.sharma@gmail.com';
+  _phone = prefs.getString('buyer_phone') ??
+      '+91 98765 43210';
 
-    _phone = prefs.getString('buyer_phone') ??
-        '+91 98765 43210';
+  _dob = prefs.getString('buyer_dob') ??
+      '12/04/1998';
 
-    _dob = prefs.getString('buyer_dob') ??
-        '12/04/1998';
+  _gender = prefs.getString('buyer_gender') ??
+      'Female';
 
-    _gender = prefs.getString('buyer_gender') ??
-        'Female';
+  // IMPORTANT
+  final imagePath =
+      prefs.getString('buyer_profile_image');
 
-    final imagePath =
-        prefs.getString('buyer_profile_image');
+  if (imagePath != null &&
+      imagePath.isNotEmpty) {
+    final file = File(imagePath);
 
-    if (imagePath != null &&
-        imagePath.isNotEmpty) {
-      final file = File(imagePath);
-
-      if (await file.exists()) {
-        _profileImage = file;
-      }
+    if (await file.exists()) {
+      _profileImage = file;
+    } else {
+      _profileImage = null;
     }
-
-    notifyListeners();
+  } else {
+    _profileImage = null;
   }
+
+  notifyListeners();
+}
 
   // ============================================================
   // PICK IMAGE
