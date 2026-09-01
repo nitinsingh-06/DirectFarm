@@ -2,6 +2,7 @@ import 'package:farmdirect/Authentification/screens/comming_soon.dart';
 import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/home_screen.dart';
 import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/market_place_screen.dart';
 import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/marketplace/add_to_cart.dart';
+import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/order/order_screen.dart';
 import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/profile/buyer_profile_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -79,7 +80,7 @@ class _BuyerDashboardState extends State<BuyerDashboard> {
       
 
       case 3:
-        return const ComingSoonScreen();
+        return const OrderScreen();
 
       case 4:
         return const BuyerProfileScreen();

@@ -1,5 +1,5 @@
 import 'package:farmdirect/Authentification/screens/Register_screen/successful_screen.dart';
-import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/order/order_screen.dart';
+import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/order/order_success.dart';
 import 'package:flutter/material.dart';
 
 class PaymentScreen extends StatefulWidget {
