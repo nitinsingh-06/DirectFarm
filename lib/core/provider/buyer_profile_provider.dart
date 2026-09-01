@@ -1,3 +1,4 @@
+
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -35,74 +36,84 @@ class BuyerProfileProvider extends ChangeNotifier {
       'assets/images/profile.png';
 
   // ============================================================
-  // LOAD DATA
+  // LOAD PROFILE
   // ============================================================
-Future<void> loadProfile() async {
-  final prefs =
-      await SharedPreferences.getInstance();
 
-  _name = prefs.getString('buyer_name') ??
-      'Priya Sharma';
+  Future<void> loadProfile() async {
+    final prefs = await SharedPreferences.getInstance();
 
-  _email = prefs.getString('buyer_email') ??
-      'priya.sharma@gmail.com';
+    _name = prefs.getString('buyer_name') ??
+        'Priya Sharma';
 
-  _phone = prefs.getString('buyer_phone') ??
-      '+91 98765 43210';
+    _email = prefs.getString('buyer_email') ??
+        'priya.sharma@gmail.com';
 
-  _dob = prefs.getString('buyer_dob') ??
-      '12/04/1998';
+    _phone = prefs.getString('buyer_phone') ??
+        '+91 98765 43210';
 
-  _gender = prefs.getString('buyer_gender') ??
-      'Female';
+    _dob = prefs.getString('buyer_dob') ??
+        '12/04/1998';
 
-  // IMPORTANT
-  final imagePath =
-      prefs.getString('buyer_profile_image');
+    _gender = prefs.getString('buyer_gender') ??
+        'Female';
 
-  if (imagePath != null &&
-      imagePath.isNotEmpty) {
-    final file = File(imagePath);
-
-    if (await file.exists()) {
-      _profileImage = file;
-    } else {
-      _profileImage = null;
-    }
-  } else {
+    // Reset first
     _profileImage = null;
-  }
 
-  notifyListeners();
-}
+    final imagePath =
+        prefs.getString('buyer_profile_image');
 
-  // ============================================================
-  // PICK IMAGE
-  // ============================================================
+    if (imagePath != null &&
+        imagePath.isNotEmpty) {
+      final file = File(imagePath);
 
-  Future<void> pickProfileImage() async {
-    final XFile? image = await _picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 85,
-    );
-
-    if (image == null) return;
-
-    _profileImage = File(image.path);
-
-    final prefs =
-        await SharedPreferences.getInstance();
-
-    await prefs.setString(
-      'buyer_profile_image',
-      image.path,
-    );
+      if (await file.exists()) {
+        _profileImage = file;
+      }
+    }
 
     notifyListeners();
   }
 
   // ============================================================
-  // SAVE EVERYTHING
+  // PICK PROFILE IMAGE
+  // ============================================================
+
+  Future<void> pickProfileImage() async {
+    try {
+      final XFile? image =
+          await _picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 85,
+      );
+
+      if (image == null) return;
+
+      final file = File(image.path);
+
+      // Update immediately
+      _profileImage = file;
+
+      // Save path permanently
+      final prefs =
+          await SharedPreferences.getInstance();
+
+      await prefs.setString(
+        'buyer_profile_image',
+        file.path,
+      );
+
+      // Refresh all screens using provider
+      notifyListeners();
+    } catch (e) {
+      debugPrint(
+        'PROFILE IMAGE ERROR: $e',
+      );
+    }
+  }
+
+  // ============================================================
+  // SAVE PROFILE
   // ============================================================
 
   Future<bool> saveProfile({
@@ -126,7 +137,7 @@ Future<void> loadProfile() async {
         return false;
       }
 
-      // Update provider variables
+      // Update provider
       _name = newName;
       _email = newEmail;
       _phone = newPhone;
@@ -159,7 +170,6 @@ Future<void> loadProfile() async {
         _gender,
       );
 
-      // Tell all listening screens
       notifyListeners();
 
       return true;
@@ -170,5 +180,22 @@ Future<void> loadProfile() async {
 
       return false;
     }
+  }
+
+  // ============================================================
+  // CLEAR PROFILE IMAGE
+  // ============================================================
+
+  Future<void> removeProfileImage() async {
+    final prefs =
+        await SharedPreferences.getInstance();
+
+    await prefs.remove(
+      'buyer_profile_image',
+    );
+
+    _profileImage = null;
+
+    notifyListeners();
   }
 }

@@ -496,37 +496,45 @@ class _BuyerProfileSettingsScreenState
   // SAVE PROFILE
   // ==============================================================
   Future<void> _saveProfile() async {
-    final provider = context.read<BuyerProfileProvider>();
+  final provider =
+      context.read<BuyerProfileProvider>();
 
-    final success = await provider.saveProfile(
-      name: nameController.text,
-      email: emailController.text,
-      phone: phoneController.text,
-      dob: dobController.text,
-      gender: selectedGender,
+  final success =
+      await provider.saveProfile(
+    name: nameController.text,
+    email: emailController.text,
+    phone: phoneController.text,
+    dob: dobController.text,
+    gender: selectedGender,
+  );
+
+  if (!mounted) return;
+
+  if (success) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Profile saved successfully',
+        ),
+        backgroundColor: Color(0xFF006B4F),
+      ),
     );
 
-    if (!mounted) return;
-
-    if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Profile saved successfully'),
-          backgroundColor: Color(0xFF006B4F),
+    // Go back after saving
+    Navigator.pop(context);
+  } else {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Please fill all required fields',
         ),
-      );
-
-      // Go back after saving
-      Navigator.pop(context);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please fill all required fields'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
+        backgroundColor: Colors.red,
+      ),
+    );
   }
+}
   // ==============================================================
   // MESSAGE
   // ==============================================================
