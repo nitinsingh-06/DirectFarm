@@ -1,4 +1,5 @@
 import 'package:farmdirect/Authentification/screens/login_screen.dart';
+import 'package:farmdirect/core/provider/theme_provider.dart';
 import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/profile/about_us_screen.dart';
 import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/profile/app_language_selector.dart';
 import 'package:farmdirect/features/farmer/dashboard/farmer_profile/farm_help_section.dart';
@@ -657,71 +658,72 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
   // ============================================================
   // APPEARANCE DIALOG
   // ============================================================
+void _showAppearanceDialog() {
+  showDialog(
+    context: context,
+    builder: (dialogContext) {
+      final themeProvider = context.read<ThemeProvider>();
 
-  void _showAppearanceDialog() {
-    showDialog(
-      context: context,
-
-      builder: (context) {
-        return AlertDialog(
-          title: const Text(
-            "Appearance",
-          ),
-
-          content: Column(
-            mainAxisSize:
-                MainAxisSize.min,
-
-            children: [
-              ListTile(
-                leading: const Icon(
-                  Icons.light_mode_outlined,
-                ),
-
-                title: const Text(
-                  "Light",
-                ),
-
-                onTap: () {
-                  Navigator.pop(context);
-                },
+      return AlertDialog(
+        title: const Text(
+          "Appearance",
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(
+                Icons.light_mode_outlined,
               ),
-
-              ListTile(
-                leading: const Icon(
-                  Icons.dark_mode_outlined,
-                ),
-
-                title: const Text(
-                  "Dark",
-                ),
-
-                onTap: () {
-                  Navigator.pop(context);
-                },
+              title: const Text(
+                "Light",
               ),
+              onTap: () {
+                themeProvider.setTheme(
+                  ThemeMode.light,
+                );
 
-              ListTile(
-                leading: const Icon(
-                  Icons.settings_outlined,
-                ),
+                Navigator.pop(dialogContext);
+              },
+            ),
 
-                title: const Text(
-                  "System Default",
-                ),
-
-                onTap: () {
-                  Navigator.pop(context);
-                },
+            ListTile(
+              leading: const Icon(
+                Icons.dark_mode_outlined,
               ),
-            ],
-          ),
-        );
-      },
-    );
-  }
+              title: const Text(
+                "Dark",
+              ),
+              onTap: () {
+                themeProvider.setTheme(
+                  ThemeMode.dark,
+                );
 
+                Navigator.pop(dialogContext);
+              },
+            ),
 
+            ListTile(
+              leading: const Icon(
+                Icons.settings_outlined,
+              ),
+              title: const Text(
+                "System Default",
+              ),
+              onTap: () {
+                themeProvider.setTheme(
+                  ThemeMode.system,
+                );
+
+                Navigator.pop(dialogContext);
+              },
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
 
   // ============================================================
   // LOGOUT DIALOG

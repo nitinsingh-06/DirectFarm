@@ -188,9 +188,9 @@ Widget _buildHeader() {
                 child: Text(
                   title,
                   style: const TextStyle(
-                    fontSize: 2,
+                    fontSize: 11,
                     color: Color(0xFF6B7280),
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
@@ -202,7 +202,7 @@ Widget _buildHeader() {
           Text(
             value,
             style: TextStyle(
-              fontSize: 17,
+              fontSize: 18,
               fontWeight: FontWeight.bold,
               color: valueColor,
             ),
@@ -230,7 +230,7 @@ Widget _buildHeader() {
               icon: const Icon(Icons.add_circle_outline, size: 14),
               label: const Text(
                 'Add Product',
-                style: TextStyle(fontSize: 9, fontWeight: FontWeight.w600),
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF075640),
@@ -259,7 +259,7 @@ Widget _buildHeader() {
               icon: const Icon(Icons.inventory_2_outlined, size: 13),
               label: const Text(
                 'View Orders',
-                style: TextStyle(fontSize: 9, fontWeight: FontWeight.w600),
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
               ),
               style: OutlinedButton.styleFrom(
                 foregroundColor: const Color(0xFF164F42),
@@ -286,7 +286,7 @@ Widget _buildHeader() {
         const Text(
           'Recent Orders',
           style: TextStyle(
-            fontSize: 14,
+            fontSize: 16,
             fontWeight: FontWeight.bold,
             color: Color(0xFF075640),
           ),
@@ -353,7 +353,7 @@ Widget _buildHeader() {
                 Text(
                   buyer,
                   style: const TextStyle(
-                    fontSize: 9,
+                    fontSize: 10,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF374151),
                   ),
@@ -363,7 +363,7 @@ Widget _buildHeader() {
 
                 Text(
                   details,
-                  style: const TextStyle(fontSize: 8, color: Color(0xFF7A8491)),
+                  style: const TextStyle(fontSize: 10, color: Color(0xFF7A8491)),
                 ),
               ],
             ),
@@ -378,7 +378,7 @@ Widget _buildHeader() {
             child: Text(
               status,
               style: TextStyle(
-                fontSize: 7,
+                fontSize: 9,
                 fontWeight: FontWeight.w600,
                 color: statusTextColor,
               ),

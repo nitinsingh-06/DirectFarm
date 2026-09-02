@@ -160,7 +160,7 @@ class _MyProductsScreenState extends State<MyProductsScreen> {
       ProductCardData(
         name: 'Pure Cow Ghee',
         price: '₹650 / kg',
-        image: 'assets/images/ghee.jpg',
+        image: 'assets/images/ghee.png',
         badge: 'Out of Stock',
         badgeColor: AppColors.red,
       ),

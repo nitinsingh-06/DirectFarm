@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:farmdirect/Authentification/screens/comming_soon.dart';
 import 'package:farmdirect/Authentification/screens/login_screen.dart';
 import 'package:farmdirect/core/provider/farmer_profile_provider.dart';
+import 'package:farmdirect/core/provider/theme_provider.dart';
 import 'package:farmdirect/core/widgets/farmer/profile_image.dart';
 import 'package:farmdirect/features/farmer/dashboard/farmer_profile/about_us_screen.dart';
 import 'package:farmdirect/features/farmer/dashboard/farmer_profile/farm_details_screen.dart';
@@ -581,53 +582,71 @@ Widget _buildProfileHeader() {
   // ============================================================
 
   void _showAppearanceDialog() {
-    showDialog(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text(
-            'Appearance',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
+  showDialog(
+    context: context,
+    builder: (dialogContext) {
+      final themeProvider = context.read<ThemeProvider>();
+
+      return AlertDialog(
+        title: const Text(
+          "Appearance",
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(
+                Icons.light_mode_outlined,
+              ),
+              title: const Text(
+                "Light",
+              ),
+              onTap: () {
+                themeProvider.setTheme(
+                  ThemeMode.light,
+                );
+
+                Navigator.pop(dialogContext);
+              },
             ),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                title: const Text(
-                  'System Default',
-                  style: TextStyle(fontSize: 13),
-                ),
-                onTap: () {
-                  Navigator.pop(dialogContext);
-                },
+
+            ListTile(
+              leading: const Icon(
+                Icons.dark_mode_outlined,
               ),
-              ListTile(
-                title: const Text(
-                  'Light',
-                  style: TextStyle(fontSize: 13),
-                ),
-                onTap: () {
-                  Navigator.pop(dialogContext);
-                },
+              title: const Text(
+                "Dark",
               ),
-              ListTile(
-                title: const Text(
-                  'Dark',
-                  style: TextStyle(fontSize: 13),
-                ),
-                onTap: () {
-                  Navigator.pop(dialogContext);
-                },
+              onTap: () {
+                themeProvider.setTheme(
+                  ThemeMode.dark,
+                );
+
+                Navigator.pop(dialogContext);
+              },
+            ),
+
+            ListTile(
+              leading: const Icon(
+                Icons.settings_outlined,
               ),
-            ],
-          ),
-        );
-      },
-    );
-  }
+              title: const Text(
+                "System Default",
+              ),
+              onTap: () {
+                themeProvider.setTheme(
+                  ThemeMode.system,
+                );
+
+                Navigator.pop(dialogContext);
+              },
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
 
   // ============================================================
   // LOGOUT DIALOG
