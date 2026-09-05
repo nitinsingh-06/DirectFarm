@@ -1,7 +1,9 @@
+import 'package:farmdirect/Authentification/otp_screen.dart';
 import 'package:farmdirect/Authentification/screens/comming_soon.dart';
-import 'package:farmdirect/Authentification/screens/forget_password_screen.dart';
 import 'package:farmdirect/Authentification/screens/select_role_screen.dart';
 import 'package:farmdirect/features/farmer/dashboard/dashboard_screen.dart';
+import 'package:farmdirect/services/auth_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class LoginPage extends StatefulWidget {
@@ -15,10 +17,12 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
 
   final TextEditingController phoneController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
+  // final TextEditingController passwordController = TextEditingController();
+  final AuthService _authService = AuthService();
 
   bool rememberMe = false;
-  bool obscurePassword = true;
+  bool isSendingOtp = false;
+  // bool obscurePassword = true;
 
   // Colors
   static const Color primaryGreen = Color(0xFF78D000);
@@ -30,7 +34,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void dispose() {
     phoneController.dispose();
-    passwordController.dispose();
+    // passwordController.dispose();
     super.dispose();
   }
 
@@ -53,7 +57,6 @@ class _LoginPageState extends State<LoginPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-
                     // ---------------- LOGIN TITLE ----------------
                     const Padding(
                       padding: EdgeInsets.only(top: 18),
@@ -87,9 +90,9 @@ class _LoginPageState extends State<LoginPage> {
                     _inputField(
                       controller: phoneController,
                       hintText: 'e.g.+91 9876543210',
-                    
+
                       prefixIcon: Icons.phone_outlined,
-                      keyboardType: TextInputType.emailAddress,
+                      keyboardType: TextInputType.number,
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
                           return 'Please enter phone number or email';
@@ -101,48 +104,50 @@ class _LoginPageState extends State<LoginPage> {
                     const SizedBox(height: 14),
 
                     // ---------------- PASSWORD ----------------
-                    const Text(
-                      'Password',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF28313D),
-                      ),
-                    ),
+                    // const Text(
+                    //   'Password',
+                    //   style: TextStyle(
+                    //     fontSize: 12,
+                    //     fontWeight: FontWeight.w600,
+                    //     color: Color(0xFF28313D),
+                    //   ),
+                    // ),
 
-                    const SizedBox(height: 6),
+                    // const SizedBox(height: 6),
 
-                    _inputField(
-                      controller: passwordController,
-                      hintText: 'Enter password',
-                      prefixIcon: Icons.lock_outline,
-                      obscureText: obscurePassword,
-                      suffixIcon: IconButton(
-                        onPressed: () {
-                          setState(() {
-                            obscurePassword = !obscurePassword;
-                          });
-                        },
-                        icon: Icon(
-                          obscurePassword
-                              ? Icons.visibility_outlined
-                              : Icons.visibility_off_outlined,
-                          size: 18,
-                          color: const Color(0xFF7E8794),
-                        ),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter password';
-                        }
-                        return null;
-                      },
-                    ),
+                    // -------------------------------
+                    // PASSWORD INPUTFIELD//
+                    // -------------------------------
 
+                    // _inputField(
+                    //   controller: passwordController,
+                    //   hintText: 'Enter password',
+                    //   prefixIcon: Icons.lock_outline,
+                    //   obscureText: obscurePassword,
+                    //   suffixIcon: IconButton(
+                    //     onPressed: () {
+                    //       setState(() {
+                    //         obscurePassword = !obscurePassword;
+                    //       });
+                    //     },
+                    //     icon: Icon(
+                    //       obscurePassword
+                    //           ? Icons.visibility_outlined
+                    //           : Icons.visibility_off_outlined,
+                    //       size: 18,
+                    //       color: const Color(0xFF7E8794),
+                    //     ),
+                    //   ),
+                    //   validator: (value) {
+                    //     if (value == null || value.isEmpty) {
+                    //       return 'Please enter password';
+                    //     }
+                    //     return null;
+                    //   },
+                    // ),
                     const SizedBox(height: 8),
 
                     // ---------------- REMEMBER / FORGOT ----------------
-
                     Row(
                       children: [
                         SizedBox(
@@ -153,13 +158,10 @@ class _LoginPageState extends State<LoginPage> {
                             onChanged: (value) {
                               setState(() {
                                 rememberMe = value ?? false;
-                                
                               });
                             },
                             activeColor: primaryGreen,
-                            side: const BorderSide(
-                              color: Color(0xFFDDE1E5),
-                            ),
+                            side: const BorderSide(color: Color(0xFFDDE1E5)),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(3),
                             ),
@@ -177,29 +179,31 @@ class _LoginPageState extends State<LoginPage> {
                         ),
 
                         const Spacer(),
+                        // ==============================
+                        // FORGOT PASSWORD
+                        // ==============================
 
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (context)=>ComingSoonScreen()));
-                          },
-                          child: InkWell(
-                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context)=> ResetPasswordScreen())),
-                            child: const Text(
-                              'Forgot Password?',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                                color: darkGreen,
-                              ),
-                            ),
-                          ),
-                        ),
+                        // GestureDetector(
+                        //   onTap: () {
+                        //     Navigator.push(context, MaterialPageRoute(builder: (context)=>ComingSoonScreen()));
+                        //   },
+                        //   child: InkWell(
+                        //     onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context)=> ResetPasswordScreen())),
+                        //     child: const Text(
+                        //       'Forgot Password?',
+                        //       style: TextStyle(
+                        //         fontSize: 10,
+                        //         fontWeight: FontWeight.w700,
+                        //         color: darkGreen,
+                        //       ),
+                        //     ),
+                        //   ),
+                        // ),
                       ],
                     ),
-                    
 
-                    // ---------------- LOGIN BUTTON ----------------
-                    SizedBox(height: size.height * 0.155),
+                    // ---------------- SEND OTP BUTTON ----------------
+                    SizedBox(height: size.height * 0.160),
 
                     SizedBox(
                       width: double.infinity,
@@ -215,56 +219,60 @@ class _LoginPageState extends State<LoginPage> {
                             borderRadius: BorderRadius.circular(25),
                           ),
                         ),
-                        child: const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'Login',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
+                        child: isSendingOtp
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.black,
+                                ),
+                              )
+                            : const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    'Send OTP',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  SizedBox(width: 6),
+                                  Icon(Icons.sms_outlined, size: 16),
+                                ],
                               ),
-                            ),
-                            SizedBox(width: 6),
-                            Icon(
-                              Icons.login,
-                              size: 16,
-                            ),
-                          ],
-                        ),
                       ),
                     ),
 
                     const SizedBox(height: 16),
 
                     // ---------------- OR CONTINUE ----------------
-
                     const Center(
                       child: Text(
                         'Or continue with',
-                        style: TextStyle(
-                          fontSize: 9,
-                          color: Color(0xFF969CA4),
-                        ),
+                        style: TextStyle(fontSize: 9, color: Color(0xFF969CA4)),
                       ),
                     ),
 
                     const SizedBox(height: 11),
 
                     // ---------------- GOOGLE BUTTON ----------------
-
                     SizedBox(
                       width: double.infinity,
                       height: 34,
                       child: OutlinedButton(
                         onPressed: () {
-                          Navigator.push(context, MaterialPageRoute(builder: (context)=>ComingSoonScreen()));
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ComingSoonScreen(),
+                            ),
+                          );
                         },
                         style: OutlinedButton.styleFrom(
                           backgroundColor: Colors.white,
-                          side: const BorderSide(
-                            color: borderColor,
-                          ),
+                          side: const BorderSide(color: borderColor),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(20),
                           ),
@@ -297,8 +305,12 @@ class _LoginPageState extends State<LoginPage> {
                     Center(
                       child: GestureDetector(
                         onTap: () {
-
-                         Navigator.push(context,MaterialPageRoute(builder: (context)=>ChooseRoleScreen()));
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ChooseRoleScreen(),
+                            ),
+                          );
                         },
                         child: RichText(
                           text: const TextSpan(
@@ -307,9 +319,7 @@ class _LoginPageState extends State<LoginPage> {
                               color: Color(0xFF858C95),
                             ),
                             children: [
-                              TextSpan(
-                                text: 'New here? ',
-                              ),
+                              TextSpan(text: 'New here? '),
                               TextSpan(
                                 text: 'Register Now /',
                                 style: TextStyle(
@@ -343,7 +353,7 @@ class _LoginPageState extends State<LoginPage> {
     TextInputType? keyboardType,
     bool obscureText = false,
     Widget? suffixIcon,
-    
+
     String? Function(String?)? validator,
   }) {
     return SizedBox(
@@ -353,25 +363,17 @@ class _LoginPageState extends State<LoginPage> {
         keyboardType: keyboardType,
         obscureText: obscureText,
         // validator: validator,
-        style: const TextStyle(
-          fontSize: 10,
-          color: Color(0xFF303640),
-        ),
+        style: const TextStyle(fontSize: 10, color: Color(0xFF303640)),
         decoration: InputDecoration(
           hintText: hintText,
-          hintStyle: const TextStyle(
-            fontSize: 10,
-            color: hintColor,
-          ),
+          hintStyle: const TextStyle(fontSize: 10, color: hintColor),
           prefixIcon: Icon(
             prefixIcon,
             size: 17,
             color: const Color(0xFF858D99),
           ),
           suffixIcon: suffixIcon,
-          prefixIconConstraints: const BoxConstraints(
-            minWidth: 40,
-          ),
+          prefixIconConstraints: const BoxConstraints(minWidth: 40),
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 12,
             vertical: 8,
@@ -380,28 +382,19 @@ class _LoginPageState extends State<LoginPage> {
           fillColor: Colors.white,
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(
-              color: borderColor,
-            ),
+            borderSide: const BorderSide(color: borderColor),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(
-              color: primaryGreen,
-              width: 1.2,
-            ),
+            borderSide: const BorderSide(color: primaryGreen, width: 1.2),
           ),
           errorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(
-              color: Colors.redAccent,
-            ),
+            borderSide: const BorderSide(color: Colors.redAccent),
           ),
           focusedErrorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(
-              color: Colors.redAccent,
-            ),
+            borderSide: const BorderSide(color: Colors.redAccent),
           ),
         ),
       ),
@@ -409,12 +402,110 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   // ---------------- LOGIN ----------------
+  Future<void> _login() async {
+    if (phoneController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter your phone number')),
+      );
+      return;
+    }
 
-  void _login() {
-    if (_formKey.currentState!.validate()) {
-      debugPrint('Phone/Email: ${phoneController.text}');
-      debugPrint('Password: ${passwordController.text}');
-      Navigator.push(context,MaterialPageRoute(builder: (context)=>FarmerDashboard()));
+    String phoneNumber = phoneController.text.trim();
+
+    if (!phoneNumber.startsWith('+')) {
+      phoneNumber = '+91$phoneNumber';
+    }
+
+    setState(() {
+      isSendingOtp = true;
+    });
+
+    try {
+      await _authService.sendOTP(
+        phoneNumber: phoneNumber,
+
+        onCodeSent: (verificationId) {
+          if (!mounted) return;
+
+          setState(() {
+            isSendingOtp = false;
+          });
+
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => OtpScreen(
+                verificationId: verificationId,
+                phoneNumber: phoneNumber,
+              ),
+            ),
+          );
+        },
+
+        onError: (error) {
+          if (!mounted) return;
+
+          setState(() {
+            isSendingOtp = false;
+          });
+          String message;
+
+          switch (error.code) {
+            case 'invalid-phone-number':
+              message = 'Please enter a valid phone number.';
+              break;
+
+            case 'too-many-requests':
+              message = 'Too many attempts. Please try again later.';
+              break;
+
+            case 'quota-exceeded':
+              message = 'OTP limit exceeded. Please try again later.';
+              break;
+
+            case 'operation-not-allowed':
+              message = 'Phone authentication is not enabled.';
+              break;
+
+            case 'network-request-failed':
+              message = 'Check your internet connection.';
+              break;
+
+            default:
+              message = error.message ?? 'Unable to send OTP.';
+          }
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(message)),
+          );
+        },
+
+        onAutoVerified: (credential) async {
+          await FirebaseAuth.instance.signInWithCredential(credential);
+
+          if (!mounted) return;
+
+          setState(() {
+            isSendingOtp = false;
+          });
+
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => FarmerDashboard()),
+            (route) => false,
+          );
+        },
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        isSendingOtp = false;
+      });
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Something went wrong: $e')));
     }
   }
 }

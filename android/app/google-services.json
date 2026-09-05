@@ -1,0 +1,67 @@
+{
+  "project_info": {
+    "project_number": "446870566293",
+    "project_id": "fir-series-dc038",
+    "storage_bucket": "fir-series-dc038.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:446870566293:android:c95b197298db05564bb29c",
+        "android_client_info": {
+          "package_name": "com.example.farmdirect"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBIudGcwKeIqo4oCNt02ZvQ59m7Kp05hx0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:446870566293:android:e3e554191ac3d53c4bb29c",
+        "android_client_info": {
+          "package_name": "com.example.firebase_series"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBIudGcwKeIqo4oCNt02ZvQ59m7Kp05hx0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:446870566293:android:6c3eedacaf65a79d4bb29c",
+        "android_client_info": {
+          "package_name": "com.example.phone_auth"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBIudGcwKeIqo4oCNt02ZvQ59m7Kp05hx0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
