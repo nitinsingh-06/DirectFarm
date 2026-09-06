@@ -1,4 +1,5 @@
 import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/buyer_dashboard_screen.dart';
+import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/order/order_tracking.dart';
 import 'package:flutter/material.dart';
 
 class OrderSuccessScreen extends StatefulWidget {
@@ -254,14 +255,14 @@ class _OrderSuccessScreenState
 
     // Later:
     //
-    // Navigator.push(
-    //   context,
-    //   MaterialPageRoute(
-    //     builder: (_) => OrderTrackingScreen(
-    //       orderId: widget.orderId,
-    //     ),
-    //   ),
-    // );
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => OrderTrackingScreen(
+          orderId: widget.orderId,
+        ),
+      ),
+    );
   }
 
   // ============================================================

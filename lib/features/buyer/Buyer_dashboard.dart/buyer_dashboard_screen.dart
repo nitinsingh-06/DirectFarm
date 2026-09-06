@@ -44,7 +44,7 @@ class _BuyerDashboardState extends State<BuyerDashboard> {
           BottomNavigationBarItem(
             icon: Icon(Icons.search_outlined),
             activeIcon: Icon(Icons.search),
-            label: "Search",
+            label: "Market",
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.shopping_bag_outlined),

@@ -78,7 +78,7 @@ class AboutUsScreen extends StatelessWidget {
                     const Text(
                       "FarmDirect",
                       style: TextStyle(
-                        fontSize: 17,
+                        fontSize: 19,
                         fontWeight: FontWeight.w800,
                         color: primaryGreen,
                       ),
@@ -94,7 +94,7 @@ class AboutUsScreen extends StatelessWidget {
                       "Connecting Farmers Directly to Consumers",
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 8,
+                        fontSize: 10,
                         fontWeight: FontWeight.w600,
                         color: primaryGreen,
                       ),
@@ -156,7 +156,7 @@ class AboutUsScreen extends StatelessWidget {
                     const Text(
                       "FarmDirect App • version v1.0.0",
                       style: TextStyle(
-                        fontSize: 7,
+                        fontSize: 9,
                         color: secondaryTextColor,
                       ),
                     ),
@@ -209,7 +209,7 @@ class AboutUsScreen extends StatelessWidget {
             title,
 
             style: const TextStyle(
-              fontSize: 10,
+              fontSize: 12,
               fontWeight: FontWeight.w800,
               color: primaryGreen,
             ),
@@ -225,7 +225,7 @@ class AboutUsScreen extends StatelessWidget {
             content,
 
             style: const TextStyle(
-              fontSize: 8,
+              fontSize: 10,
               height: 1.35,
               color: textColor,
             ),
@@ -246,7 +246,7 @@ class AboutUsScreen extends StatelessWidget {
           "Follow Our Journey",
 
           style: TextStyle(
-            fontSize: 8,
+            fontSize: 10,
             fontWeight: FontWeight.w600,
             color: secondaryTextColor,
           ),
@@ -403,7 +403,7 @@ class AboutUsScreen extends StatelessWidget {
           title,
 
           style: const TextStyle(
-            fontSize: 9,
+            fontSize: 11,
             fontWeight: FontWeight.w700,
           ),
         ),

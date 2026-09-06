@@ -3,6 +3,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
+  // ============================================================
+  // PHONE AUTHENTICATION
+  // ============================================================
+
   Future<void> sendOTP({
     required String phoneNumber,
     required Function(String verificationId) onCodeSent,
@@ -40,7 +44,39 @@ class AuthService {
     return await _auth.signInWithCredential(credential);
   }
 
+  // ============================================================
+  // EMAIL AUTHENTICATION
+  // ============================================================
+
+  Future<UserCredential> registerWithEmail({
+    required String email,
+    required String password,
+  }) async {
+    return await _auth.createUserWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+  }
+
+  Future<UserCredential> loginWithEmail({
+    required String email,
+    required String password,
+  }) async {
+    return await _auth.signInWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+  }
+
+  // ============================================================
+  // CURRENT USER
+  // ============================================================
+
   User? get currentUser => _auth.currentUser;
+
+  // ============================================================
+  // LOGOUT
+  // ============================================================
 
   Future<void> logout() async {
     await _auth.signOut();

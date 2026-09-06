@@ -1,4 +1,4 @@
-import 'package:farmdirect/features/farmer/dashboard/order_details_screen.dart';
+import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/order/order_tracking.dart';
 import 'package:flutter/material.dart';
 
 class OrderScreen extends StatefulWidget {
@@ -458,16 +458,7 @@ class _OrderScreenState extends State<OrderScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => OrderDetailsScreen(
-                          orderId: orderNumber,
-                          buyerName: buyerName,
-                          buyerAddress: buyerAddress,
-                          productName: productName,
-                          quantity: quantity,
-                          price: price,
-                          logistics: logistics,
-                          totalAmount: totalAmount,
-                        ),
+                        builder: (context) => OrderTrackingScreen()
                       ),
                     );
                   },

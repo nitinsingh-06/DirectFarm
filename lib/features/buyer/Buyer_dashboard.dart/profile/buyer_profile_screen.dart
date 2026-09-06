@@ -1,7 +1,12 @@
 import 'package:farmdirect/Authentification/screens/login_screen.dart';
 import 'package:farmdirect/core/provider/theme_provider.dart';
+import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/order/order_screen.dart';
 import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/profile/about_us_screen.dart';
 import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/profile/app_language_selector.dart';
+import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/profile/notification_screen.dart';
+import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/profile/payment_method_screen.dart';
+import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/profile/saved_address_screen.dart';
+import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/profile/wishlist_screen.dart';
 import 'package:farmdirect/features/farmer/dashboard/farmer_profile/farm_help_section.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -91,6 +96,7 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
                     onTap: () {
                       // TODO:
                       // Open Saved Addresses Screen
+                      Navigator.push(context,MaterialPageRoute(builder: (context)=>SavedAddressesScreen()));
                     },
                   ),
 
@@ -107,6 +113,8 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
                     onTap: () {
                       // TODO:
                       // Open My Orders Screen
+                      Navigator.push(context, MaterialPageRoute(builder: (context)=>const OrderScreen()));
+                      
                     },
                   ),
 
@@ -120,6 +128,7 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
                     onTap: () {
                       // TODO:
                       // Open Wishlist Screen
+                      Navigator.push(context, MaterialPageRoute(builder: (context)=>WishlistScreen()));
                     },
                   ),
 
@@ -133,6 +142,7 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
                     onTap: () {
                       // TODO:
                       // Open Payment Methods Screen
+                        Navigator.push(context, MaterialPageRoute(builder: (context)=>PaymentMethodsScreen()));
                     },
                   ),
                 ],
@@ -160,6 +170,7 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
                     onTap: () {
                       // TODO:
                       // Open Notifications Screen
+                      Navigator.push(context, MaterialPageRoute(builder: (context)=>const NotificationSettingsScreen()));
                     },
                   ),
 

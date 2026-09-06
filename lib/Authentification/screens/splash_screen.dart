@@ -1,5 +1,6 @@
 import 'dart:async';
-import 'package:farmdirect/Authentification/screens/welcome_screen.dart';
+import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/buyer_dashboard_screen.dart';
+import 'package:farmdirect/features/farmer/dashboard/dashboard_screen.dart';
 import 'package:flutter/material.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -14,10 +15,10 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
 
-    Timer(const Duration(seconds: 5), () {
+    Timer(const Duration(seconds: 3), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => WelcomeScreen()),
+        MaterialPageRoute(builder: (context) => FarmerDashboard()),
       );
     });
   }
@@ -35,7 +36,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
               SizedBox(height: 50,),
 
-              Image.asset("assets/images/logo.png", width: 100),
+              Image.asset("assets/images/logo.png", width: 120),
 
               // const SizedBox(height: 130),
               Spacer(),

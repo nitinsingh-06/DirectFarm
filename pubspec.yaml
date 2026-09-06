@@ -48,7 +48,7 @@ flutter_native_splash:
 
   android_12:
     color: "#005238"
-    image: assets/images/logo.png
+    image: assets/images/splash_icon.png
 
 # --------------------------------
 # APP ICON
@@ -57,19 +57,19 @@ flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
 
-  image_path: "assets/images/logo.png"
+  image_path: "assets/images/splash_icon.png"
 
   min_sdk_android: 21
 
   web:
     generate: true
-    image_path: "assets/images/logo.png"
+    image_path: "assets/images/splash_icon.png"
     background_color: "#005238"
     theme_color: "#005238"
 
   windows:
     generate: true
-    image_path: "assets/images/logo.png"
+    image_path: "assets/images/splash_icon.png"
     icon_size: 48
 
   macos:
