@@ -8,6 +8,8 @@ from .routes.auth import router as auth_router
 app = FastAPI(title="FarmDirect API")
 
 app.include_router(users_router)
+app.include_router(users_router)
+app.include_router(auth_router)
 
 
 @app.get("/")
