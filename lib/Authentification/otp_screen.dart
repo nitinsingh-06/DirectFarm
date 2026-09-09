@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:farmdirect/config/api_config.dart';
 import 'package:flutter/material.dart';
 import 'package:farmdirect/services/auth_service.dart';
 import 'package:http/http.dart' as http;
@@ -257,7 +258,7 @@ class _OtpScreenState extends State<OtpScreen> {
     final response = await http
         .post(
           Uri.parse(
-            'http://127.0.0.1:8000/auth/register',
+            '${ApiConfig.baseUrl}/auth/register',
           ),
 
           headers: {
@@ -340,7 +341,7 @@ class _OtpScreenState extends State<OtpScreen> {
     final response = await http
         .post(
           Uri.parse(
-            'http://127.0.0.1:8000/auth/verify',
+            '${ApiConfig.baseUrl}/auth/register',
           ),
 
           headers: {

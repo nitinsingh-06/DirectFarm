@@ -4,7 +4,6 @@ import 'package:farmdirect/core/provider/card_provider.dart';
 import 'package:farmdirect/core/provider/farmer_profile_provider.dart';
 import 'package:farmdirect/core/provider/theme_provider.dart';
 import 'package:farmdirect/core/theme/app_theme.dart';
-import 'package:farmdirect/features/farmer/dashboard/dashboard_screen.dart';
 import 'package:farmdirect/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 

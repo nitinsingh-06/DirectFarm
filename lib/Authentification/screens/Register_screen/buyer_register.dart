@@ -1,22 +1,22 @@
+import 'dart:convert';
 
 import 'package:farmdirect/Authentification/otp_screen.dart';
 import 'package:farmdirect/Authentification/screens/Register_screen/successful_screen.dart';
+import 'package:farmdirect/config/api_config.dart';
 import 'package:farmdirect/services/auth_service.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 class BuyerRegisterScreen extends StatefulWidget {
   const BuyerRegisterScreen({super.key});
 
   @override
-  State<BuyerRegisterScreen> createState() =>
-      _BuyerRegisterScreenState();
+  State<BuyerRegisterScreen> createState() => _BuyerRegisterScreenState();
 }
 
-class _BuyerRegisterScreenState
-    extends State<BuyerRegisterScreen> {
-
+class _BuyerRegisterScreenState extends State<BuyerRegisterScreen> {
   final _formKey = GlobalKey<FormState>();
 
   final AuthService _authService = AuthService();
@@ -25,26 +25,19 @@ class _BuyerRegisterScreenState
   // CONTROLLERS
   // ============================================================
 
-  final TextEditingController nameController =
-      TextEditingController();
+  final TextEditingController nameController = TextEditingController();
 
-  final TextEditingController emailController =
-      TextEditingController();
+  final TextEditingController emailController = TextEditingController();
 
-  final TextEditingController addressController =
-      TextEditingController();
+  final TextEditingController addressController = TextEditingController();
 
-  final TextEditingController cityController =
-      TextEditingController();
+  final TextEditingController cityController = TextEditingController();
 
-  final TextEditingController pincodeController =
-      TextEditingController();
+  final TextEditingController pincodeController = TextEditingController();
 
-  final TextEditingController phoneController =
-      TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
 
-  final TextEditingController passwordController =
-      TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
 
   final TextEditingController confirmPasswordController =
       TextEditingController();
@@ -65,14 +58,11 @@ class _BuyerRegisterScreenState
   // COLORS
   // ============================================================
 
-  static const Color primaryGreen =
-      Color(0xFF80D000);
+  static const Color primaryGreen = Color(0xFF80D000);
 
-  static const Color darkGreen =
-      Color(0xFF075B4A);
+  static const Color darkGreen = Color(0xFF075B4A);
 
-  static const Color backgroundColor =
-      Color(0xFFF8F9FA);
+  static const Color backgroundColor = Color(0xFFF8F9FA);
 
   // ============================================================
   // DISPOSE
@@ -103,29 +93,20 @@ class _BuyerRegisterScreenState
 
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(
-            17,
-            14,
-            17,
-            30,
-          ),
+          padding: const EdgeInsets.fromLTRB(17, 14, 17, 30),
 
           child: Form(
             key: _formKey,
 
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
 
               children: [
-
                 // ==================================================
                 // HEADER
                 // ==================================================
-
                 Row(
-                  mainAxisAlignment:
-                      MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
                   children: [
                     const Text(
@@ -133,8 +114,7 @@ class _BuyerRegisterScreenState
 
                       style: TextStyle(
                         fontSize: 18,
-                        fontWeight:
-                            FontWeight.w800,
+                        fontWeight: FontWeight.w800,
                         color: darkGreen,
                       ),
                     ),
@@ -144,10 +124,8 @@ class _BuyerRegisterScreenState
 
                       style: TextStyle(
                         fontSize: 9.5,
-                        fontWeight:
-                            FontWeight.w600,
-                        color:
-                            Colors.grey.shade600,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey.shade600,
                       ),
                     ),
                   ],
@@ -158,19 +136,14 @@ class _BuyerRegisterScreenState
                 // ==================================================
                 // NAME
                 // ==================================================
-
                 _buildTextField(
-                  label:
-                      'Full Name / Company Name',
+                  label: 'Full Name / Company Name',
 
-                  hint:
-                      'e.g. FreshMart Retail',
+                  hint: 'e.g. FreshMart Retail',
 
-                  icon:
-                      Icons.person_outline,
+                  icon: Icons.person_outline,
 
-                  controller:
-                      nameController,
+                  controller: nameController,
                 ),
 
                 const SizedBox(height: 13),
@@ -178,22 +151,16 @@ class _BuyerRegisterScreenState
                 // ==================================================
                 // EMAIL
                 // ==================================================
-
                 _buildTextField(
-                  label:
-                      'Email Address',
+                  label: 'Email Address',
 
-                  hint:
-                      'e.g. procurement@freshmart.com',
+                  hint: 'e.g. procurement@freshmart.com',
 
-                  icon:
-                      Icons.mail_outline,
+                  icon: Icons.mail_outline,
 
-                  controller:
-                      emailController,
+                  controller: emailController,
 
-                  keyboardType:
-                      TextInputType.emailAddress,
+                  keyboardType: TextInputType.emailAddress,
                 ),
 
                 const SizedBox(height: 13),
@@ -201,19 +168,14 @@ class _BuyerRegisterScreenState
                 // ==================================================
                 // ADDRESS
                 // ==================================================
-
                 _buildTextField(
-                  label:
-                      'Delivery / Warehouse Address',
+                  label: 'Delivery / Warehouse Address',
 
-                  hint:
-                      'Street, Sector, Warehousing Zone',
+                  hint: 'Street, Sector, Warehousing Zone',
 
-                  icon:
-                      Icons.location_on_outlined,
+                  icon: Icons.location_on_outlined,
 
-                  controller:
-                      addressController,
+                  controller: addressController,
                 ),
 
                 const SizedBox(height: 13),
@@ -221,41 +183,31 @@ class _BuyerRegisterScreenState
                 // ==================================================
                 // CITY + PINCODE
                 // ==================================================
-
                 Row(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
 
                   children: [
-
                     Expanded(
-                      child:
-                          _buildSmallTextField(
+                      child: _buildSmallTextField(
                         label: 'City',
 
-                        hint:
-                            'e.g. New Delhi',
+                        hint: 'e.g. New Delhi',
 
-                        controller:
-                            cityController,
+                        controller: cityController,
                       ),
                     ),
 
                     const SizedBox(width: 13),
 
                     Expanded(
-                      child:
-                          _buildSmallTextField(
+                      child: _buildSmallTextField(
                         label: 'Pincode',
 
-                        hint:
-                            'e.g. 110001',
+                        hint: 'e.g. 110001',
 
-                        controller:
-                            pincodeController,
+                        controller: pincodeController,
 
-                        keyboardType:
-                            TextInputType.number,
+                        keyboardType: TextInputType.number,
                       ),
                     ),
                   ],
@@ -266,16 +218,13 @@ class _BuyerRegisterScreenState
                 // ==================================================
                 // AUTHENTICATION METHOD
                 // ==================================================
-
                 const Text(
                   'Choose Authentication Method',
 
                   style: TextStyle(
                     fontSize: 10.5,
-                    fontWeight:
-                        FontWeight.w600,
-                    color:
-                        Color(0xFF263238),
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF263238),
                   ),
                 ),
 
@@ -283,22 +232,17 @@ class _BuyerRegisterScreenState
 
                 Row(
                   children: [
-
                     Expanded(
-                      child:
-                          _authMethodButton(
+                      child: _authMethodButton(
                         title: 'Phone OTP',
 
-                        icon:
-                            Icons.phone_outlined,
+                        icon: Icons.phone_outlined,
 
-                        selected:
-                            !isEmailAuth,
+                        selected: !isEmailAuth,
 
                         onPressed: () {
                           setState(() {
-                            isEmailAuth =
-                                false;
+                            isEmailAuth = false;
                           });
                         },
                       ),
@@ -307,20 +251,16 @@ class _BuyerRegisterScreenState
                     const SizedBox(width: 10),
 
                     Expanded(
-                      child:
-                          _authMethodButton(
+                      child: _authMethodButton(
                         title: 'Email',
 
-                        icon:
-                            Icons.email_outlined,
+                        icon: Icons.email_outlined,
 
-                        selected:
-                            isEmailAuth,
+                        selected: isEmailAuth,
 
                         onPressed: () {
                           setState(() {
-                            isEmailAuth =
-                                true;
+                            isEmailAuth = true;
                           });
                         },
                       ),
@@ -333,18 +273,14 @@ class _BuyerRegisterScreenState
                 // ==================================================
                 // PHONE AUTH
                 // ==================================================
-
                 if (!isEmailAuth) ...[
-
                   const Text(
                     'Phone Number',
 
                     style: TextStyle(
                       fontSize: 10.5,
-                      fontWeight:
-                          FontWeight.w600,
-                      color:
-                          Color(0xFF263238),
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF263238),
                     ),
                   ),
 
@@ -352,54 +288,41 @@ class _BuyerRegisterScreenState
 
                   _buildTextField(
                     label: '',
-                    hint:
-                        '+91 9876543210',
+                    hint: '+91 9876543210',
 
-                    icon:
-                        Icons.phone_outlined,
+                    icon: Icons.phone_outlined,
 
-                    controller:
-                        phoneController,
+                    controller: phoneController,
 
-                    keyboardType:
-                        TextInputType.phone,
+                    keyboardType: TextInputType.phone,
                   ),
                 ]
-
                 // ==================================================
                 // EMAIL AUTH
                 // ==================================================
-
                 else ...[
-
                   const Text(
                     'Password',
 
                     style: TextStyle(
                       fontSize: 10.5,
-                      fontWeight:
-                          FontWeight.w600,
-                      color:
-                          Color(0xFF263238),
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF263238),
                     ),
                   ),
 
                   const SizedBox(height: 5),
 
                   _buildPasswordField(
-                    controller:
-                        passwordController,
+                    controller: passwordController,
 
-                    hint:
-                        'Enter password',
+                    hint: 'Enter password',
 
-                    obscureText:
-                        obscurePassword,
+                    obscureText: obscurePassword,
 
                     onVisibilityPressed: () {
                       setState(() {
-                        obscurePassword =
-                            !obscurePassword;
+                        obscurePassword = !obscurePassword;
                       });
                     },
                   ),
@@ -411,29 +334,23 @@ class _BuyerRegisterScreenState
 
                     style: TextStyle(
                       fontSize: 10.5,
-                      fontWeight:
-                          FontWeight.w600,
-                      color:
-                          Color(0xFF263238),
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF263238),
                     ),
                   ),
 
                   const SizedBox(height: 5),
 
                   _buildPasswordField(
-                    controller:
-                        confirmPasswordController,
+                    controller: confirmPasswordController,
 
-                    hint:
-                        'Confirm password',
+                    hint: 'Confirm password',
 
-                    obscureText:
-                        obscureConfirmPassword,
+                    obscureText: obscureConfirmPassword,
 
                     onVisibilityPressed: () {
                       setState(() {
-                        obscureConfirmPassword =
-                            !obscureConfirmPassword;
+                        obscureConfirmPassword = !obscureConfirmPassword;
                       });
                     },
                   ),
@@ -444,38 +361,24 @@ class _BuyerRegisterScreenState
                 // ==================================================
                 // REGISTER BUTTON
                 // ==================================================
-
                 SizedBox(
                   width: double.infinity,
                   height: 40,
 
                   child: ElevatedButton(
-                    onPressed:
-                        isLoading
-                            ? null
-                            : _registerBuyer,
+                    onPressed: isLoading ? null : _registerBuyer,
 
-                    style:
-                        ElevatedButton.styleFrom(
-                      backgroundColor:
-                          primaryGreen,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: primaryGreen,
 
-                      foregroundColor:
-                          const Color(
-                              0xFF123400),
+                      foregroundColor: const Color(0xFF123400),
 
                       elevation: 4,
 
-                      shadowColor:
-                          primaryGreen
-                              .withOpacity(
-                                  0.25),
+                      shadowColor: primaryGreen.withOpacity(0.25),
 
-                      shape:
-                          RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(
-                                22),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(22),
                       ),
                     ),
 
@@ -484,41 +387,31 @@ class _BuyerRegisterScreenState
                             height: 20,
                             width: 20,
 
-                            child:
-                                CircularProgressIndicator(
+                            child: CircularProgressIndicator(
                               strokeWidth: 2,
 
-                              color:
-                                  Colors.black,
+                              color: Colors.black,
                             ),
                           )
-
                         : Row(
-                            mainAxisAlignment:
-                                MainAxisAlignment
-                                    .center,
+                            mainAxisAlignment: MainAxisAlignment.center,
 
                             children: [
-
                               const Text(
                                 'Register as Buyer',
 
                                 style: TextStyle(
                                   fontSize: 11.5,
-                                  fontWeight:
-                                      FontWeight.w800,
+                                  fontWeight: FontWeight.w800,
                                 ),
                               ),
 
-                              const SizedBox(
-                                  width: 7),
+                              const SizedBox(width: 7),
 
                               Icon(
                                 isEmailAuth
-                                    ? Icons
-                                        .person_add_alt_1_outlined
-                                    : Icons
-                                        .sms_outlined,
+                                    ? Icons.person_add_alt_1_outlined
+                                    : Icons.sms_outlined,
 
                                 size: 17,
                               ),
@@ -544,30 +437,24 @@ class _BuyerRegisterScreenState
     required IconData icon,
     required TextEditingController controller,
 
-    TextInputType keyboardType =
-        TextInputType.text,
+    TextInputType keyboardType = TextInputType.text,
   }) {
     return Column(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
 
       children: [
-
         if (label.isNotEmpty)
           Text(
             label,
 
             style: const TextStyle(
               fontSize: 10.5,
-              fontWeight:
-                  FontWeight.w600,
-              color:
-                  Color(0xFF263238),
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF263238),
             ),
           ),
 
-        if (label.isNotEmpty)
-          const SizedBox(height: 5),
+        if (label.isNotEmpty) const SizedBox(height: 5),
 
         SizedBox(
           height: 38,
@@ -575,114 +462,64 @@ class _BuyerRegisterScreenState
           child: TextFormField(
             controller: controller,
 
-            keyboardType:
-                keyboardType,
+            keyboardType: keyboardType,
 
             validator: (value) {
-              if (value == null ||
-                  value.trim().isEmpty) {
+              if (value == null || value.trim().isEmpty) {
                 return 'Required';
               }
 
               return null;
             },
 
-            style: const TextStyle(
-              fontSize: 11.5,
-              color:
-                  Color(0xFF374151),
-            ),
+            style: const TextStyle(fontSize: 11.5, color: Color(0xFF374151)),
 
-            decoration:
-                InputDecoration(
+            decoration: InputDecoration(
               hintText: hint,
 
-              hintStyle:
-                  const TextStyle(
+              hintStyle: const TextStyle(
                 fontSize: 11.5,
-                color:
-                    Color(0xFF8B949E),
+                color: Color(0xFF8B949E),
               ),
 
-              prefixIcon: Icon(
-                icon,
+              prefixIcon: Icon(icon, size: 17, color: const Color(0xFF7B8794)),
 
-                size: 17,
-
-                color:
-                    const Color(
-                        0xFF7B8794),
-              ),
-
-              prefixIconConstraints:
-                  const BoxConstraints(
+              prefixIconConstraints: const BoxConstraints(
                 minWidth: 38,
                 minHeight: 38,
               ),
 
               filled: true,
 
-              fillColor:
-                  Colors.white,
+              fillColor: Colors.white,
 
-              contentPadding:
-                  const EdgeInsets
-                      .symmetric(
+              contentPadding: const EdgeInsets.symmetric(
                 horizontal: 10,
                 vertical: 0,
               ),
 
-              enabledBorder:
-                  OutlineInputBorder(
-                borderRadius:
-                    BorderRadius.circular(
-                        8),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
 
-                borderSide:
-                    const BorderSide(
-                  color:
-                      Color(0xFFE1E5E9),
-                ),
+                borderSide: const BorderSide(color: Color(0xFFE1E5E9)),
               ),
 
-              focusedBorder:
-                  OutlineInputBorder(
-                borderRadius:
-                    BorderRadius.circular(
-                        8),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
 
-                borderSide:
-                    const BorderSide(
-                  color:
-                      primaryGreen,
-                  width: 1.2,
-                ),
+                borderSide: const BorderSide(color: primaryGreen, width: 1.2),
               ),
 
-              errorBorder:
-                  OutlineInputBorder(
-                borderRadius:
-                    BorderRadius.circular(
-                        8),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
 
-                borderSide:
-                    const BorderSide(
-                  color:
-                      Colors.redAccent,
-                ),
+                borderSide: const BorderSide(color: Colors.redAccent),
               ),
 
-              focusedErrorBorder:
-                  OutlineInputBorder(
-                borderRadius:
-                    BorderRadius.circular(
-                        8),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
 
-                borderSide:
-                    const BorderSide(
-                  color:
-                      Colors.redAccent,
-                ),
+                borderSide: const BorderSide(color: Colors.redAccent),
               ),
             ),
           ),
@@ -700,24 +537,19 @@ class _BuyerRegisterScreenState
     required String hint,
     required TextEditingController controller,
 
-    TextInputType keyboardType =
-        TextInputType.text,
+    TextInputType keyboardType = TextInputType.text,
   }) {
     return Column(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
 
       children: [
-
         Text(
           label,
 
           style: const TextStyle(
             fontSize: 10.5,
-            fontWeight:
-                FontWeight.w600,
-            color:
-                Color(0xFF263238),
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF263238),
           ),
         ),
 
@@ -727,89 +559,53 @@ class _BuyerRegisterScreenState
           height: 38,
 
           child: TextFormField(
-            controller:
-                controller,
+            controller: controller,
 
-            keyboardType:
-                keyboardType,
+            keyboardType: keyboardType,
 
             validator: (value) {
-              if (value == null ||
-                  value.trim().isEmpty) {
+              if (value == null || value.trim().isEmpty) {
                 return 'Required';
               }
 
               return null;
             },
 
-            style: const TextStyle(
-              fontSize: 11.5,
-              color:
-                  Color(0xFF374151),
-            ),
+            style: const TextStyle(fontSize: 11.5, color: Color(0xFF374151)),
 
-            decoration:
-                InputDecoration(
-              hintText:
-                  hint,
+            decoration: InputDecoration(
+              hintText: hint,
 
-              hintStyle:
-                  const TextStyle(
+              hintStyle: const TextStyle(
                 fontSize: 11.5,
-                color:
-                    Color(0xFF8B949E),
+                color: Color(0xFF8B949E),
               ),
 
               filled: true,
 
-              fillColor:
-                  Colors.white,
+              fillColor: Colors.white,
 
-              contentPadding:
-                  const EdgeInsets
-                      .symmetric(
+              contentPadding: const EdgeInsets.symmetric(
                 horizontal: 11,
                 vertical: 0,
               ),
 
-              enabledBorder:
-                  OutlineInputBorder(
-                borderRadius:
-                    BorderRadius.circular(
-                        8),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
 
-                borderSide:
-                    const BorderSide(
-                  color:
-                      Color(0xFFE1E5E9),
-                ),
+                borderSide: const BorderSide(color: Color(0xFFE1E5E9)),
               ),
 
-              focusedBorder:
-                  OutlineInputBorder(
-                borderRadius:
-                    BorderRadius.circular(
-                        8),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
 
-                borderSide:
-                    const BorderSide(
-                  color:
-                      primaryGreen,
-                  width: 1.2,
-                ),
+                borderSide: const BorderSide(color: primaryGreen, width: 1.2),
               ),
 
-              errorBorder:
-                  OutlineInputBorder(
-                borderRadius:
-                    BorderRadius.circular(
-                        8),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
 
-                borderSide:
-                    const BorderSide(
-                  color:
-                      Colors.redAccent,
-                ),
+                borderSide: const BorderSide(color: Colors.redAccent),
               ),
             ),
           ),
@@ -832,57 +628,38 @@ class _BuyerRegisterScreenState
       height: 38,
 
       child: TextFormField(
-        controller:
-            controller,
+        controller: controller,
 
-        obscureText:
-            obscureText,
+        obscureText: obscureText,
 
         validator: (value) {
-          if (value == null ||
-              value.trim().isEmpty) {
+          if (value == null || value.trim().isEmpty) {
             return 'Required';
           }
 
           return null;
         },
 
-        style: const TextStyle(
-          fontSize: 11.5,
-          color:
-              Color(0xFF374151),
-        ),
+        style: const TextStyle(fontSize: 11.5, color: Color(0xFF374151)),
 
-        decoration:
-            InputDecoration(
-          hintText:
-              hint,
+        decoration: InputDecoration(
+          hintText: hint,
 
-          hintStyle:
-              const TextStyle(
-            fontSize: 11.5,
-            color:
-                Color(0xFF8B949E),
-          ),
+          hintStyle: const TextStyle(fontSize: 11.5, color: Color(0xFF8B949E)),
 
           prefixIcon: const Icon(
             Icons.lock_outline,
             size: 17,
-            color:
-                Color(0xFF7B8794),
+            color: Color(0xFF7B8794),
           ),
 
-          suffixIcon:
-              IconButton(
-            onPressed:
-                onVisibilityPressed,
+          suffixIcon: IconButton(
+            onPressed: onVisibilityPressed,
 
             icon: Icon(
               obscureText
-                  ? Icons
-                      .visibility_outlined
-                  : Icons
-                      .visibility_off_outlined,
+                  ? Icons.visibility_outlined
+                  : Icons.visibility_off_outlined,
 
               size: 17,
             ),
@@ -890,54 +667,29 @@ class _BuyerRegisterScreenState
 
           filled: true,
 
-          fillColor:
-              Colors.white,
+          fillColor: Colors.white,
 
-          contentPadding:
-              const EdgeInsets
-                  .symmetric(
+          contentPadding: const EdgeInsets.symmetric(
             horizontal: 10,
             vertical: 0,
           ),
 
-          enabledBorder:
-              OutlineInputBorder(
-            borderRadius:
-                BorderRadius.circular(
-                    8),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
 
-            borderSide:
-                const BorderSide(
-              color:
-                  Color(0xFFE1E5E9),
-            ),
+            borderSide: const BorderSide(color: Color(0xFFE1E5E9)),
           ),
 
-          focusedBorder:
-              OutlineInputBorder(
-            borderRadius:
-                BorderRadius.circular(
-                    8),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
 
-            borderSide:
-                const BorderSide(
-              color:
-                  primaryGreen,
-              width: 1.2,
-            ),
+            borderSide: const BorderSide(color: primaryGreen, width: 1.2),
           ),
 
-          errorBorder:
-              OutlineInputBorder(
-            borderRadius:
-                BorderRadius.circular(
-                    8),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
 
-            borderSide:
-                const BorderSide(
-              color:
-                  Colors.redAccent,
-            ),
+            borderSide: const BorderSide(color: Colors.redAccent),
           ),
         ),
       ),
@@ -958,59 +710,36 @@ class _BuyerRegisterScreenState
       height: 40,
 
       child: ElevatedButton(
-        onPressed:
-            onPressed,
+        onPressed: onPressed,
 
-        style:
-            ElevatedButton.styleFrom(
-          backgroundColor:
-              selected
-                  ? primaryGreen
-                  : Colors.white,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: selected ? primaryGreen : Colors.white,
 
-          foregroundColor:
-              Colors.black,
+          foregroundColor: Colors.black,
 
-          elevation:
-              selected ? 2 : 0,
+          elevation: selected ? 2 : 0,
 
           side: BorderSide(
-            color: selected
-                ? primaryGreen
-                : const Color(
-                    0xFFE1E5E9),
+            color: selected ? primaryGreen : const Color(0xFFE1E5E9),
           ),
 
-          shape:
-              RoundedRectangleBorder(
-            borderRadius:
-                BorderRadius.circular(
-                    20),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
           ),
         ),
 
         child: Row(
-          mainAxisAlignment:
-              MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
 
           children: [
-
-            Icon(
-              icon,
-              size: 16,
-            ),
+            Icon(icon, size: 16),
 
             const SizedBox(width: 5),
 
             Text(
               title,
 
-              style:
-                  const TextStyle(
-                fontSize: 10,
-                fontWeight:
-                    FontWeight.w700,
-              ),
+              style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700),
             ),
           ],
         ),
@@ -1023,7 +752,6 @@ class _BuyerRegisterScreenState
   // ================================================================
 
   Future<void> _registerBuyer() async {
-
     // --------------------------------------------------------------
     // VALIDATE FORM
     // --------------------------------------------------------------
@@ -1037,38 +765,26 @@ class _BuyerRegisterScreenState
     // --------------------------------------------------------------
 
     if (isEmailAuth) {
+      final email = emailController.text.trim();
 
-      final email =
-          emailController.text.trim();
+      final password = passwordController.text.trim();
 
-      final password =
-          passwordController.text.trim();
-
-      final confirmPassword =
-          confirmPasswordController
-              .text
-              .trim();
+      final confirmPassword = confirmPasswordController.text.trim();
 
       if (!email.contains('@')) {
-        _showMessage(
-          'Please enter a valid email address.',
-        );
+        _showMessage('Please enter a valid email address.');
 
         return;
       }
 
       if (password.length < 6) {
-        _showMessage(
-          'Password must be at least 6 characters.',
-        );
+        _showMessage('Password must be at least 6 characters.');
 
         return;
       }
 
       if (password != confirmPassword) {
-        _showMessage(
-          'Passwords do not match.',
-        );
+        _showMessage('Passwords do not match.');
 
         return;
       }
@@ -1078,20 +794,13 @@ class _BuyerRegisterScreenState
     // PHONE
     // --------------------------------------------------------------
 
-    String phoneNumber =
-        phoneController.text.trim();
+    String phoneNumber = phoneController.text.trim();
 
     if (!isEmailAuth) {
-
-      phoneNumber =
-          _formatPhoneNumber(
-        phoneNumber,
-      );
+      phoneNumber = _formatPhoneNumber(phoneNumber);
 
       if (phoneNumber.isEmpty) {
-        _showMessage(
-          'Please enter a valid Indian phone number.',
-        );
+        _showMessage('Please enter a valid Indian phone number.');
 
         return;
       }
@@ -1102,28 +811,20 @@ class _BuyerRegisterScreenState
     });
 
     try {
-
       // ============================================================
       // BUYER DATA
       // ============================================================
 
-      final Map<String, dynamic>
-          registrationData = {
+      final Map<String, dynamic> registrationData = {
+        'name': nameController.text.trim(),
 
-        'name':
-            nameController.text.trim(),
+        'email': emailController.text.trim(),
 
-        'email':
-            emailController.text.trim(),
+        'delivery_address': addressController.text.trim(),
 
-        'delivery_address':
-            addressController.text.trim(),
+        'city': cityController.text.trim(),
 
-        'city':
-            cityController.text.trim(),
-
-        'pincode':
-            pincodeController.text.trim(),
+        'pincode': pincodeController.text.trim(),
       };
 
       // ============================================================
@@ -1131,40 +832,56 @@ class _BuyerRegisterScreenState
       // ============================================================
 
       if (isEmailAuth) {
+        debugPrint('=== EMAIL REGISTRATION STARTED ===');
 
-        final userCredential =
-            await _authService
-                .registerWithEmail(
-          email:
-              emailController.text.trim(),
-
-          password:
-              passwordController.text.trim(),
+        final userCredential = await _authService.registerWithEmail(
+          email: emailController.text.trim(),
+          password: passwordController.text.trim(),
         );
 
-        final User? user =
-            userCredential.user;
+        final User? user = userCredential.user;
 
         if (user == null) {
-          throw Exception(
-            'Firebase user was not created.',
-          );
+          throw Exception('Firebase user was not created.');
         }
 
-        debugPrint(
-          'Buyer Firebase account created.',
-        );
+        debugPrint('Buyer Firebase account created.');
+        debugPrint('Firebase UID: ${user.uid}');
 
-        debugPrint(
-          'Firebase UID: ${user.uid}',
-        );
+        final String? idToken = await user.getIdToken();
 
-        /*
-         * FastAPI/PostgreSQL profile
-         * registration will be connected
-         * after our final database schema
-         * is ready.
-         */
+        if (idToken == null) {
+          throw Exception('Firebase ID token was not generated.');
+        }
+
+        debugPrint('=== CALLING FASTAPI ===');
+        debugPrint('API URL: ${ApiConfig.baseUrl}/auth/register');
+
+        final response = await http
+            .post(
+              Uri.parse('${ApiConfig.baseUrl}/auth/register'),
+              headers: {'Content-Type': 'application/json'},
+              body: jsonEncode({
+                'id_token': idToken,
+                'firebase_uid': user.uid,
+                'role': 'buyer',
+                'phone': null,
+                'name': nameController.text.trim(),
+                'email': emailController.text.trim(),
+              }),
+            )
+            .timeout(const Duration(seconds: 10));
+
+        debugPrint('=== FASTAPI RESPONSE RECEIVED ===');
+        debugPrint('FastAPI response: ${response.statusCode}');
+        debugPrint('FastAPI body: ${response.body}');
+        if (response.statusCode < 200 || response.statusCode >= 300) {
+          throw Exception('Backend registration failed: ${response.body}');
+        }
+
+        // ============================================================
+        // SUCCESS
+        // ============================================================
 
         if (!mounted) return;
 
@@ -1174,11 +891,7 @@ class _BuyerRegisterScreenState
 
         Navigator.pushReplacement(
           context,
-
-          MaterialPageRoute(
-            builder: (_) =>
-                const SuccessScreen(),
-          ),
+          MaterialPageRoute(builder: (_) => const SuccessScreen()),
         );
 
         return;
@@ -1189,17 +902,12 @@ class _BuyerRegisterScreenState
       // ============================================================
 
       await _authService.sendOTP(
-
-        phoneNumber:
-            phoneNumber,
+        phoneNumber: phoneNumber,
 
         // ----------------------------------------------------------
         // OTP SENT
         // ----------------------------------------------------------
-
-        onCodeSent:
-            (String verificationId) {
-
+        onCodeSent: (String verificationId) {
           if (!mounted) return;
 
           setState(() {
@@ -1210,27 +918,19 @@ class _BuyerRegisterScreenState
             context,
 
             MaterialPageRoute(
-              builder: (_) =>
-                  OtpScreen(
+              builder: (_) => OtpScreen(
+                verificationId: verificationId,
 
-                verificationId:
-                    verificationId,
+                phoneNumber: phoneNumber,
 
-                phoneNumber:
-                    phoneNumber,
-
-                mode:
-                    'register',
+                mode: 'register',
 
                 // IMPORTANT:
                 // Database role for Buyer
-                // is "customer".
+                // is "buyer".
+                role: 'buyer',
 
-                role:
-                    'customer',
-
-                registrationData:
-                    registrationData,
+                registrationData: registrationData,
               ),
             ),
           );
@@ -1239,56 +939,33 @@ class _BuyerRegisterScreenState
         // ----------------------------------------------------------
         // ERROR
         // ----------------------------------------------------------
-
-        onError:
-            (FirebaseAuthException error) {
-
+        onError: (FirebaseAuthException error) {
           if (!mounted) return;
 
           setState(() {
             isLoading = false;
           });
 
-          _showMessage(
-            _firebaseErrorMessage(
-              error,
-            ),
-          );
+          _showMessage(_firebaseErrorMessage(error));
         },
 
         // ----------------------------------------------------------
         // AUTOMATIC VERIFICATION
         // ----------------------------------------------------------
-
-        onAutoVerified:
-            (PhoneAuthCredential credential)
-                async {
-
+        onAutoVerified: (PhoneAuthCredential credential) async {
           try {
+            final userCredential = await FirebaseAuth.instance
+                .signInWithCredential(credential);
 
-            final userCredential =
-                await FirebaseAuth
-                    .instance
-                    .signInWithCredential(
-              credential,
-            );
-
-            final User? user =
-                userCredential.user;
+            final User? user = userCredential.user;
 
             if (user == null) {
-              throw Exception(
-                'Firebase user not found.',
-              );
+              throw Exception('Firebase user not found.');
             }
 
-            debugPrint(
-              'Buyer phone automatically verified.',
-            );
+            debugPrint('Buyer phone automatically verified.');
 
-            debugPrint(
-              'Firebase UID: ${user.uid}',
-            );
+            debugPrint('Firebase UID: ${user.uid}');
 
             /*
              * FastAPI/PostgreSQL registration
@@ -1305,44 +982,29 @@ class _BuyerRegisterScreenState
             Navigator.pushReplacement(
               context,
 
-              MaterialPageRoute(
-                builder: (_) =>
-                    const SuccessScreen(),
-              ),
+              MaterialPageRoute(builder: (_) => const SuccessScreen()),
             );
-
           } catch (e) {
-
             if (!mounted) return;
 
             setState(() {
               isLoading = false;
             });
 
-            _showMessage(
-              'Automatic verification failed.',
-            );
+            _showMessage('Automatic verification failed.');
           }
         },
       );
-
     } on FirebaseAuthException catch (e) {
-
       if (!mounted) return;
 
       setState(() {
         isLoading = false;
       });
 
-      _showMessage(
-        _firebaseErrorMessage(e),
-      );
-
+      _showMessage(_firebaseErrorMessage(e));
     } catch (e) {
-
-      debugPrint(
-        'Buyer registration error: $e',
-      );
+      debugPrint('Buyer registration error: $e');
 
       if (!mounted) return;
 
@@ -1350,9 +1012,7 @@ class _BuyerRegisterScreenState
         isLoading = false;
       });
 
-      _showMessage(
-        'Something went wrong. Please try again.',
-      );
+      _showMessage('Something went wrong. Please try again.');
     }
   }
 
@@ -1360,17 +1020,10 @@ class _BuyerRegisterScreenState
   // PHONE FORMAT
   // ================================================================
 
-  String _formatPhoneNumber(
-    String phone,
-  ) {
-
-    phone = phone.replaceAll(
-      RegExp(r'[\s\-()]'),
-      '',
-    );
+  String _formatPhoneNumber(String phone) {
+    phone = phone.replaceAll(RegExp(r'[\s\-()]'), '');
 
     if (phone.startsWith('+91')) {
-
       if (phone.length == 13) {
         return phone;
       }
@@ -1378,8 +1031,7 @@ class _BuyerRegisterScreenState
       return '';
     }
 
-    if (phone.startsWith('91') &&
-        phone.length == 12) {
+    if (phone.startsWith('91') && phone.length == 12) {
       return '+$phone';
     }
 
@@ -1394,12 +1046,8 @@ class _BuyerRegisterScreenState
   // FIREBASE ERROR
   // ================================================================
 
-  String _firebaseErrorMessage(
-    FirebaseAuthException error,
-  ) {
-
+  String _firebaseErrorMessage(FirebaseAuthException error) {
     switch (error.code) {
-
       case 'invalid-phone-number':
         return 'Please enter a valid phone number.';
 
@@ -1425,8 +1073,7 @@ class _BuyerRegisterScreenState
         return 'Password is too weak.';
 
       default:
-        return error.message ??
-            'Authentication failed.';
+        return error.message ?? 'Authentication failed.';
     }
   }
 
@@ -1434,20 +1081,11 @@ class _BuyerRegisterScreenState
   // MESSAGE
   // ================================================================
 
-  void _showMessage(
-    String message,
-  ) {
-
+  void _showMessage(String message) {
     if (!mounted) return;
 
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content:
-              Text(message),
-        ),
-      );
+      ..showSnackBar(SnackBar(content: Text(message)));
   }
 }
-
