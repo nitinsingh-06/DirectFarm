@@ -16,10 +16,7 @@ import 'package:provider/provider.dart';
 class ProfileScreen extends StatefulWidget {
   final Function(int) onBottomNavTap;
 
-  const ProfileScreen({
-    super.key,
-    required this.onBottomNavTap,
-  });
+  const ProfileScreen({super.key, required this.onBottomNavTap});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -30,10 +27,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   final ImagePicker _picker = ImagePicker();
 
+  @override
+  void initState() {
+    super.initState();
 
-  // ============================================================
-  // BUILD
-  // ============================================================
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ProfileProvider>().loadProfile();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,32 +44,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
           // ========================================================
           // PROFILE HEADER
           // ========================================================
-
           _buildProfileHeader(),
 
           // ========================================================
           // SCROLLABLE PROFILE CONTENT
           // ========================================================
-
           Expanded(
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(
-                10,
-                10,
-                10,
-                15,
-              ),
+              padding: const EdgeInsets.fromLTRB(10, 10, 10, 15),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // ==================================================
                   // MY PROFILE
                   // ==================================================
-
-                  _buildSectionTitle(
-                    'MY PROFILE',
-                  ),
+                  _buildSectionTitle('MY PROFILE'),
 
                   const SizedBox(height: 6),
 
@@ -81,8 +72,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) =>
-                                  const FarmerProfileSettings(),
+                              builder: (_) => const FarmerProfileSettings(),
                             ),
                           );
                         },
@@ -97,8 +87,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) =>
-                                  const FarmDetailsScreen(),
+                              builder: (_) => const FarmDetailsScreen(),
                             ),
                           );
                         },
@@ -109,13 +98,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       _buildMenuItem(
                         icon: Icons.location_on_outlined,
                         title: 'Farm Location',
-                        trailing: 'Rohini, New Delhi',
+                        trailing:
+                            context.watch<ProfileProvider>().location.isEmpty
+                            ? 'Not set'
+                            : context.watch<ProfileProvider>().location,
                         onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) =>
-                                  const ComingSoonScreen(),
+                              builder: (_) => const ComingSoonScreen(),
                             ),
                           );
                         },
@@ -128,10 +119,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   // ==================================================
                   // QUICK ACCESS
                   // ==================================================
-
-                  _buildSectionTitle(
-                    'QUICK ACCESS ',
-                  ),
+                  _buildSectionTitle('QUICK ACCESS '),
 
                   const SizedBox(height: 6),
 
@@ -141,8 +129,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         icon: Icons.inventory_2_outlined,
                         title: 'My Products',
                         trailing: '24 New',
-                        trailingColor:
-                            const Color(0xFF08795D),
+                        trailingColor: const Color(0xFF08795D),
                         onTap: () {
                           widget.onBottomNavTap(1);
                         },
@@ -154,8 +141,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         icon: Icons.shopping_bag_outlined,
                         title: 'My Orders',
                         trailing: '8 New',
-                        trailingColor:
-                            const Color(0xFF08795D),
+                        trailingColor: const Color(0xFF08795D),
                         onTap: () {
                           widget.onBottomNavTap(2);
                         },
@@ -179,10 +165,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   // ==================================================
                   // APP SETTINGS
                   // ==================================================
-
-                  _buildSectionTitle(
-                    'APP SETTINGS',
-                  ),
+                  _buildSectionTitle('APP SETTINGS'),
 
                   const SizedBox(height: 6),
 
@@ -191,7 +174,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       // ----------------------------------------------
                       // NOTIFICATIONS
                       // ----------------------------------------------
-
                       _buildMenuItem(
                         icon: Icons.notifications_none,
                         title: 'Notifications',
@@ -199,8 +181,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) =>
-                                  const ComingSoonScreen(),
+                              builder: (_) => const ComingSoonScreen(),
                             ),
                           );
                         },
@@ -211,7 +192,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       // ----------------------------------------------
                       // APP LANGUAGE
                       // ----------------------------------------------
-
                       _buildMenuItem(
                         icon: Icons.language,
                         title: 'App Language',
@@ -226,7 +206,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       // ----------------------------------------------
                       // APPEARANCE
                       // ----------------------------------------------
-
                       _buildMenuItem(
                         icon: Icons.phone_android_outlined,
                         title: 'Appearance',
@@ -241,7 +220,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       // ----------------------------------------------
                       // HELP & SUPPORT
                       // ----------------------------------------------
-
                       _buildMenuItem(
                         icon: Icons.help_outline,
                         title: 'Help & Support',
@@ -249,8 +227,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) =>
-                                  const HelpSupportScreen(),
+                              builder: (_) => const HelpSupportScreen(),
                             ),
                           );
                         },
@@ -261,7 +238,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       // ----------------------------------------------
                       // ABOUT US
                       // ----------------------------------------------
-
                       _buildMenuItem(
                         icon: Icons.info_outline,
                         title: 'About Us',
@@ -269,8 +245,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) =>
-                                  const AboutUsScreen(),
+                              builder: (_) => const AboutUsScreen(),
                             ),
                           );
                         },
@@ -281,7 +256,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       // ----------------------------------------------
                       // LOGOUT
                       // ----------------------------------------------
-
                       _buildMenuItem(
                         icon: Icons.logout,
                         title: 'Logout',
@@ -308,77 +282,62 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // ============================================================
   // PROFILE HEADER
   // ============================================================
-Widget _buildProfileHeader() {
-  return Consumer<ProfileProvider>(
-    builder: (context, profile, child) {
-      return Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(
-          horizontal: 14,
-          vertical: 9,
-        ),
-        color: const Color(0xFF075B47),
+  Widget _buildProfileHeader() {
+    return Consumer<ProfileProvider>(
+      builder: (context, profile, child) {
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+          color: const Color(0xFF075B47),
 
-        child: Row(
-          children: [
-
-            // ====================================================
-            // PROFILE IMAGE
-            // ====================================================
-
-            Container(
-              width: 44,
-              height: 44,
-              padding: const EdgeInsets.all(2),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: const Color(0xFFB8D9A8),
-                  width: 2,
+          child: Row(
+            children: [
+              // ====================================================
+              // PROFILE IMAGE
+              // ====================================================
+              Container(
+                width: 44,
+                height: 44,
+                padding: const EdgeInsets.all(2),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: const Color(0xFFB8D9A8), width: 2),
                 ),
+
+                child: const ProfileImage(size: 36),
               ),
 
-              child: const ProfileImage(
-                size: 36,
+              const SizedBox(width: 10),
+
+              // ====================================================
+              // PROFILE NAME
+              // ====================================================
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    profile.name,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+
+                  const SizedBox(height: 2),
+
+                  const Text(
+                    'Farm ID: #83422',
+                    style: TextStyle(fontSize: 8, color: Color(0xFFD1E8E1)),
+                  ),
+                ],
               ),
-            ),
-
-            const SizedBox(width: 10),
-
-            // ====================================================
-            // PROFILE NAME
-            // ====================================================
-
-            Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
-              children: [
-                Text(
-                  profile.name,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                  ),
-                ),
-
-                const SizedBox(height: 2),
-
-                const Text(
-                  'Farm ID: #83422',
-                  style: TextStyle(
-                    fontSize: 8,
-                    color: Color(0xFFD1E8E1),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      );
-    },
-  );
-}
+            ],
+          ),
+        );
+      },
+    );
+  }
   // ============================================================
   // SECTION TITLE
   // ============================================================
@@ -401,21 +360,15 @@ Widget _buildProfileHeader() {
   // MENU GROUP
   // ============================================================
 
-  Widget _buildMenuGroup({
-    required List<Widget> children,
-  }) {
+  Widget _buildMenuGroup({required List<Widget> children}) {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: const Color(0xFFE8ECEF),
-        ),
+        border: Border.all(color: const Color(0xFFE8ECEF)),
       ),
-      child: Column(
-        children: children,
-      ),
+      child: Column(children: children),
     );
   }
 
@@ -439,30 +392,25 @@ Widget _buildProfileHeader() {
       child: SizedBox(
         height: 42,
         child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 9,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 9),
           child: Row(
             children: [
               // ====================================================
               // ICON
               // ====================================================
-
               Container(
                 width: 25,
                 height: 25,
                 decoration: BoxDecoration(
-                  color: (iconColor ??
-                          const Color(0xFF08795D))
-                      .withOpacity(0.08),
-                  borderRadius:
-                      BorderRadius.circular(7),
+                  color: (iconColor ?? const Color(0xFF08795D)).withOpacity(
+                    0.08,
+                  ),
+                  borderRadius: BorderRadius.circular(7),
                 ),
                 child: Icon(
                   icon,
                   size: 14,
-                  color: iconColor ??
-                      const Color(0xFF08795D),
+                  color: iconColor ?? const Color(0xFF08795D),
                 ),
               ),
 
@@ -471,15 +419,13 @@ Widget _buildProfileHeader() {
               // ====================================================
               // TITLE
               // ====================================================
-
               Expanded(
                 child: Text(
                   title,
                   style: TextStyle(
                     fontSize: 9.5,
                     fontWeight: FontWeight.w600,
-                    color: titleColor ??
-                        const Color(0xFF38434A),
+                    color: titleColor ?? const Color(0xFF38434A),
                   ),
                 ),
               ),
@@ -487,22 +433,19 @@ Widget _buildProfileHeader() {
               // ====================================================
               // TRAILING TEXT
               // ====================================================
-
               if (trailing != null)
                 Text(
                   trailing,
                   style: TextStyle(
                     fontSize: 7.5,
                     fontWeight: FontWeight.w500,
-                    color: trailingColor ??
-                        const Color(0xFF737B82),
+                    color: trailingColor ?? const Color(0xFF737B82),
                   ),
                 ),
 
               // ====================================================
               // ARROW
               // ====================================================
-
               if (showArrow) ...[
                 const SizedBox(width: 5),
 
@@ -544,19 +487,13 @@ Widget _buildProfileHeader() {
         return AlertDialog(
           title: const Text(
             'App Language',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-            ),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
-                title: const Text(
-                  'English',
-                  style: TextStyle(fontSize: 13),
-                ),
+                title: const Text('English', style: TextStyle(fontSize: 13)),
                 onTap: () {
                   Navigator.pop(dialogContext);
                 },
@@ -582,71 +519,51 @@ Widget _buildProfileHeader() {
   // ============================================================
 
   void _showAppearanceDialog() {
-  showDialog(
-    context: context,
-    builder: (dialogContext) {
-      final themeProvider = context.read<ThemeProvider>();
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        final themeProvider = context.read<ThemeProvider>();
 
-      return AlertDialog(
-        title: const Text(
-          "Appearance",
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(
-                Icons.light_mode_outlined,
-              ),
-              title: const Text(
-                "Light",
-              ),
-              onTap: () {
-                themeProvider.setTheme(
-                  ThemeMode.light,
-                );
+        return AlertDialog(
+          title: const Text("Appearance"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.light_mode_outlined),
+                title: const Text("Light"),
+                onTap: () {
+                  themeProvider.setTheme(ThemeMode.light);
 
-                Navigator.pop(dialogContext);
-              },
-            ),
-
-            ListTile(
-              leading: const Icon(
-                Icons.dark_mode_outlined,
+                  Navigator.pop(dialogContext);
+                },
               ),
-              title: const Text(
-                "Dark",
-              ),
-              onTap: () {
-                themeProvider.setTheme(
-                  ThemeMode.dark,
-                );
 
-                Navigator.pop(dialogContext);
-              },
-            ),
+              ListTile(
+                leading: const Icon(Icons.dark_mode_outlined),
+                title: const Text("Dark"),
+                onTap: () {
+                  themeProvider.setTheme(ThemeMode.dark);
 
-            ListTile(
-              leading: const Icon(
-                Icons.settings_outlined,
+                  Navigator.pop(dialogContext);
+                },
               ),
-              title: const Text(
-                "System Default",
-              ),
-              onTap: () {
-                themeProvider.setTheme(
-                  ThemeMode.system,
-                );
 
-                Navigator.pop(dialogContext);
-              },
-            ),
-          ],
-        ),
-      );
-    },
-  );
-}
+              ListTile(
+                leading: const Icon(Icons.settings_outlined),
+                title: const Text("System Default"),
+                onTap: () {
+                  themeProvider.setTheme(ThemeMode.system);
+
+                  Navigator.pop(dialogContext);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   // ============================================================
   // LOGOUT DIALOG
@@ -659,22 +576,16 @@ Widget _buildProfileHeader() {
         return AlertDialog(
           title: const Text(
             'Logout',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-            ),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
           ),
           content: const Text(
             'Are you sure you want to logout?',
-            style: TextStyle(
-              fontSize: 13,
-            ),
+            style: TextStyle(fontSize: 13),
           ),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.pop(dialogContext);
-                
               },
               child: const Text('Cancel'),
             ),
@@ -683,17 +594,17 @@ Widget _buildProfileHeader() {
                 Navigator.pop(dialogContext);
 
                 //  actual logout logic here.
-                Navigator.push(context, MaterialPageRoute(builder: (_)=>LoginPage()));
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => LoginPage()),
+                );
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor:
-                    const Color(0xFFE55353),
+                backgroundColor: const Color(0xFFE55353),
               ),
               child: const Text(
                 'Logout',
-                style: TextStyle(
-                  color: Colors.white,
-                ),
+                style: TextStyle(color: Colors.white),
               ),
             ),
           ],

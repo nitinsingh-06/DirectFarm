@@ -72,6 +72,60 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
   }
 
   // ============================================================
+  // CREATE FARMER PROFILE
+  // ============================================================
+
+  Future<void> createFarmerProfile(int userId) async {
+    debugPrint('Creating Farmer profile...');
+
+    final Uri profileUrl = Uri.parse(
+      '${ApiConfig.baseUrl}/farmer-profile/',
+    );
+
+    final Map<String, dynamic> profileData = {
+      'user_id': userId,
+      'farm_name': farmNameController.text.trim(),
+      'location': locationController.text.trim(),
+      'aadhaar': aadhaarController.text.trim(),
+      'crops': selectedCrops.toList(),
+    };
+
+    debugPrint(
+      'Farmer profile data: $profileData',
+    );
+
+    final response = await http.post(
+      profileUrl,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(profileData),
+    ).timeout(
+      const Duration(seconds: 10),
+    );
+
+    debugPrint(
+      'Farmer profile status: ${response.statusCode}',
+    );
+
+    debugPrint(
+      'Farmer profile response: ${response.body}',
+    );
+
+    if (response.statusCode < 200 ||
+        response.statusCode >= 300) {
+      throw Exception(
+        'Farmer profile creation failed: '
+        '${response.body}',
+      );
+    }
+
+    debugPrint(
+      'Farmer profile saved successfully',
+    );
+  }
+
+  // ============================================================
   // FARMER REGISTRATION
   // ============================================================
 
@@ -83,9 +137,12 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
     if (selectedCrops.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please select at least one crop'),
+          content: Text(
+            'Please select at least one crop',
+          ),
         ),
       );
+
       return;
     }
 
@@ -95,11 +152,17 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
 
     try {
       // ========================================================
-      // EMAIL + PASSWORD REGISTRATION
+      // EMAIL REGISTRATION
       // ========================================================
 
       if (isEmailAuth) {
-        debugPrint('Starting Farmer Email Registration...');
+        debugPrint(
+          'Starting Farmer Email Registration...',
+        );
+
+        // ------------------------------------------------------
+        // STEP 1: CREATE FIREBASE USER
+        // ------------------------------------------------------
 
         final UserCredential credential =
             await _auth.createUserWithEmailAndPassword(
@@ -119,11 +182,12 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
           'Firebase Farmer UID: ${user.uid}',
         );
 
-        // ======================================================
-        // GET FIREBASE ID TOKEN
-        // ======================================================
+        // ------------------------------------------------------
+        // STEP 2: GET FIREBASE ID TOKEN
+        // ------------------------------------------------------
 
-        final String? idToken = await user.getIdToken();
+        final String? idToken =
+            await user.getIdToken();
 
         if (idToken == null) {
           throw Exception(
@@ -135,9 +199,9 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
           'Firebase ID token received',
         );
 
-        // ======================================================
-        // SEND DATA TO FASTAPI
-        // ======================================================
+        // ------------------------------------------------------
+        // STEP 3: REGISTER USER IN FASTAPI
+        // ------------------------------------------------------
 
         final Uri url = Uri.parse(
           '${ApiConfig.baseUrl}/auth/register',
@@ -165,34 +229,21 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
         );
 
         debugPrint(
-          'FastAPI Farmer registration status: '
+          'FastAPI registration status: '
           '${response.statusCode}',
         );
 
         debugPrint(
-          'FastAPI Farmer registration response: '
+          'FastAPI registration response: '
           '${response.body}',
         );
 
-        // ======================================================
-        // CHECK BACKEND RESPONSE
-        // ======================================================
+        // ------------------------------------------------------
+        // STEP 4: CHECK USER REGISTRATION
+        // ------------------------------------------------------
 
-        if (response.statusCode >= 200 &&
-            response.statusCode < 300) {
-          debugPrint(
-            'Farmer registered successfully in PostgreSQL',
-          );
-
-          if (!mounted) return;
-
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const SuccessScreen(),
-            ),
-          );
-        } else {
+        if (response.statusCode < 200 ||
+            response.statusCode >= 300) {
           String errorMessage =
               'Backend registration failed';
 
@@ -209,6 +260,57 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
 
           throw Exception(errorMessage);
         }
+
+        debugPrint(
+          'Farmer saved in users table',
+        );
+
+        // ------------------------------------------------------
+        // STEP 5: GET USER ID
+        // ------------------------------------------------------
+
+        final Map<String, dynamic> userData =
+            jsonDecode(response.body);
+
+        final dynamic userIdValue =
+            userData['user_id'];
+
+        if (userIdValue == null) {
+          throw Exception(
+            'Backend did not return user_id',
+          );
+        }
+
+        final int userId =
+            int.parse(userIdValue.toString());
+
+        debugPrint(
+          'Created Farmer user_id: $userId',
+        );
+
+        // ------------------------------------------------------
+        // STEP 6: CREATE FARMER PROFILE
+        // ------------------------------------------------------
+
+        await createFarmerProfile(userId);
+
+        // ------------------------------------------------------
+        // STEP 7: SUCCESS
+        // ------------------------------------------------------
+
+        if (!mounted) return;
+
+        setState(() {
+          isLoading = false;
+        });
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                const SuccessScreen(),
+          ),
+        );
       }
 
       // ========================================================
@@ -225,9 +327,9 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
           );
         }
 
-        // ======================================================
+        // ------------------------------------------------------
         // FORMAT PHONE NUMBER
-        // ======================================================
+        // ------------------------------------------------------
 
         String formattedPhone = phone;
 
@@ -240,31 +342,40 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
         );
 
         debugPrint(
-          'Sending OTP to: $formattedPhone',
+          'Phone number: $formattedPhone',
         );
 
-        // ======================================================
+        // ------------------------------------------------------
         // REGISTRATION DATA
-        // ======================================================
+        // ------------------------------------------------------
 
         final Map<String, dynamic> registrationData = {
-          'full_name': fullNameController.text.trim(),
-          'farm_name': farmNameController.text.trim(),
-          'location': locationController.text.trim(),
-          'aadhaar': aadhaarController.text.trim(),
-          'crops': selectedCrops.toList(),
+          'full_name':
+              fullNameController.text.trim(),
+
+          'farm_name':
+              farmNameController.text.trim(),
+
+          'location':
+              locationController.text.trim(),
+
+          'aadhaar':
+              aadhaarController.text.trim(),
+
+          'crops':
+              selectedCrops.toList(),
         };
 
-        // ======================================================
-        // FIREBASE PHONE VERIFICATION
-        // ======================================================
+        // ------------------------------------------------------
+        // SEND OTP
+        // ------------------------------------------------------
 
         await _auth.verifyPhoneNumber(
           phoneNumber: formattedPhone,
 
-          // ----------------------------------------------------
+          // ====================================================
           // AUTOMATIC VERIFICATION
-          // ----------------------------------------------------
+          // ====================================================
 
           verificationCompleted:
               (PhoneAuthCredential credential) async {
@@ -273,7 +384,8 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
             );
 
             try {
-              final UserCredential userCredential =
+              final UserCredential
+                  userCredential =
                   await _auth.signInWithCredential(
                 credential,
               );
@@ -297,10 +409,11 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
               }
 
               // ------------------------------------------------
-              // REGISTER FARMER IN FASTAPI
+              // REGISTER USER
               // ------------------------------------------------
 
-              final response = await http.post(
+              final response =
+                  await http.post(
                 Uri.parse(
                   '${ApiConfig.baseUrl}/auth/register',
                 ),
@@ -313,7 +426,8 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
                   'firebase_uid': user.uid,
                   'role': 'farmer',
                   'phone': formattedPhone,
-                  ...registrationData,
+                  'name':
+                      fullNameController.text.trim(),
                 }),
               ).timeout(
                 const Duration(seconds: 10),
@@ -329,27 +443,44 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
                 '${response.body}',
               );
 
-              if (response.statusCode >= 200 &&
-                  response.statusCode < 300) {
-                if (!mounted) return;
-
-                setState(() {
-                  isLoading = false;
-                });
-
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        const SuccessScreen(),
-                  ),
-                );
-              } else {
+              if (response.statusCode < 200 ||
+                  response.statusCode >= 300) {
                 throw Exception(
                   'Registration failed: '
                   '${response.body}',
                 );
               }
+
+              final Map<String, dynamic>
+                  userData =
+                  jsonDecode(response.body);
+
+              final int userId =
+                  int.parse(
+                userData['user_id'].toString(),
+              );
+
+              // ------------------------------------------------
+              // CREATE FARMER PROFILE
+              // ------------------------------------------------
+
+              await createFarmerProfile(
+                userId,
+              );
+
+              if (!mounted) return;
+
+              setState(() {
+                isLoading = false;
+              });
+
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      const SuccessScreen(),
+                ),
+              );
             } catch (e) {
               debugPrint(
                 'Automatic verification error: $e',
@@ -361,7 +492,8 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
                 isLoading = false;
               });
 
-              ScaffoldMessenger.of(context).showSnackBar(
+              ScaffoldMessenger.of(context)
+                  .showSnackBar(
                 SnackBar(
                   content: Text(
                     'Registration failed: $e',
@@ -371,9 +503,9 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
             }
           },
 
-          // ----------------------------------------------------
+          // ====================================================
           // VERIFICATION FAILED
-          // ----------------------------------------------------
+          // ====================================================
 
           verificationFailed:
               (FirebaseAuthException error) {
@@ -395,7 +527,8 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
               isLoading = false;
             });
 
-            ScaffoldMessenger.of(context).showSnackBar(
+            ScaffoldMessenger.of(context)
+                .showSnackBar(
               SnackBar(
                 content: Text(
                   error.message ??
@@ -405,9 +538,9 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
             );
           },
 
-          // ----------------------------------------------------
-          // CODE SENT
-          // ----------------------------------------------------
+          // ====================================================
+          // OTP SENT
+          // ====================================================
 
           codeSent: (
             String verificationId,
@@ -417,28 +550,26 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
               'OTP sent successfully.',
             );
 
-            debugPrint(
-              'Verification ID received.',
-            );
-
             if (!mounted) return;
 
             setState(() {
               isLoading = false;
             });
 
-            // ==================================================
-            // OPEN YOUR EXISTING OTP SCREEN
-            // ==================================================
-
             Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => OtpScreen(
-                  verificationId: verificationId,
-                  phoneNumber: formattedPhone,
+                  verificationId:
+                      verificationId,
+
+                  phoneNumber:
+                      formattedPhone,
+
                   mode: 'register',
+
                   role: 'farmer',
+
                   registrationData:
                       registrationData,
                 ),
@@ -446,9 +577,9 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
             );
           },
 
-          // ----------------------------------------------------
-          // AUTO RETRIEVAL TIMEOUT
-          // ----------------------------------------------------
+          // ====================================================
+          // OTP TIMEOUT
+          // ====================================================
 
           codeAutoRetrievalTimeout:
               (String verificationId) {
@@ -481,7 +612,8 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
         isLoading = false;
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
         SnackBar(
           content: Text(
             e.message ??
@@ -506,7 +638,8 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
         isLoading = false;
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
         SnackBar(
           content: Text(
             e.toString().replaceFirst(
@@ -551,23 +684,33 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
         ),
         centerTitle: true,
       ),
+
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
+
           child: Form(
             key: _formKey,
+
             child: Column(
               crossAxisAlignment:
                   CrossAxisAlignment.stretch,
+
               children: [
                 const SizedBox(height: 10),
+
+                // ==================================================
+                // TITLE
+                // ==================================================
 
                 const Text(
                   'Create Farmer Account',
                   textAlign: TextAlign.center,
+
                   style: TextStyle(
                     fontSize: 26,
-                    fontWeight: FontWeight.bold,
+                    fontWeight:
+                        FontWeight.bold,
                   ),
                 ),
 
@@ -576,6 +719,7 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
                 const Text(
                   'Register your farm with FarmDirect',
                   textAlign: TextAlign.center,
+
                   style: TextStyle(
                     fontSize: 15,
                     color: Colors.grey,
@@ -589,11 +733,15 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
                 // ==================================================
 
                 TextFormField(
-                  controller: fullNameController,
-                  decoration: inputDecoration(
+                  controller:
+                      fullNameController,
+
+                  decoration:
+                      inputDecoration(
                     label: 'Full Name',
                     icon: Icons.person,
                   ),
+
                   validator: (value) {
                     if (value == null ||
                         value.trim().isEmpty) {
@@ -611,11 +759,16 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
                 // ==================================================
 
                 TextFormField(
-                  controller: farmNameController,
-                  decoration: inputDecoration(
+                  controller:
+                      farmNameController,
+
+                  decoration:
+                      inputDecoration(
                     label: 'Farm Name',
-                    icon: Icons.agriculture,
+                    icon:
+                        Icons.agriculture,
                   ),
+
                   validator: (value) {
                     if (value == null ||
                         value.trim().isEmpty) {
@@ -633,11 +786,16 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
                 // ==================================================
 
                 TextFormField(
-                  controller: locationController,
-                  decoration: inputDecoration(
+                  controller:
+                      locationController,
+
+                  decoration:
+                      inputDecoration(
                     label: 'Farm Location',
-                    icon: Icons.location_on,
+                    icon:
+                        Icons.location_on,
                   ),
+
                   validator: (value) {
                     if (value == null ||
                         value.trim().isEmpty) {
@@ -655,21 +813,28 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
                 // ==================================================
 
                 TextFormField(
-                  controller: aadhaarController,
+                  controller:
+                      aadhaarController,
+
                   keyboardType:
                       TextInputType.number,
+
                   maxLength: 12,
-                  decoration: inputDecoration(
+
+                  decoration:
+                      inputDecoration(
                     label: 'Aadhaar Number',
                     icon: Icons.badge,
                   ),
+
                   validator: (value) {
                     if (value == null ||
                         value.trim().isEmpty) {
                       return 'Please enter Aadhaar number';
                     }
 
-                    if (value.trim().length != 12) {
+                    if (value.trim().length !=
+                        12) {
                       return 'Aadhaar must be 12 digits';
                     }
 
@@ -685,9 +850,11 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
 
                 const Text(
                   'Crops You Grow',
+
                   style: TextStyle(
                     fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                    fontWeight:
+                        FontWeight.bold,
                   ),
                 ),
 
@@ -696,19 +863,28 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
-                  children: crops.map((crop) {
+
+                  children:
+                      crops.map((crop) {
                     final bool isSelected =
-                        selectedCrops.contains(crop);
+                        selectedCrops
+                            .contains(crop);
 
                     return FilterChip(
                       label: Text(crop),
-                      selected: isSelected,
-                      onSelected: (selected) {
+
+                      selected:
+                          isSelected,
+
+                      onSelected:
+                          (selected) {
                         setState(() {
                           if (selected) {
-                            selectedCrops.add(crop);
+                            selectedCrops
+                                .add(crop);
                           } else {
-                            selectedCrops.remove(crop);
+                            selectedCrops
+                                .remove(crop);
                           }
                         });
                       },
@@ -724,9 +900,11 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
 
                 const Text(
                   'Registration Method',
+
                   style: TextStyle(
                     fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                    fontWeight:
+                        FontWeight.bold,
                   ),
                 ),
 
@@ -739,11 +917,16 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
                         label: const Text(
                           'Phone OTP',
                         ),
-                        selected: !isEmailAuth,
-                        onSelected: (selected) {
+
+                        selected:
+                            !isEmailAuth,
+
+                        onSelected:
+                            (selected) {
                           if (selected) {
                             setState(() {
-                              isEmailAuth = false;
+                              isEmailAuth =
+                                  false;
                             });
                           }
                         },
@@ -757,11 +940,16 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
                         label: const Text(
                           'Email',
                         ),
-                        selected: isEmailAuth,
-                        onSelected: (selected) {
+
+                        selected:
+                            isEmailAuth,
+
+                        onSelected:
+                            (selected) {
                           if (selected) {
                             setState(() {
-                              isEmailAuth = true;
+                              isEmailAuth =
+                                  true;
                             });
                           }
                         },
@@ -778,15 +966,21 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
 
                 if (!isEmailAuth)
                   TextFormField(
-                    controller: phoneController,
+                    controller:
+                        phoneController,
+
                     keyboardType:
                         TextInputType.phone,
-                    decoration: inputDecoration(
-                      label: 'Phone Number',
+
+                    decoration:
+                        inputDecoration(
+                      label:
+                          'Phone Number',
                       icon: Icons.phone,
                       hint:
                           '10 digit mobile number',
                     ),
+
                     validator: (value) {
                       if (!isEmailAuth) {
                         if (value == null ||
@@ -794,10 +988,9 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
                           return 'Please enter phone number';
                         }
 
-                        final phone =
-                            value.trim();
-
-                        if (phone.length != 10) {
+                        if (value.trim()
+                                .length !=
+                            10) {
                           return 'Enter a valid 10 digit number';
                         }
                       }
@@ -814,13 +1007,19 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
                 // ==================================================
 
                 TextFormField(
-                  controller: emailController,
+                  controller:
+                      emailController,
+
                   keyboardType:
-                      TextInputType.emailAddress,
-                  decoration: inputDecoration(
+                      TextInputType
+                          .emailAddress,
+
+                  decoration:
+                      inputDecoration(
                     label: 'Email',
                     icon: Icons.email,
                   ),
+
                   validator: (value) {
                     if (isEmailAuth) {
                       if (value == null ||
@@ -847,11 +1046,15 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
                   TextFormField(
                     controller:
                         passwordController,
+
                     obscureText: true,
-                    decoration: inputDecoration(
+
+                    decoration:
+                        inputDecoration(
                       label: 'Password',
                       icon: Icons.lock,
                     ),
+
                     validator: (value) {
                       if (isEmailAuth) {
                         if (value == null ||
@@ -879,11 +1082,17 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
                   TextFormField(
                     controller:
                         confirmPasswordController,
+
                     obscureText: true,
-                    decoration: inputDecoration(
-                      label: 'Confirm Password',
-                      icon: Icons.lock_outline,
+
+                    decoration:
+                        inputDecoration(
+                      label:
+                          'Confirm Password',
+                      icon:
+                          Icons.lock_outline,
                     ),
+
                     validator: (value) {
                       if (isEmailAuth) {
                         if (value == null ||
@@ -892,7 +1101,8 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
                         }
 
                         if (value !=
-                            passwordController.text) {
+                            passwordController
+                                .text) {
                           return 'Passwords do not match';
                         }
                       }
@@ -909,14 +1119,18 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
 
                 SizedBox(
                   height: 55,
-                  child: ElevatedButton(
+
+                  child:
+                      ElevatedButton(
                     onPressed: isLoading
                         ? null
                         : registerFarmer,
+
                     child: isLoading
                         ? const SizedBox(
                             height: 25,
                             width: 25,
+
                             child:
                                 CircularProgressIndicator(
                               strokeWidth: 2,
@@ -926,6 +1140,7 @@ class _FarmerRegisterPageState extends State<FarmerRegisterPage> {
                             isEmailAuth
                                 ? 'Register Farmer'
                                 : 'Send OTP',
+
                             style:
                                 const TextStyle(
                               fontSize: 17,

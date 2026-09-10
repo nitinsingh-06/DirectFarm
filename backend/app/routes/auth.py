@@ -49,6 +49,53 @@ def verify_token(data: TokenRequest):
 
 
 @router.post("/register")
+# ============================================================
+# LOGIN USER
+# ============================================================
+
+@router.post("/login")
+def login_user(
+    data: TokenRequest,
+    db: Session = Depends(get_db)
+):
+    try:
+        # Verify Firebase ID token
+        decoded_token = verify_firebase_token(data.id_token)
+
+        # Get Firebase UID from the verified token
+        firebase_uid = decoded_token["uid"]
+
+        # Find the EXISTING user in PostgreSQL
+        existing_user = (
+            db.query(User)
+            .filter(User.firebase_uid == firebase_uid)
+            .first()
+        )
+
+        # Firebase account exists, but no FarmDirect user
+        if existing_user is None:
+            raise HTTPException(
+                status_code=404,
+                detail="User is not registered in FarmDirect"
+            )
+
+        # Return the existing PostgreSQL user information
+        return {
+            "message": "Login successful",
+            "user_id": existing_user.user_id,
+            "firebase_uid": existing_user.firebase_uid,
+            "name": existing_user.name,
+            "email": existing_user.email,
+            "phone": existing_user.phone,
+            "role": existing_user.role
+        }
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=401,
+            detail=str(e)
+        )
+
 def register_user(
     data: RegisterRequest,
     db: Session = Depends(get_db)
@@ -113,6 +160,7 @@ def register_user(
             "phone": new_user.phone,
             "role": new_user.role
         }
+    
 
     except ValueError as e:
         raise HTTPException(
