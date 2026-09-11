@@ -334,16 +334,10 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ------------------------------------------------
-                // NAME
-                // ------------------------------------------------
                 Text(
                   profile.name,
-
                   maxLines: 1,
-
                   overflow: TextOverflow.ellipsis,
-
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 18,
@@ -353,37 +347,39 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
 
                 const SizedBox(height: 4),
 
-                // ------------------------------------------------
-                // EMAIL
-                // ------------------------------------------------
                 Text(
                   profile.email,
-
                   maxLines: 1,
-
                   overflow: TextOverflow.ellipsis,
-
                   style: const TextStyle(color: Colors.white70, fontSize: 10),
                 ),
 
                 const SizedBox(height: 3),
 
-                // ------------------------------------------------
-                // PHONE
-                // ------------------------------------------------
                 Text(
                   profile.phone,
-
                   maxLines: 1,
-
                   overflow: TextOverflow.ellipsis,
-
                   style: const TextStyle(color: Colors.white70, fontSize: 9),
+                ),
+
+                const SizedBox(height: 3),
+
+                Text(
+                  profile.userId != null
+                      ? 'Buyer ID: ${profile.userId}'
+                      : 'Buyer ID: Loading...',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 9,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),
           ),
-
           // ======================================================
           // EDIT BUTTON
           // ======================================================

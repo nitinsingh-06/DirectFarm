@@ -12,12 +12,11 @@ class BuyerProfileProvider extends ChangeNotifier {
   File? _profileImage;
   int? _userId;
   String _role = '';
-
-  String _name = 'Priya Sharma';
-  String _email = 'priya.sharma@gmail.com';
-  String _phone = '+91 98765 43210';
-  String _dob = '12/04/1998';
-  String _gender = 'Female';
+  String _name = '';
+  String _email = '';
+  String _phone = '';
+  String _dob = '';
+  String _gender = '';
 
   // ============================================================
   // GETTERS
@@ -44,53 +43,167 @@ class BuyerProfileProvider extends ChangeNotifier {
   // LOAD PROFILE
   // ============================================================
   Future<void> loadProfile() async {
+  try {
+    // ==========================================================
+    // GET FIREBASE USER
+    // ==========================================================
+
+    final firebaseUser =
+        FirebaseAuth.instance.currentUser;
+
+    if (firebaseUser == null) {
+      debugPrint('NO FIREBASE USER LOGGED IN');
+      return;
+    }
+
+    final firebaseUid = firebaseUser.uid;
+
+    debugPrint(
+      'PROFILE FIREBASE UID: $firebaseUid',
+    );
+
+    // ==========================================================
+    // LOAD LOGIN DATA FROM SHARED PREFERENCES
+    // ==========================================================
+
+    final prefs =
+        await SharedPreferences.getInstance();
+
+    final savedUserId =
+        prefs.getInt('user_id');
+
+    final savedRole =
+        prefs.getString('user_role');
+
+    final savedName =
+        prefs.getString('profile_name');
+
+    final savedEmail =
+        prefs.getString('user_email');
+
+    final savedPhone =
+        prefs.getString('user_phone');
+
+    debugPrint(
+      'SAVED USER ID: $savedUserId',
+    );
+
+    debugPrint(
+      'SAVED ROLE: $savedRole',
+    );
+
+    debugPrint(
+      'SAVED NAME: $savedName',
+    );
+
+    debugPrint(
+      'SAVED EMAIL: $savedEmail',
+    );
+
+    debugPrint(
+      'SAVED PHONE: $savedPhone',
+    );
+
+    // ==========================================================
+    // USE LOGIN DATA
+    // ==========================================================
+
+    if (savedUserId != null) {
+      _userId = savedUserId;
+    }
+
+    if (savedRole != null &&
+        savedRole.isNotEmpty) {
+      _role = savedRole;
+    }
+
+    if (savedName != null &&
+        savedName.isNotEmpty) {
+      _name = savedName;
+    }
+
+    if (savedEmail != null &&
+        savedEmail.isNotEmpty) {
+      _email = savedEmail;
+    }
+
+    if (savedPhone != null &&
+        savedPhone.isNotEmpty) {
+      _phone = savedPhone;
+    }
+
+    // ==========================================================
+    // ALSO FETCH FRESH DATA FROM FASTAPI
+    // ==========================================================
+
     try {
-      final firebaseUser = FirebaseAuth.instance.currentUser;
-
-      if (firebaseUser == null) {
-        debugPrint('No Firebase user is logged in');
-        return;
-      }
-
-      final firebaseUid = firebaseUser.uid;
-
-      debugPrint('Loading profile for Firebase UID: $firebaseUid');
-
-      final userData = await ApiService.getUserByFirebaseUid(
+      final userData =
+          await ApiService.getUserByFirebaseUid(
         firebaseUid: firebaseUid,
       );
 
-      // Load data from FastAPI / PostgreSQL
-      _userId = userData['user_id'];
+      debugPrint(
+        'PROFILE API RESPONSE: $userData',
+      );
 
-      _name = userData['name'] ?? '';
+      _userId =
+          userData['user_id'];
 
-      _email = userData['email'] ?? '';
+      _name =
+          userData['name']?.toString() ?? '';
 
-      _phone = userData['phone'] ?? '';
+      _email =
+          userData['email']?.toString() ?? '';
 
-      _role = userData['role'] ?? '';
+      _phone =
+          userData['phone']?.toString() ?? '';
 
-      // Load profile image from local storage
-      final prefs = await SharedPreferences.getInstance();
+      _role =
+          userData['role']?.toString() ?? '';
 
-      _profileImage = null;
-
-      final imagePath = prefs.getString('buyer_profile_image');
-
-      if (imagePath != null && imagePath.isNotEmpty) {
-        final file = File(imagePath);
-
-        if (await file.exists()) {
-          _profileImage = file;
-        }
-      }
-
-      notifyListeners();
     } catch (e) {
-      debugPrint('LOAD BUYER PROFILE ERROR: $e');
+      debugPrint(
+        'PROFILE API ERROR: $e',
+      );
+
+      // Login data remains available.
+      debugPrint(
+        'USING SAVED LOGIN DATA INSTEAD',
+      );
     }
+
+    // ==========================================================
+    // LOAD LOCAL PROFILE IMAGE
+    // ==========================================================
+
+    _profileImage = null;
+
+    final imagePath =
+        prefs.getString(
+      'buyer_profile_image',
+    );
+
+    if (imagePath != null &&
+        imagePath.isNotEmpty) {
+      final file = File(imagePath);
+
+      if (await file.exists()) {
+        _profileImage = file;
+      }
+    }
+
+    // ==========================================================
+    // REFRESH UI
+    // ==========================================================
+
+    notifyListeners();
+
+  } catch (e) {
+    debugPrint(
+      'LOAD BUYER PROFILE ERROR: $e',
+    );
   }
+}
   // ============================================================
   // PICK PROFILE IMAGE
   // ============================================================

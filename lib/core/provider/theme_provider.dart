@@ -26,10 +26,10 @@ class ThemeProvider extends ChangeNotifier {
 
     if (savedTheme == 'light') {
       _themeMode = ThemeMode.light;
-    } else if (savedTheme == 'dark') {
-      _themeMode = ThemeMode.dark;
+    } else if (savedTheme == 'light') {
+      _themeMode = ThemeMode.light;
     } else {
-      _themeMode = ThemeMode.system;
+      _themeMode = ThemeMode.light;
     }
 
     notifyListeners();
