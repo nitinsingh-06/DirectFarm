@@ -4,6 +4,10 @@ import 'package:http/http.dart' as http;
 
 class ApiService {
 
+  // ============================================================
+  // CREATE USER - REGISTRATION
+  // ============================================================
+
   static Future<Map<String, dynamic>> createUser({
     required String firebaseUid,
     required String name,
@@ -32,7 +36,44 @@ class ApiService {
 
     if (response.statusCode == 400) {
       final body = jsonDecode(response.body);
-      throw Exception(body['detail'] ?? 'User creation failed');
+
+      throw Exception(
+        body['detail'] ?? 'User creation failed',
+      );
+    }
+
+    throw Exception(
+      'Server error: ${response.statusCode}',
+    );
+  }
+
+
+  // ============================================================
+  // GET USER BY FIREBASE UID
+  // ============================================================
+
+  static Future<Map<String, dynamic>> getUserByFirebaseUid({
+    required String firebaseUid,
+  }) async {
+    final response = await http.get(
+      Uri.parse(
+        '${ApiConfig.baseUrl}/users/by-firebase/$firebaseUid',
+      ),
+      headers: {
+        'Accept': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    }
+
+    if (response.statusCode == 404) {
+      final body = jsonDecode(response.body);
+
+      throw Exception(
+        body['detail'] ?? 'User not found',
+      );
     }
 
     throw Exception(

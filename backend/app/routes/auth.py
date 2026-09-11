@@ -15,6 +15,10 @@ router = APIRouter(
 )
 
 
+# ============================================================
+# REQUEST MODELS
+# ============================================================
+
 class TokenRequest(BaseModel):
     id_token: str
 
@@ -29,11 +33,18 @@ class RegisterRequest(BaseModel):
     email: str | None = None
 
 
-@router.post("/verify")
-def verify_token(data: TokenRequest):
+# ============================================================
+# VERIFY FIREBASE TOKEN
+# ============================================================
 
+@router.post("/verify")
+def verify_token(
+    data: TokenRequest
+):
     try:
-        decoded_token = verify_firebase_token(data.id_token)
+        decoded_token = verify_firebase_token(
+            data.id_token
+        )
 
         return {
             "message": "Firebase token verified successfully",
@@ -48,75 +59,45 @@ def verify_token(data: TokenRequest):
         )
 
 
+# ============================================================
+# REGISTER USER
+# ============================================================
+
 @router.post("/register")
-# ============================================================
-# LOGIN USER
-# ============================================================
-
-@router.post("/login")
-def login_user(
-    data: TokenRequest,
-    db: Session = Depends(get_db)
-):
-    try:
-        # Verify Firebase ID token
-        decoded_token = verify_firebase_token(data.id_token)
-
-        # Get Firebase UID from the verified token
-        firebase_uid = decoded_token["uid"]
-
-        # Find the EXISTING user in PostgreSQL
-        existing_user = (
-            db.query(User)
-            .filter(User.firebase_uid == firebase_uid)
-            .first()
-        )
-
-        # Firebase account exists, but no FarmDirect user
-        if existing_user is None:
-            raise HTTPException(
-                status_code=404,
-                detail="User is not registered in FarmDirect"
-            )
-
-        # Return the existing PostgreSQL user information
-        return {
-            "message": "Login successful",
-            "user_id": existing_user.user_id,
-            "firebase_uid": existing_user.firebase_uid,
-            "name": existing_user.name,
-            "email": existing_user.email,
-            "phone": existing_user.phone,
-            "role": existing_user.role
-        }
-
-    except ValueError as e:
-        raise HTTPException(
-            status_code=401,
-            detail=str(e)
-        )
-
 def register_user(
     data: RegisterRequest,
     db: Session = Depends(get_db)
 ):
     try:
-        # Verify Firebase ID token
-        decoded_token = verify_firebase_token(data.id_token)
+        # --------------------------------------------------------
+        # VERIFY FIREBASE ID TOKEN
+        # --------------------------------------------------------
+
+        decoded_token = verify_firebase_token(
+            data.id_token
+        )
 
         firebase_uid = decoded_token["uid"]
 
-        # Don't trust a different UID sent by Flutter
+        # --------------------------------------------------------
+        # VERIFY FIREBASE UID
+        # --------------------------------------------------------
+
         if firebase_uid != data.firebase_uid:
             raise HTTPException(
                 status_code=401,
                 detail="Firebase UID does not match token"
             )
 
-        # Check whether user already exists
+        # --------------------------------------------------------
+        # CHECK IF USER ALREADY EXISTS
+        # --------------------------------------------------------
+
         existing_user = (
             db.query(User)
-            .filter(User.firebase_uid == firebase_uid)
+            .filter(
+                User.firebase_uid == firebase_uid
+            )
             .first()
         )
 
@@ -126,8 +107,12 @@ def register_user(
                 detail="User already exists"
             )
 
-        # Buyer sends "name"
-        # Farmer sends "full_name"
+        # --------------------------------------------------------
+        # GET NAME
+        # Buyer sends: name
+        # Farmer sends: full_name
+        # --------------------------------------------------------
+
         name = data.name or data.full_name
 
         if not name:
@@ -136,8 +121,19 @@ def register_user(
                 detail="Name is required"
             )
 
-        # Use phone from Firebase token when available
-        phone = decoded_token.get("phone_number") or data.phone
+        # --------------------------------------------------------
+        # GET PHONE
+        # Prefer phone from Firebase token
+        # --------------------------------------------------------
+
+        phone = (
+            decoded_token.get("phone_number")
+            or data.phone
+        )
+
+        # --------------------------------------------------------
+        # CREATE DATABASE USER
+        # --------------------------------------------------------
 
         new_user = User(
             firebase_uid=firebase_uid,
@@ -148,8 +144,14 @@ def register_user(
         )
 
         db.add(new_user)
+
         db.commit()
+
         db.refresh(new_user)
+
+        # --------------------------------------------------------
+        # RETURN USER DATA
+        # --------------------------------------------------------
 
         return {
             "message": "User registered successfully",
@@ -160,7 +162,73 @@ def register_user(
             "phone": new_user.phone,
             "role": new_user.role
         }
-    
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=401,
+            detail=str(e)
+        )
+
+
+# ============================================================
+# LOGIN USER
+# ============================================================
+
+@router.post("/login")
+def login_user(
+    data: TokenRequest,
+    db: Session = Depends(get_db)
+):
+    try:
+        # --------------------------------------------------------
+        # VERIFY FIREBASE ID TOKEN
+        # --------------------------------------------------------
+
+        decoded_token = verify_firebase_token(
+            data.id_token
+        )
+
+        # --------------------------------------------------------
+        # GET FIREBASE UID
+        # --------------------------------------------------------
+
+        firebase_uid = decoded_token["uid"]
+
+        # --------------------------------------------------------
+        # FIND USER IN POSTGRESQL
+        # --------------------------------------------------------
+
+        existing_user = (
+            db.query(User)
+            .filter(
+                User.firebase_uid == firebase_uid
+            )
+            .first()
+        )
+
+        # --------------------------------------------------------
+        # USER NOT REGISTERED
+        # --------------------------------------------------------
+
+        if existing_user is None:
+            raise HTTPException(
+                status_code=404,
+                detail="User is not registered in FarmDirect"
+            )
+
+        # --------------------------------------------------------
+        # LOGIN SUCCESS
+        # --------------------------------------------------------
+
+        return {
+            "message": "Login successful",
+            "user_id": existing_user.user_id,
+            "firebase_uid": existing_user.firebase_uid,
+            "name": existing_user.name,
+            "email": existing_user.email,
+            "phone": existing_user.phone,
+            "role": existing_user.role
+        }
 
     except ValueError as e:
         raise HTTPException(

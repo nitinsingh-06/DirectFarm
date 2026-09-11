@@ -36,7 +36,16 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
 
   static const Color lightGreen = Color(0xFFEAF7F2);
 
-  // ============================================================
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<BuyerProfileProvider>().loadProfile();
+    });
+  }
+
+  // ==================================== ========================
   // BUILD
   // ============================================================
 
@@ -54,7 +63,6 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
               // ==================================================
               // PROFILE HEADER
               // ==================================================
-
               Consumer<BuyerProfileProvider>(
                 builder: (context, profile, child) {
                   return _profileHeader(profile);
@@ -66,17 +74,13 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
               // ==================================================
               // PERSONAL & SECURITY
               // ==================================================
-
-              _buildSectionTitle(
-                "PERSONAL & SECURITY",
-              ),
+              _buildSectionTitle("PERSONAL & SECURITY"),
 
               _buildSettingsCard(
                 children: [
                   // ------------------------------------------------
                   // PROFILE SETTINGS
                   // ------------------------------------------------
-
                   _buildSettingsItem(
                     icon: Icons.person_outline,
                     title: "Profile Settings",
@@ -86,63 +90,74 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
                   // ------------------------------------------------
                   // SAVED ADDRESSES
                   // ------------------------------------------------
-
                   _buildSettingsItem(
                     icon: Icons.location_on_outlined,
                     title: "Saved Addresses",
-                    trailing: _buildBadge(
-                      "Home, Work",
-                    ),
+                    trailing: _buildBadge("Home, Work"),
                     onTap: () {
                       // TODO:
                       // Open Saved Addresses Screen
-                      Navigator.push(context,MaterialPageRoute(builder: (context)=>SavedAddressesScreen()));
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => SavedAddressesScreen(),
+                        ),
+                      );
                     },
                   ),
 
                   // ------------------------------------------------
                   // MY ORDERS
                   // ------------------------------------------------
-
                   _buildSettingsItem(
                     icon: Icons.shopping_bag_outlined,
                     title: "My Orders",
-                    trailing: _buildBadge(
-                      "2 Active",
-                    ),
+                    trailing: _buildBadge("2 Active"),
                     onTap: () {
                       // TODO:
                       // Open My Orders Screen
-                      Navigator.push(context, MaterialPageRoute(builder: (context)=>const OrderScreen()));
-                      
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const OrderScreen(),
+                        ),
+                      );
                     },
                   ),
 
                   // ------------------------------------------------
                   // WISHLIST
                   // ------------------------------------------------
-
                   _buildSettingsItem(
                     icon: Icons.favorite_border,
                     title: "Wishlist & Saved Farms",
                     onTap: () {
                       // TODO:
                       // Open Wishlist Screen
-                      Navigator.push(context, MaterialPageRoute(builder: (context)=>WishlistScreen()));
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => WishlistScreen(),
+                        ),
+                      );
                     },
                   ),
 
                   // ------------------------------------------------
                   // PAYMENT METHODS
                   // ------------------------------------------------
-
                   _buildSettingsItem(
                     icon: Icons.credit_card_outlined,
                     title: "Payment Methods",
                     onTap: () {
                       // TODO:
                       // Open Payment Methods Screen
-                        Navigator.push(context, MaterialPageRoute(builder: (context)=>PaymentMethodsScreen()));
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => PaymentMethodsScreen(),
+                        ),
+                      );
                     },
                   ),
                 ],
@@ -153,44 +168,49 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
               // ==================================================
               // PREFERENCES & SUPPORT
               // ==================================================
-
-              _buildSectionTitle(
-                "PREFERENCES & SUPPORT",
-              ),
+              _buildSectionTitle("PREFERENCES & SUPPORT"),
 
               _buildSettingsCard(
                 children: [
                   // ------------------------------------------------
                   // NOTIFICATIONS
                   // ------------------------------------------------
-
                   _buildSettingsItem(
                     icon: Icons.notifications_none,
                     title: "Notifications",
                     onTap: () {
                       // TODO:
                       // Open Notifications Screen
-                      Navigator.push(context, MaterialPageRoute(builder: (context)=>const NotificationSettingsScreen()));
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              const NotificationSettingsScreen(),
+                        ),
+                      );
                     },
                   ),
 
                   // ------------------------------------------------
                   // LANGUAGE
                   // ------------------------------------------------
-
                   _buildSettingsItem(
                     icon: Icons.language,
                     title: "Language",
                     subtitle: "English",
                     onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context)=>AppLanguageScreen()));
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => AppLanguageScreen(),
+                        ),
+                      );
                     },
                   ),
 
                   // ------------------------------------------------
                   // APPEARANCE
                   // ------------------------------------------------
-
                   _buildSettingsItem(
                     icon: Icons.phone_android_outlined,
                     title: "Appearance",
@@ -202,32 +222,39 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
                   // ------------------------------------------------
                   // HELP & SUPPORT
                   // ------------------------------------------------
-
                   _buildSettingsItem(
                     icon: Icons.help_outline,
                     title: "Help & Support",
                     onTap: () {
                       // TODO:
-                      Navigator.push(context,MaterialPageRoute(builder: (context)=>HelpSupportScreen()));
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => HelpSupportScreen(),
+                        ),
+                      );
                     },
                   ),
 
                   // ------------------------------------------------
                   // ABOUT US
                   // ------------------------------------------------
-
                   _buildSettingsItem(
                     icon: Icons.info_outline,
                     title: "About Us",
                     onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context)=>AboutUsScreen()));
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => AboutUsScreen(),
+                        ),
+                      );
                     },
                   ),
 
                   // ------------------------------------------------
                   // LOGOUT
                   // ------------------------------------------------
-
                   _buildSettingsItem(
                     icon: Icons.logout,
                     title: "Logout",
@@ -249,18 +276,11 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
   // PROFILE HEADER
   // ============================================================
 
-  Widget _profileHeader(
-    BuyerProfileProvider profile,
-  ) {
+  Widget _profileHeader(BuyerProfileProvider profile) {
     return Container(
       width: double.infinity,
 
-      padding: const EdgeInsets.fromLTRB(
-        18,
-        18,
-        18,
-        20,
-      ),
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
 
       decoration: const BoxDecoration(
         color: primaryGreen,
@@ -276,7 +296,6 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
           // ======================================================
           // PROFILE IMAGE
           // ======================================================
-
           Container(
             width: 62,
             height: 62,
@@ -286,10 +305,7 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
 
-              border: Border.all(
-                color: Colors.white,
-                width: 2,
-              ),
+              border: Border.all(color: Colors.white, width: 2),
             ),
 
             child: ClipOval(
@@ -298,21 +314,14 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
                       profile.profileImage!,
                       fit: BoxFit.cover,
 
-                      errorBuilder: (
-                        context,
-                        error,
-                        stackTrace,
-                      ) {
+                      errorBuilder: (context, error, stackTrace) {
                         return Image.asset(
                           profile.defaultImage,
                           fit: BoxFit.cover,
                         );
                       },
                     )
-                  : Image.asset(
-                      profile.defaultImage,
-                      fit: BoxFit.cover,
-                    ),
+                  : Image.asset(profile.defaultImage, fit: BoxFit.cover),
             ),
           ),
 
@@ -321,7 +330,6 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
           // ======================================================
           // PROFILE INFORMATION
           // ======================================================
-
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -329,7 +337,6 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
                 // ------------------------------------------------
                 // NAME
                 // ------------------------------------------------
-
                 Text(
                   profile.name,
 
@@ -349,7 +356,6 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
                 // ------------------------------------------------
                 // EMAIL
                 // ------------------------------------------------
-
                 Text(
                   profile.email,
 
@@ -357,10 +363,7 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
 
                   overflow: TextOverflow.ellipsis,
 
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 10,
-                  ),
+                  style: const TextStyle(color: Colors.white70, fontSize: 10),
                 ),
 
                 const SizedBox(height: 3),
@@ -368,7 +371,6 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
                 // ------------------------------------------------
                 // PHONE
                 // ------------------------------------------------
-
                 Text(
                   profile.phone,
 
@@ -376,10 +378,7 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
 
                   overflow: TextOverflow.ellipsis,
 
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 9,
-                  ),
+                  style: const TextStyle(color: Colors.white70, fontSize: 9),
                 ),
               ],
             ),
@@ -388,7 +387,6 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
           // ======================================================
           // EDIT BUTTON
           // ======================================================
-
           IconButton(
             onPressed: _openProfileSettings,
 
@@ -407,16 +405,9 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
   // SECTION TITLE
   // ============================================================
 
-  Widget _buildSectionTitle(
-    String title,
-  ) {
+  Widget _buildSectionTitle(String title) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        10,
-        0,
-        10,
-        7,
-      ),
+      padding: const EdgeInsets.fromLTRB(10, 0, 10, 7),
 
       child: Align(
         alignment: Alignment.centerLeft,
@@ -439,30 +430,19 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
   // SETTINGS CARD
   // ============================================================
 
-  Widget _buildSettingsCard({
-    required List<Widget> children,
-  }) {
+  Widget _buildSettingsCard({required List<Widget> children}) {
     return Container(
-      margin: const EdgeInsets.symmetric(
-        horizontal: 8,
-      ),
+      margin: const EdgeInsets.symmetric(horizontal: 8),
 
       decoration: BoxDecoration(
         color: Colors.white,
 
-        borderRadius: BorderRadius.circular(
-          11,
-        ),
+        borderRadius: BorderRadius.circular(11),
 
-        border: Border.all(
-          color: const Color(0xFFE5E9E7),
-          width: 0.7,
-        ),
+        border: Border.all(color: const Color(0xFFE5E9E7), width: 0.7),
       ),
 
-      child: Column(
-        children: children,
-      ),
+      child: Column(children: children),
     );
   }
 
@@ -484,25 +464,16 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
     return InkWell(
       onTap: onTap,
 
-      borderRadius: BorderRadius.circular(
-        10,
-      ),
+      borderRadius: BorderRadius.circular(10),
 
       child: Container(
-        height: subtitle != null
-            ? 48
-            : 43,
+        height: subtitle != null ? 48 : 43,
 
-        padding: const EdgeInsets.symmetric(
-          horizontal: 10,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 10),
 
         decoration: const BoxDecoration(
           border: Border(
-            bottom: BorderSide(
-              color: Color(0xFFECEFED),
-              width: 0.6,
-            ),
+            bottom: BorderSide(color: Color(0xFFECEFED), width: 0.6),
           ),
         ),
 
@@ -511,18 +482,14 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
             // ==================================================
             // ICON
             // ==================================================
-
             Container(
               width: 27,
               height: 27,
 
               decoration: BoxDecoration(
-                color: isLogout
-                    ? const Color(0xFFFFE8E8)
-                    : lightGreen,
+                color: isLogout ? const Color(0xFFFFE8E8) : lightGreen,
 
-                borderRadius:
-                    BorderRadius.circular(7),
+                borderRadius: BorderRadius.circular(7),
               ),
 
               child: Icon(
@@ -530,9 +497,7 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
 
                 size: 16,
 
-                color: isLogout
-                    ? Colors.red
-                    : primaryGreen,
+                color: isLogout ? Colors.red : primaryGreen,
               ),
             ),
 
@@ -541,14 +506,11 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
             // ==================================================
             // TITLE + SUBTITLE
             // ==================================================
-
             Expanded(
               child: Column(
-                mainAxisAlignment:
-                    MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
 
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
 
                 children: [
                   Text(
@@ -556,17 +518,13 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
 
                     maxLines: 1,
 
-                    overflow:
-                        TextOverflow.ellipsis,
+                    overflow: TextOverflow.ellipsis,
 
                     style: TextStyle(
                       fontSize: 10,
-                      fontWeight:
-                          FontWeight.w600,
+                      fontWeight: FontWeight.w600,
 
-                      color: isLogout
-                          ? Colors.red
-                          : textColor,
+                      color: isLogout ? Colors.red : textColor,
                     ),
                   ),
 
@@ -578,8 +536,7 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
 
                       style: const TextStyle(
                         fontSize: 8,
-                        color:
-                            secondaryTextColor,
+                        color: secondaryTextColor,
                       ),
                     ),
                   ],
@@ -590,23 +547,12 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
             // ==================================================
             // BADGE
             // ==================================================
-
-            if (trailing != null) ...[
-              trailing,
-              const SizedBox(width: 5),
-            ],
+            if (trailing != null) ...[trailing, const SizedBox(width: 5)],
 
             // ==================================================
             // ARROW
             // ==================================================
-
-            const Icon(
-              Icons.chevron_right,
-
-              size: 17,
-
-              color: Color(0xFF78827E),
-            ),
+            const Icon(Icons.chevron_right, size: 17, color: Color(0xFF78827E)),
           ],
         ),
       ),
@@ -617,20 +563,14 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
   // BADGE
   // ============================================================
 
-  Widget _buildBadge(
-    String text,
-  ) {
+  Widget _buildBadge(String text) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 7,
-        vertical: 3,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
 
       decoration: BoxDecoration(
         color: const Color(0xFF075B49),
 
-        borderRadius:
-            BorderRadius.circular(7),
+        borderRadius: BorderRadius.circular(7),
       ),
 
       child: Text(
@@ -653,288 +593,240 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
     await Navigator.push(
       context,
 
-      MaterialPageRoute(
-        builder: (_) =>
-            const BuyerProfileSettingsScreen(),
-      ),
+      MaterialPageRoute(builder: (_) => const BuyerProfileSettingsScreen()),
     );
 
     if (!mounted) return;
 
-    await context
-        .read<BuyerProfileProvider>()
-        .loadProfile();
+    await context.read<BuyerProfileProvider>().loadProfile();
   }
 
   // ============================================================
   // APPEARANCE DIALOG
   // ============================================================
-void _showAppearanceDialog() {
-  showDialog(
-    context: context,
-    builder: (dialogContext) {
-      final themeProvider = context.read<ThemeProvider>();
+  void _showAppearanceDialog() {
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        final themeProvider = context.read<ThemeProvider>();
 
-      return AlertDialog(
-        title: const Text(
-          "Appearance",
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(
-                Icons.light_mode_outlined,
-              ),
-              title: const Text(
-                "Light",
-              ),
-              onTap: () {
-                themeProvider.setTheme(
-                  ThemeMode.light,
-                );
+        return AlertDialog(
+          title: const Text("Appearance"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.light_mode_outlined),
+                title: const Text("Light"),
+                onTap: () {
+                  themeProvider.setTheme(ThemeMode.light);
 
-                Navigator.pop(dialogContext);
-              },
-            ),
-
-            ListTile(
-              leading: const Icon(
-                Icons.dark_mode_outlined,
+                  Navigator.pop(dialogContext);
+                },
               ),
-              title: const Text(
-                "Dark",
-              ),
-              onTap: () {
-                themeProvider.setTheme(
-                  ThemeMode.dark,
-                );
 
-                Navigator.pop(dialogContext);
-              },
-            ),
+              ListTile(
+                leading: const Icon(Icons.dark_mode_outlined),
+                title: const Text("Dark"),
+                onTap: () {
+                  themeProvider.setTheme(ThemeMode.dark);
 
-            ListTile(
-              leading: const Icon(
-                Icons.settings_outlined,
+                  Navigator.pop(dialogContext);
+                },
               ),
-              title: const Text(
-                "System Default",
-              ),
-              onTap: () {
-                themeProvider.setTheme(
-                  ThemeMode.system,
-                );
 
-                Navigator.pop(dialogContext);
-              },
-            ),
-          ],
-        ),
-      );
-    },
-  );
-}
+              ListTile(
+                leading: const Icon(Icons.settings_outlined),
+                title: const Text("System Default"),
+                onTap: () {
+                  themeProvider.setTheme(ThemeMode.system);
+
+                  Navigator.pop(dialogContext);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   // ============================================================
   // LOGOUT DIALOG
   // ============================================================
 
+  void _showLogoutDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (dialogContext) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Container(
+            width: double.infinity,
 
-void _showLogoutDialog() {
-  showDialog(
-    context: context,
-    barrierDismissible: true,
-    builder: (dialogContext) {
-      return Dialog(
-        backgroundColor: Colors.transparent,
-        insetPadding: const EdgeInsets.symmetric(
-          horizontal: 10,
-        ),
-        child: Container(
-          width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(14, 16, 14, 14),
 
-          padding: const EdgeInsets.fromLTRB(
-            14,
-            16,
-            14,
-            14,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+            ),
+
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // ==================================================
+                // LOGOUT ICON
+                // ==================================================
+                Container(
+                  width: 44,
+                  height: 44,
+
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFFFE5E5),
+                    shape: BoxShape.circle,
+                  ),
+
+                  child: const Icon(
+                    Icons.logout,
+                    color: Color(0xFFFF4545),
+                    size: 22,
+                  ),
+                ),
+
+                const SizedBox(height: 13),
+
+                // ==================================================
+                // TITLE
+                // ==================================================
+                const Text(
+                  "Confirm Logout",
+
+                  textAlign: TextAlign.center,
+
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF26332F),
+                  ),
+                ),
+
+                const SizedBox(height: 7),
+
+                // ==================================================
+                // DESCRIPTION
+                // ==================================================
+                const Text(
+                  "Are you sure you want to logout?",
+
+                  textAlign: TextAlign.center,
+
+                  style: TextStyle(fontSize: 9, color: Color(0xFF7E8985)),
+                ),
+
+                const SizedBox(height: 20),
+
+                // ==================================================
+                // LOGOUT BUTTON
+                // ==================================================
+                SizedBox(
+                  width: double.infinity,
+                  height: 37,
+
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(dialogContext);
+
+                      _performLogout();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => LoginPage()),
+                      );
+                    },
+
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFF4545),
+
+                      foregroundColor: Colors.white,
+
+                      elevation: 1,
+
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+
+                    child: const Text(
+                      "Logout",
+
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 8),
+
+                // ==================================================
+                // CANCEL BUTTON
+                // ==================================================
+                SizedBox(
+                  width: double.infinity,
+                  height: 37,
+
+                  child: OutlinedButton(
+                    onPressed: () {
+                      Navigator.pop(dialogContext);
+                    },
+
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFF747E7A),
+
+                      side: const BorderSide(
+                        color: Color(0xFF8B9591),
+                        width: 1,
+                      ),
+
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+
+                    child: const Text(
+                      "Cancel",
+
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
+        );
+      },
+    );
+  }
+  // ============================================================
+  // PERFORM LOGOUT
+  // ============================================================
 
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-          ),
+  void _performLogout() {
+    // TODO:
+    // Clear login/session data here.
+    //
+    // Example:
+    // await yourAuthProvider.logout();
+    //
+    // Then navigate to your login screen.
 
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // ==================================================
-              // LOGOUT ICON
-              // ==================================================
-
-              Container(
-                width: 44,
-                height: 44,
-
-                decoration: const BoxDecoration(
-                  color: Color(0xFFFFE5E5),
-                  shape: BoxShape.circle,
-                ),
-
-                child: const Icon(
-                  Icons.logout,
-                  color: Color(0xFFFF4545),
-                  size: 22,
-                ),
-              ),
-
-              const SizedBox(height: 13),
-
-              // ==================================================
-              // TITLE
-              // ==================================================
-
-              const Text(
-                "Confirm Logout",
-
-                textAlign: TextAlign.center,
-
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w800,
-                  color: Color(0xFF26332F),
-                ),
-              ),
-
-              const SizedBox(height: 7),
-
-              // ==================================================
-              // DESCRIPTION
-              // ==================================================
-
-              const Text(
-                "Are you sure you want to logout?",
-
-                textAlign: TextAlign.center,
-
-                style: TextStyle(
-                  fontSize: 9,
-                  color: Color(0xFF7E8985),
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              // ==================================================
-              // LOGOUT BUTTON
-              // ==================================================
-
-              SizedBox(
-                width: double.infinity,
-                height: 37,
-
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(dialogContext);
-
-                    _performLogout();
-                    Navigator.push(context, MaterialPageRoute(builder: (context)=>LoginPage()));
-                    
-                  },
-
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        const Color(0xFFFF4545),
-
-                    foregroundColor: Colors.white,
-
-                    elevation: 1,
-
-                    shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(20),
-                    ),
-                  ),
-
-                  child: const Text(
-                    "Logout",
-
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 8),
-
-              // ==================================================
-              // CANCEL BUTTON
-              // ==================================================
-
-              SizedBox(
-                width: double.infinity,
-                height: 37,
-
-                child: OutlinedButton(
-                  onPressed: () {
-                    Navigator.pop(dialogContext);
-                  },
-
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor:
-                        const Color(0xFF747E7A),
-
-                    side: const BorderSide(
-                      color: Color(0xFF8B9591),
-                      width: 1,
-                    ),
-
-                    shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(20),
-                    ),
-                  ),
-
-                  child: const Text(
-                    "Cancel",
-
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-      
-    },
-  );
-}
-// ============================================================
-// PERFORM LOGOUT
-// ============================================================
-
-void _performLogout() {
-  // TODO:
-  // Clear login/session data here.
-  //
-  // Example:
-  // await yourAuthProvider.logout();
-  //
-  // Then navigate to your login screen.
-
-  ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(
-      content: Text(
-        "Logged out successfully",
-      ),
-    ),
-  );
-}
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text("Logged out successfully")));
+  }
 }

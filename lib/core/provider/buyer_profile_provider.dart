@@ -1,6 +1,7 @@
-
 import 'dart:io';
 
+import 'package:farmdirect/services/api_services.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -9,6 +10,8 @@ class BuyerProfileProvider extends ChangeNotifier {
   final ImagePicker _picker = ImagePicker();
 
   File? _profileImage;
+  int? _userId;
+  String _role = '';
 
   String _name = 'Priya Sharma';
   String _email = 'priya.sharma@gmail.com';
@@ -23,6 +26,9 @@ class BuyerProfileProvider extends ChangeNotifier {
   File? get profileImage => _profileImage;
 
   String get name => _name;
+  int? get userId => _userId;
+
+  String get role => _role;
 
   String get email => _email;
 
@@ -32,57 +38,66 @@ class BuyerProfileProvider extends ChangeNotifier {
 
   String get gender => _gender;
 
-  String get defaultImage =>
-      'assets/images/profile.png';
+  String get defaultImage => 'assets/images/profile.png';
 
   // ============================================================
   // LOAD PROFILE
   // ============================================================
-
   Future<void> loadProfile() async {
-    final prefs = await SharedPreferences.getInstance();
+    try {
+      final firebaseUser = FirebaseAuth.instance.currentUser;
 
-    _name = prefs.getString('buyer_name') ??
-        'Priya Sharma';
-
-    _email = prefs.getString('buyer_email') ??
-        'priya.sharma@gmail.com';
-
-    _phone = prefs.getString('buyer_phone') ??
-        '+91 98765 43210';
-
-    _dob = prefs.getString('buyer_dob') ??
-        '12/04/1998';
-
-    _gender = prefs.getString('buyer_gender') ??
-        'Female';
-
-    // Reset first
-    _profileImage = null;
-
-    final imagePath =
-        prefs.getString('buyer_profile_image');
-
-    if (imagePath != null &&
-        imagePath.isNotEmpty) {
-      final file = File(imagePath);
-
-      if (await file.exists()) {
-        _profileImage = file;
+      if (firebaseUser == null) {
+        debugPrint('No Firebase user is logged in');
+        return;
       }
+
+      final firebaseUid = firebaseUser.uid;
+
+      debugPrint('Loading profile for Firebase UID: $firebaseUid');
+
+      final userData = await ApiService.getUserByFirebaseUid(
+        firebaseUid: firebaseUid,
+      );
+
+      // Load data from FastAPI / PostgreSQL
+      _userId = userData['user_id'];
+
+      _name = userData['name'] ?? '';
+
+      _email = userData['email'] ?? '';
+
+      _phone = userData['phone'] ?? '';
+
+      _role = userData['role'] ?? '';
+
+      // Load profile image from local storage
+      final prefs = await SharedPreferences.getInstance();
+
+      _profileImage = null;
+
+      final imagePath = prefs.getString('buyer_profile_image');
+
+      if (imagePath != null && imagePath.isNotEmpty) {
+        final file = File(imagePath);
+
+        if (await file.exists()) {
+          _profileImage = file;
+        }
+      }
+
+      notifyListeners();
+    } catch (e) {
+      debugPrint('LOAD BUYER PROFILE ERROR: $e');
     }
-
-    notifyListeners();
   }
-
   // ============================================================
   // PICK PROFILE IMAGE
   // ============================================================
 
   Future<void> pickProfileImage() async {
     try {
-      final XFile? image =
-          await _picker.pickImage(
+      final XFile? image = await _picker.pickImage(
         source: ImageSource.gallery,
         imageQuality: 85,
       );
@@ -95,20 +110,14 @@ class BuyerProfileProvider extends ChangeNotifier {
       _profileImage = file;
 
       // Save path permanently
-      final prefs =
-          await SharedPreferences.getInstance();
+      final prefs = await SharedPreferences.getInstance();
 
-      await prefs.setString(
-        'buyer_profile_image',
-        file.path,
-      );
+      await prefs.setString('buyer_profile_image', file.path);
 
       // Refresh all screens using provider
       notifyListeners();
     } catch (e) {
-      debugPrint(
-        'PROFILE IMAGE ERROR: $e',
-      );
+      debugPrint('PROFILE IMAGE ERROR: $e');
     }
   }
 
@@ -124,16 +133,13 @@ class BuyerProfileProvider extends ChangeNotifier {
     required String gender,
   }) async {
     try {
-      final prefs =
-          await SharedPreferences.getInstance();
+      final prefs = await SharedPreferences.getInstance();
 
       final newName = name.trim();
       final newEmail = email.trim();
       final newPhone = phone.trim();
 
-      if (newName.isEmpty ||
-          newEmail.isEmpty ||
-          newPhone.isEmpty) {
+      if (newName.isEmpty || newEmail.isEmpty || newPhone.isEmpty) {
         return false;
       }
 
@@ -145,38 +151,21 @@ class BuyerProfileProvider extends ChangeNotifier {
       _gender = gender;
 
       // Save permanently
-      await prefs.setString(
-        'buyer_name',
-        _name,
-      );
+      await prefs.setString('buyer_name', _name);
 
-      await prefs.setString(
-        'buyer_email',
-        _email,
-      );
+      await prefs.setString('buyer_email', _email);
 
-      await prefs.setString(
-        'buyer_phone',
-        _phone,
-      );
+      await prefs.setString('buyer_phone', _phone);
 
-      await prefs.setString(
-        'buyer_dob',
-        _dob,
-      );
+      await prefs.setString('buyer_dob', _dob);
 
-      await prefs.setString(
-        'buyer_gender',
-        _gender,
-      );
+      await prefs.setString('buyer_gender', _gender);
 
       notifyListeners();
 
       return true;
     } catch (e) {
-      debugPrint(
-        'SAVE PROFILE ERROR: $e',
-      );
+      debugPrint('SAVE PROFILE ERROR: $e');
 
       return false;
     }
@@ -187,12 +176,9 @@ class BuyerProfileProvider extends ChangeNotifier {
   // ============================================================
 
   Future<void> removeProfileImage() async {
-    final prefs =
-        await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
 
-    await prefs.remove(
-      'buyer_profile_image',
-    );
+    await prefs.remove('buyer_profile_image');
 
     _profileImage = null;
 

@@ -4,6 +4,8 @@ import 'package:farmdirect/Authentification/otp_screen.dart';
 import 'package:farmdirect/Authentification/screens/comming_soon.dart';
 import 'package:farmdirect/Authentification/screens/select_role_screen.dart';
 import 'package:farmdirect/config/api_config.dart';
+import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/buyer_dashboard_screen.dart';
+import 'package:farmdirect/features/farmer/dashboard/dashboard_screen.dart';
 import 'package:farmdirect/services/auth_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -863,11 +865,19 @@ class _LoginPageState extends State<LoginPage> {
       // ============================================================
       // 8. GO TO NEXT SCREEN
       // ============================================================
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => ComingSoonScreen()),
-      );
+      if (role == 'buyer') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const BuyerDashboard()),
+        );
+      } else if (role == 'farmer') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const FarmerDashboard()),
+        );
+      } else {
+        _showMessage('Unknown user role: $role');
+      }
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
 
