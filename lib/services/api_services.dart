@@ -80,4 +80,39 @@ class ApiService {
       'Server error: ${response.statusCode}',
     );
   }
+
+// ===================================
+// UPDATE USER 
+// =====================================
+static Future<Map<String, dynamic>> updateUser({
+  required int userId,
+  required String name,
+  required String email,
+  required String phone,
+}) async {
+  final response = await http.put(
+    Uri.parse(
+      '${ApiConfig.baseUrl}/users/$userId',
+    ),
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
+    body: jsonEncode({
+      'name': name,
+      'email': email,
+      'phone': phone,
+    }),
+  );
+
+  if (response.statusCode == 200) {
+    return jsonDecode(response.body)
+        as Map<String, dynamic>;
+  }
+
+  throw Exception(
+    'Failed to update user: ${response.body}',
+  );
+}
+
 }

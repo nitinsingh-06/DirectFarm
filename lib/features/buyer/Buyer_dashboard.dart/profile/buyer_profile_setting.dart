@@ -22,7 +22,7 @@ class _BuyerProfileSettingsScreenState
   late TextEditingController phoneController;
   late TextEditingController dobController;
 
-  String selectedGender = 'Female';
+  String selectedGender = '';
   @override
   void initState() {
     super.initState();
@@ -37,7 +37,9 @@ class _BuyerProfileSettingsScreenState
 
     dobController = TextEditingController(text: provider.dob);
 
-    selectedGender = provider.gender;
+    selectedGender = ['Female', 'Male', 'Other'].contains(provider.gender)
+        ? provider.gender
+        : 'Female';
   }
 
   @override
@@ -495,46 +497,39 @@ class _BuyerProfileSettingsScreenState
   // ==============================================================
   // SAVE PROFILE
   // ==============================================================
+  
   Future<void> _saveProfile() async {
-  final provider =
-      context.read<BuyerProfileProvider>();
+    final provider = context.read<BuyerProfileProvider>();
 
-  final success =
-      await provider.saveProfile(
-    name: nameController.text,
-    email: emailController.text,
-    phone: phoneController.text,
-    dob: dobController.text,
-    gender: selectedGender,
-  );
-
-  if (!mounted) return;
-
-  if (success) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Profile saved successfully',
-        ),
-        backgroundColor: Color(0xFF006B4F),
-      ),
+    final success = await provider.saveProfile(
+      name: nameController.text,
+      email: emailController.text,
+      phone: phoneController.text,
+      dob: dobController.text,
+      gender: selectedGender,
     );
 
-    // Go back after saving
-    Navigator.pop(context);
-  } else {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Please fill all required fields',
+    if (!mounted) return;
+
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Profile saved successfully'),
+          backgroundColor: Color(0xFF006B4F),
         ),
-        backgroundColor: Colors.red,
-      ),
-    );
+      );
+
+      // Go back after saving
+      Navigator.pop(context);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please fill all required fields'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
-}
   // ==============================================================
   // MESSAGE
   // ==============================================================

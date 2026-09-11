@@ -43,167 +43,124 @@ class BuyerProfileProvider extends ChangeNotifier {
   // LOAD PROFILE
   // ============================================================
   Future<void> loadProfile() async {
-  try {
-    // ==========================================================
-    // GET FIREBASE USER
-    // ==========================================================
-
-    final firebaseUser =
-        FirebaseAuth.instance.currentUser;
-
-    if (firebaseUser == null) {
-      debugPrint('NO FIREBASE USER LOGGED IN');
-      return;
-    }
-
-    final firebaseUid = firebaseUser.uid;
-
-    debugPrint(
-      'PROFILE FIREBASE UID: $firebaseUid',
-    );
-
-    // ==========================================================
-    // LOAD LOGIN DATA FROM SHARED PREFERENCES
-    // ==========================================================
-
-    final prefs =
-        await SharedPreferences.getInstance();
-
-    final savedUserId =
-        prefs.getInt('user_id');
-
-    final savedRole =
-        prefs.getString('user_role');
-
-    final savedName =
-        prefs.getString('profile_name');
-
-    final savedEmail =
-        prefs.getString('user_email');
-
-    final savedPhone =
-        prefs.getString('user_phone');
-
-    debugPrint(
-      'SAVED USER ID: $savedUserId',
-    );
-
-    debugPrint(
-      'SAVED ROLE: $savedRole',
-    );
-
-    debugPrint(
-      'SAVED NAME: $savedName',
-    );
-
-    debugPrint(
-      'SAVED EMAIL: $savedEmail',
-    );
-
-    debugPrint(
-      'SAVED PHONE: $savedPhone',
-    );
-
-    // ==========================================================
-    // USE LOGIN DATA
-    // ==========================================================
-
-    if (savedUserId != null) {
-      _userId = savedUserId;
-    }
-
-    if (savedRole != null &&
-        savedRole.isNotEmpty) {
-      _role = savedRole;
-    }
-
-    if (savedName != null &&
-        savedName.isNotEmpty) {
-      _name = savedName;
-    }
-
-    if (savedEmail != null &&
-        savedEmail.isNotEmpty) {
-      _email = savedEmail;
-    }
-
-    if (savedPhone != null &&
-        savedPhone.isNotEmpty) {
-      _phone = savedPhone;
-    }
-
-    // ==========================================================
-    // ALSO FETCH FRESH DATA FROM FASTAPI
-    // ==========================================================
-
     try {
-      final userData =
-          await ApiService.getUserByFirebaseUid(
-        firebaseUid: firebaseUid,
-      );
+      // ==========================================================
+      // GET FIREBASE USER
+      // ==========================================================
 
-      debugPrint(
-        'PROFILE API RESPONSE: $userData',
-      );
+      final firebaseUser = FirebaseAuth.instance.currentUser;
 
-      _userId =
-          userData['user_id'];
-
-      _name =
-          userData['name']?.toString() ?? '';
-
-      _email =
-          userData['email']?.toString() ?? '';
-
-      _phone =
-          userData['phone']?.toString() ?? '';
-
-      _role =
-          userData['role']?.toString() ?? '';
-
-    } catch (e) {
-      debugPrint(
-        'PROFILE API ERROR: $e',
-      );
-
-      // Login data remains available.
-      debugPrint(
-        'USING SAVED LOGIN DATA INSTEAD',
-      );
-    }
-
-    // ==========================================================
-    // LOAD LOCAL PROFILE IMAGE
-    // ==========================================================
-
-    _profileImage = null;
-
-    final imagePath =
-        prefs.getString(
-      'buyer_profile_image',
-    );
-
-    if (imagePath != null &&
-        imagePath.isNotEmpty) {
-      final file = File(imagePath);
-
-      if (await file.exists()) {
-        _profileImage = file;
+      if (firebaseUser == null) {
+        debugPrint('NO FIREBASE USER LOGGED IN');
+        return;
       }
+
+      final firebaseUid = firebaseUser.uid;
+
+      debugPrint('PROFILE FIREBASE UID: $firebaseUid');
+
+      // ==========================================================
+      // LOAD LOGIN DATA FROM SHARED PREFERENCES
+      // ==========================================================
+
+      final prefs = await SharedPreferences.getInstance();
+
+      final savedUserId = prefs.getInt('user_id');
+
+      final savedRole = prefs.getString('user_role');
+
+      final savedName = prefs.getString('profile_name');
+
+      final savedEmail = prefs.getString('user_email');
+
+      final savedPhone = prefs.getString('user_phone');
+
+      debugPrint('SAVED USER ID: $savedUserId');
+
+      debugPrint('SAVED ROLE: $savedRole');
+
+      debugPrint('SAVED NAME: $savedName');
+
+      debugPrint('SAVED EMAIL: $savedEmail');
+
+      debugPrint('SAVED PHONE: $savedPhone');
+
+      // ==========================================================
+      // USE LOGIN DATA
+      // ==========================================================
+
+      if (savedUserId != null) {
+        _userId = savedUserId;
+      }
+
+      if (savedRole != null && savedRole.isNotEmpty) {
+        _role = savedRole;
+      }
+
+      if (savedName != null && savedName.isNotEmpty) {
+        _name = savedName;
+      }
+
+      if (savedEmail != null && savedEmail.isNotEmpty) {
+        _email = savedEmail;
+      }
+
+      if (savedPhone != null && savedPhone.isNotEmpty) {
+        _phone = savedPhone;
+      }
+
+      // ==========================================================
+      // ALSO FETCH FRESH DATA FROM FASTAPI
+      // ==========================================================
+
+      try {
+        final userData = await ApiService.getUserByFirebaseUid(
+          firebaseUid: firebaseUid,
+        );
+
+        debugPrint('PROFILE API RESPONSE: $userData');
+
+        _userId = userData['user_id'];
+
+        _name = userData['name']?.toString() ?? '';
+
+        _email = userData['email']?.toString() ?? '';
+
+        _phone = userData['phone']?.toString() ?? '';
+
+        _role = userData['role']?.toString() ?? '';
+      } catch (e) {
+        debugPrint('PROFILE API ERROR: $e');
+
+        // Login data remains available.
+        debugPrint('USING SAVED LOGIN DATA INSTEAD');
+      }
+
+      // ==========================================================
+      // LOAD LOCAL PROFILE IMAGE
+      // ==========================================================
+
+      _profileImage = null;
+
+      final imagePath = prefs.getString('buyer_profile_image');
+
+      if (imagePath != null && imagePath.isNotEmpty) {
+        final file = File(imagePath);
+
+        if (await file.exists()) {
+          _profileImage = file;
+        }
+      }
+
+      // ==========================================================
+      // REFRESH UI
+      // ==========================================================
+
+      notifyListeners();
+    } catch (e) {
+      debugPrint('LOAD BUYER PROFILE ERROR: $e');
     }
-
-    // ==========================================================
-    // REFRESH UI
-    // ==========================================================
-
-    notifyListeners();
-
-  } catch (e) {
-    debugPrint(
-      'LOAD BUYER PROFILE ERROR: $e',
-    );
   }
-}
   // ============================================================
   // PICK PROFILE IMAGE
   // ============================================================
@@ -237,52 +194,100 @@ class BuyerProfileProvider extends ChangeNotifier {
   // ============================================================
   // SAVE PROFILE
   // ============================================================
+Future<bool> saveProfile({
+  required String name,
+  required String email,
+  required String phone,
+  required String dob,
+  required String gender,
+}) async {
+  try {
+    final prefs = await SharedPreferences.getInstance();
 
-  Future<bool> saveProfile({
-    required String name,
-    required String email,
-    required String phone,
-    required String dob,
-    required String gender,
-  }) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
+    final newName = name.trim();
+    final newEmail = email.trim();
+    final newPhone = phone.trim();
 
-      final newName = name.trim();
-      final newEmail = email.trim();
-      final newPhone = phone.trim();
+    debugPrint('======================================');
+    debugPrint('SAVE PROFILE STARTED');
+    debugPrint('NAME: $newName');
+    debugPrint('EMAIL: $newEmail');
+    debugPrint('PHONE: $newPhone');
+    debugPrint('USER ID: $_userId');
+    debugPrint('======================================');
 
-      if (newName.isEmpty || newEmail.isEmpty || newPhone.isEmpty) {
-        return false;
-      }
-
-      // Update provider
-      _name = newName;
-      _email = newEmail;
-      _phone = newPhone;
-      _dob = dob;
-      _gender = gender;
-
-      // Save permanently
-      await prefs.setString('buyer_name', _name);
-
-      await prefs.setString('buyer_email', _email);
-
-      await prefs.setString('buyer_phone', _phone);
-
-      await prefs.setString('buyer_dob', _dob);
-
-      await prefs.setString('buyer_gender', _gender);
-
-      notifyListeners();
-
-      return true;
-    } catch (e) {
-      debugPrint('SAVE PROFILE ERROR: $e');
-
+    if (newName.isEmpty ||
+        newEmail.isEmpty ||
+        newPhone.isEmpty) {
+      debugPrint('PROFILE VALIDATION FAILED');
       return false;
     }
+
+    if (_userId == null) {
+      debugPrint('ERROR: USER ID IS NULL');
+      return false;
+    }
+
+    // ==========================================
+    // SEND DATA TO FASTAPI
+    // ==========================================
+
+    debugPrint('CALLING API UPDATE...');
+
+    final updatedUser = await ApiService.updateUser(
+      userId: _userId!,
+      name: newName,
+      email: newEmail,
+      phone: newPhone,
+    );
+
+    debugPrint('======================================');
+    debugPrint('API UPDATE SUCCESS');
+    debugPrint('UPDATED USER: $updatedUser');
+    debugPrint('======================================');
+
+    // ==========================================
+    // UPDATE PROVIDER
+    // ==========================================
+
+    _userId = updatedUser['user_id'];
+
+    _name = updatedUser['name']?.toString() ?? newName;
+
+    _email = updatedUser['email']?.toString() ?? newEmail;
+
+    _phone = updatedUser['phone']?.toString() ?? newPhone;
+
+    _dob = dob;
+    _gender = gender;
+
+    // ==========================================
+    // SAVE LOCAL DATA
+    // ==========================================
+
+    await prefs.setString('buyer_name', _name);
+    await prefs.setString('buyer_email', _email);
+    await prefs.setString('buyer_phone', _phone);
+    await prefs.setString('buyer_dob', _dob);
+    await prefs.setString('buyer_gender', _gender);
+
+    // Keep login/profile data synchronized
+    await prefs.setString('profile_name', _name);
+    await prefs.setString('user_email', _email);
+    await prefs.setString('user_phone', _phone);
+
+    notifyListeners();
+
+    return true;
+
+  } catch (e) {
+    debugPrint('======================================');
+    debugPrint('SAVE PROFILE ERROR: $e');
+    debugPrint('======================================');
+
+    return false;
   }
+}
 
   // ============================================================
   // CLEAR PROFILE IMAGE
