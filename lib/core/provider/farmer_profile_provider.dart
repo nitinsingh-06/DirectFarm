@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:farmdirect/services/api_services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
@@ -17,11 +18,18 @@ class ProfileProvider extends ChangeNotifier {
   // ============================================================
 
   File? _profileImage;
+  String _profileImageUrl = '';
 
   File? get profileImage => _profileImage;
 
-  String get defaultImage =>
-      'assets/images/profile.png';
+  String get profileImageUrl => _profileImageUrl;
+
+  String get fullProfileImageUrl {
+    if (_profileImageUrl.isEmpty) return '';
+    return '${ApiConfig.baseUrl}$_profileImageUrl';
+  }
+
+  String get defaultImage => 'assets/images/profile.png';
 
   // ============================================================
   // FARMER DATA
@@ -73,13 +81,10 @@ class ProfileProvider extends ChangeNotifier {
       // Firebase current user
       // --------------------------------------------------------
 
-      final User? firebaseUser =
-          FirebaseAuth.instance.currentUser;
+      final User? firebaseUser = FirebaseAuth.instance.currentUser;
 
       if (firebaseUser == null) {
-        debugPrint(
-          'No Firebase user currently logged in.',
-        );
+        debugPrint('No Firebase user currently logged in.');
 
         return;
       }
@@ -93,13 +98,9 @@ class ProfileProvider extends ChangeNotifier {
       // GET USERS FROM FASTAPI
       // --------------------------------------------------------
 
-      final usersResponse = await http.get(
-        Uri.parse(
-          '${ApiConfig.baseUrl}/users/',
-        ),
-      ).timeout(
-        const Duration(seconds: 10),
-      );
+      final usersResponse = await http
+          .get(Uri.parse('${ApiConfig.baseUrl}/users/'))
+          .timeout(const Duration(seconds: 10));
 
       debugPrint(
         'Users API status: '
@@ -107,13 +108,10 @@ class ProfileProvider extends ChangeNotifier {
       );
 
       if (usersResponse.statusCode != 200) {
-        throw Exception(
-          'Failed to load user information',
-        );
+        throw Exception('Failed to load user information');
       }
 
-      final List<dynamic> users =
-          jsonDecode(usersResponse.body);
+      final List<dynamic> users = jsonDecode(usersResponse.body);
 
       // --------------------------------------------------------
       // FIND CURRENT USER
@@ -123,55 +121,45 @@ class ProfileProvider extends ChangeNotifier {
 
       for (final item in users) {
         if (item is Map<String, dynamic> &&
-            item['firebase_uid'] ==
-                firebaseUser.uid) {
+            item['firebase_uid'] == firebaseUser.uid) {
           currentUser = item;
           break;
         }
       }
 
       if (currentUser == null) {
-        throw Exception(
-          'User not found in PostgreSQL',
-        );
+        throw Exception('User not found in PostgreSQL');
       }
 
       // --------------------------------------------------------
       // USER DATA
       // --------------------------------------------------------
 
-      _userId = int.parse(
-        currentUser['user_id'].toString(),
-      );
+      _userId = int.parse(currentUser['user_id'].toString());
 
-      _name =
-          currentUser['name']?.toString() ?? '';
+      _name = currentUser['name']?.toString() ?? '';
 
-      _email =
-          currentUser['email']?.toString() ?? '';
+      _email = currentUser['email']?.toString() ?? '';
 
-      _phone =
-          currentUser['phone']?.toString() ?? '';
+      _phone = currentUser['phone']?.toString() ?? '';
 
-      debugPrint(
-        'PostgreSQL user_id: $_userId',
-      );
+      _profileImageUrl = currentUser['profile_image_url']?.toString() ?? '';
 
-      debugPrint(
-        'Farmer name: $_name',
-      );
+      debugPrint('Farmer profile image URL: $_profileImageUrl');
+
+      debugPrint('Farmer full profile image URL: $fullProfileImageUrl');
+
+      debugPrint('PostgreSQL user_id: $_userId');
+
+      debugPrint('Farmer name: $_name');
 
       // --------------------------------------------------------
       // GET FARMER PROFILE
       // --------------------------------------------------------
 
-      final profileResponse = await http.get(
-        Uri.parse(
-          '${ApiConfig.baseUrl}/farmer-profile/$_userId',
-        ),
-      ).timeout(
-        const Duration(seconds: 10),
-      );
+      final profileResponse = await http
+          .get(Uri.parse('${ApiConfig.baseUrl}/farmer-profile/$_userId'))
+          .timeout(const Duration(seconds: 10));
 
       debugPrint(
         'Farmer profile status: '
@@ -184,106 +172,104 @@ class ProfileProvider extends ChangeNotifier {
       );
 
       if (profileResponse.statusCode == 200) {
-        final Map<String, dynamic> profile =
-            jsonDecode(profileResponse.body);
+        final Map<String, dynamic> profile = jsonDecode(profileResponse.body);
 
-        _farmName =
-            profile['farm_name']?.toString() ?? '';
+        _farmName = profile['farm_name']?.toString() ?? '';
 
-        _location =
-            profile['farm_location']?.toString() ?? '';
+        _location = profile['farm_location']?.toString() ?? '';
 
-        _aadhaar =
-            profile['aadhaar']?.toString() ?? '';
+        _aadhaar = profile['aadhaar']?.toString() ?? '';
 
-        final dynamic cropsData =
-            profile['crops'];
+        final dynamic cropsData = profile['crops'];
 
         if (cropsData is List) {
-          _crops = cropsData
-              .map((crop) => crop.toString())
-              .toList();
+          _crops = cropsData.map((crop) => crop.toString()).toList();
         }
 
-        debugPrint(
-          'Farmer profile loaded successfully.',
-        );
+        debugPrint('Farmer profile loaded successfully.');
       } else if (profileResponse.statusCode == 404) {
-        debugPrint(
-          'Farmer profile does not exist.',
-        );
+        debugPrint('Farmer profile does not exist.');
 
         _farmName = '';
         _location = '';
         _aadhaar = '';
         _crops = [];
       } else {
-        throw Exception(
-          'Failed to load Farmer profile',
-        );
+        throw Exception('Failed to load Farmer profile');
       }
 
       // --------------------------------------------------------
       // LOAD LOCAL PROFILE IMAGE
       // --------------------------------------------------------
 
-      await _loadLocalProfileImage();
     } catch (e) {
-      debugPrint(
-        'Profile loading error: $e',
-      );
+      debugPrint('Profile loading error: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
-  // ============================================================
-  // LOAD LOCAL PROFILE IMAGE
-  // ============================================================
-
-  Future<void> _loadLocalProfileImage() async {
-    final prefs =
-        await SharedPreferences.getInstance();
-
-    final imagePath =
-        prefs.getString('profile_image');
-
-    if (imagePath != null &&
-        imagePath.isNotEmpty) {
-      final file = File(imagePath);
-
-      if (await file.exists()) {
-        _profileImage = file;
-      }
-    }
-  }
 
   // ============================================================
   // PICK PROFILE IMAGE
   // ============================================================
 
   Future<void> pickProfileImage() async {
-    final XFile? image =
-        await _picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 85,
+  final XFile? image = await _picker.pickImage(
+    source: ImageSource.gallery,
+    imageQuality: 85,
+  );
+
+  if (image == null) return;
+
+  if (_userId == null) {
+    debugPrint('Cannot upload image: user ID is null');
+    return;
+  }
+
+  // Show selected image immediately
+  _profileImage = File(image.path);
+  notifyListeners();
+
+  try {
+    debugPrint(
+      'Uploading farmer profile image for user: $_userId',
     );
 
-    if (image == null) return;
-
-    _profileImage = File(image.path);
-
-    final prefs =
-        await SharedPreferences.getInstance();
-
-    await prefs.setString(
-      'profile_image',
-      image.path,
+    final updatedUser = await ApiService.uploadProfileImage(
+      userId: _userId!,
+      imagePath: image.path,
     );
+
+    _profileImageUrl =
+        updatedUser['profile_image_url']?.toString() ?? '';
+
+    debugPrint(
+      'Farmer profile image uploaded: $_profileImageUrl',
+    );
+
+    debugPrint(
+      'Full image URL: $fullProfileImageUrl',
+    );
+
+    // Save backend URL locally for faster startup
+    final prefs = await SharedPreferences.getInstance();
+
+    if (_profileImageUrl.isNotEmpty) {
+      await prefs.setString(
+        'profile_image_url',
+        _profileImageUrl,
+      );
+    }
 
     notifyListeners();
+  } catch (e) {
+    debugPrint(
+      'Farmer profile image upload error: $e',
+    );
   }
+}
 
   // ============================================================
   // UPDATE NAME LOCALLY
@@ -293,22 +279,16 @@ class ProfileProvider extends ChangeNotifier {
   // Later we'll connect name editing to FastAPI.
   //
 
-  Future<void> updateName(
-    String newName,
-  ) async {
+  Future<void> updateName(String newName) async {
     final name = newName.trim();
 
     if (name.isEmpty) return;
 
     _name = name;
 
-    final prefs =
-        await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
 
-    await prefs.setString(
-      'profile_name',
-      name,
-    );
+    await prefs.setString('profile_name', name);
 
     notifyListeners();
   }

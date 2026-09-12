@@ -44,36 +44,70 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
 
                       const SizedBox(height: 3),
-
-                     
                     ],
                   ),
                 ),
 
                 // Profile image
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: const Color(0xFF80D000),
-                      width: 2,
-                    ),
-                  ),
-                  child: ClipOval(
-                    child: Image.asset(
-                      "assets/images/profile.jpg",
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return const Icon(
-                          Icons.person,
-                          color: Color(0xFF075B4A),
-                          size: 23,
-                        );
-                      },
-                    ),
-                  ),
+                // Profile image
+                // Profile image
+                Consumer<BuyerProfileProvider>(
+                  builder: (context, profile, child) {
+                    final name = profile.name.trim();
+
+                    final firstLetter = name.isNotEmpty
+                        ? name[0].toUpperCase()
+                        : 'U';
+
+                    final imageUrl = profile.fullProfileImageUrl;
+
+                    return Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: const Color(0xFF80D000),
+                          width: 2,
+                        ),
+                      ),
+                      child: ClipOval(
+                        child: imageUrl.isNotEmpty
+                            ? Image.network(
+                                imageUrl,
+                                width: 36,
+                                height: 36,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    color: const Color(0xFFE8F5E9),
+                                    alignment: Alignment.center,
+                                    child: Text(
+                                      firstLetter,
+                                      style: const TextStyle(
+                                        color: Color(0xFF075B4A),
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  );
+                                },
+                              )
+                            : Container(
+                                color: const Color(0xFFE8F5E9),
+                                alignment: Alignment.center,
+                                child: Text(
+                                  firstLetter,
+                                  style: const TextStyle(
+                                    color: Color(0xFF075B4A),
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                      ),
+                    );
+                  },
                 ),
               ],
             ),

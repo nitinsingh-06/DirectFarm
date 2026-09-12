@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:farmdirect/Authentification/screens/login_screen.dart';
 import 'package:farmdirect/core/provider/theme_provider.dart';
 import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/order/order_screen.dart';
@@ -35,6 +37,8 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
   static const Color secondaryTextColor = Color(0xFF7A8581);
 
   static const Color lightGreen = Color(0xFFEAF7F2);
+
+  File? get profileImage => profileImage;
 
   @override
   void initState() {
@@ -299,21 +303,38 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
           Container(
             width: 62,
             height: 62,
-
             padding: const EdgeInsets.all(2),
-
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-
               border: Border.all(color: Colors.white, width: 2),
             ),
-
             child: ClipOval(
               child: profile.profileImage != null
                   ? Image.file(
                       profile.profileImage!,
                       fit: BoxFit.cover,
-
+                      errorBuilder: (context, error, stackTrace) {
+                        return profile.fullProfileImageUrl.isNotEmpty
+                            ? Image.network(
+                                profile.fullProfileImageUrl,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Image.asset(
+                                    profile.defaultImage,
+                                    fit: BoxFit.cover,
+                                  );
+                                },
+                              )
+                            : Image.asset(
+                                profile.defaultImage,
+                                fit: BoxFit.cover,
+                              );
+                      },
+                    )
+                  : profile.fullProfileImageUrl.isNotEmpty
+                  ? Image.network(
+                      profile.fullProfileImageUrl,
+                      fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
                         return Image.asset(
                           profile.defaultImage,

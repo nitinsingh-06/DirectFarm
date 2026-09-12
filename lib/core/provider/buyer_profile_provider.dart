@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:farmdirect/config/api_config.dart';
 import 'package:farmdirect/services/api_services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
@@ -9,14 +10,27 @@ import 'package:shared_preferences/shared_preferences.dart';
 class BuyerProfileProvider extends ChangeNotifier {
   final ImagePicker _picker = ImagePicker();
 
+  // ============================================================
+  // VARIABLES
+  // ============================================================
+
   File? _profileImage;
+
   int? _userId;
+
   String _role = '';
+
   String _name = '';
+
   String _email = '';
+
   String _phone = '';
+
   String _dob = '';
+
   String _gender = '';
+
+  String _profileImageUrl = '';
 
   // ============================================================
   // GETTERS
@@ -24,10 +38,11 @@ class BuyerProfileProvider extends ChangeNotifier {
 
   File? get profileImage => _profileImage;
 
-  String get name => _name;
   int? get userId => _userId;
 
   String get role => _role;
+
+  String get name => _name;
 
   String get email => _email;
 
@@ -37,15 +52,34 @@ class BuyerProfileProvider extends ChangeNotifier {
 
   String get gender => _gender;
 
+  String get profileImageUrl => _profileImageUrl;
+
   String get defaultImage => 'assets/images/profile.png';
+
+  // ============================================================
+  // COMPLETE BACKEND IMAGE URL
+  // ============================================================
+
+String get fullProfileImageUrl {
+  if (_profileImageUrl.isEmpty) {
+    return '';
+  }
+
+  if (_profileImageUrl.startsWith('http')) {
+    return _profileImageUrl;
+  }
+
+  return '${ApiConfig.baseUrl}$_profileImageUrl';
+}
 
   // ============================================================
   // LOAD PROFILE
   // ============================================================
+
   Future<void> loadProfile() async {
     try {
       // ==========================================================
-      // GET FIREBASE USER
+      // GET CURRENT FIREBASE USER
       // ==========================================================
 
       final firebaseUser = FirebaseAuth.instance.currentUser;
@@ -57,10 +91,13 @@ class BuyerProfileProvider extends ChangeNotifier {
 
       final firebaseUid = firebaseUser.uid;
 
-      debugPrint('PROFILE FIREBASE UID: $firebaseUid');
+      debugPrint('======================================');
+      debugPrint('LOADING BUYER PROFILE');
+      debugPrint('FIREBASE UID: $firebaseUid');
+      debugPrint('======================================');
 
       // ==========================================================
-      // LOAD LOGIN DATA FROM SHARED PREFERENCES
+      // SHARED PREFERENCES
       // ==========================================================
 
       final prefs = await SharedPreferences.getInstance();
@@ -75,6 +112,8 @@ class BuyerProfileProvider extends ChangeNotifier {
 
       final savedPhone = prefs.getString('user_phone');
 
+      final savedImageUrl = prefs.getString('profile_image_url');
+
       debugPrint('SAVED USER ID: $savedUserId');
 
       debugPrint('SAVED ROLE: $savedRole');
@@ -85,8 +124,10 @@ class BuyerProfileProvider extends ChangeNotifier {
 
       debugPrint('SAVED PHONE: $savedPhone');
 
+      debugPrint('SAVED IMAGE URL: $savedImageUrl');
+
       // ==========================================================
-      // USE LOGIN DATA
+      // USE SAVED LOGIN DATA FIRST
       // ==========================================================
 
       if (savedUserId != null) {
@@ -109,48 +150,119 @@ class BuyerProfileProvider extends ChangeNotifier {
         _phone = savedPhone;
       }
 
+      if (savedImageUrl != null && savedImageUrl.isNotEmpty) {
+        _profileImageUrl = savedImageUrl;
+      }
+
       // ==========================================================
-      // ALSO FETCH FRESH DATA FROM FASTAPI
+      // GET FRESH DATA FROM FASTAPI
       // ==========================================================
 
       try {
-        final userData = await ApiService.getUserByFirebaseUid(
+        final userData =
+            await ApiService.getUserByFirebaseUid(
           firebaseUid: firebaseUid,
         );
 
-        debugPrint('PROFILE API RESPONSE: $userData');
+        debugPrint('======================================');
+        debugPrint('PROFILE API RESPONSE');
+        debugPrint('$userData');
+        debugPrint('======================================');
+
+        // ========================================================
+        // BASIC PROFILE DATA
+        // ========================================================
 
         _userId = userData['user_id'];
 
-        _name = userData['name']?.toString() ?? '';
+        _name =
+            userData['name']?.toString() ?? '';
 
-        _email = userData['email']?.toString() ?? '';
+        _email =
+            userData['email']?.toString() ?? '';
 
-        _phone = userData['phone']?.toString() ?? '';
+        _phone =
+            userData['phone']?.toString() ?? '';
 
-        _role = userData['role']?.toString() ?? '';
+        _role =
+            userData['role']?.toString() ?? '';
+
+        // ========================================================
+        // BACKEND PROFILE IMAGE
+        // ========================================================
+
+        _profileImageUrl =
+            userData['profile_image_url']?.toString() ?? '';
+
+        debugPrint(
+          'PROFILE IMAGE URL FROM API: $_profileImageUrl',
+        );
+
+        debugPrint(
+          'FULL PROFILE IMAGE URL: $fullProfileImageUrl',
+        );
+
+        // ========================================================
+        // SAVE FRESH DATA LOCALLY
+        // ========================================================
+
+        await prefs.setInt(
+          'user_id',
+          _userId!,
+        );
+
+        await prefs.setString(
+          'user_role',
+          _role,
+        );
+
+        await prefs.setString(
+          'profile_name',
+          _name,
+        );
+
+        await prefs.setString(
+          'user_email',
+          _email,
+        );
+
+        await prefs.setString(
+          'user_phone',
+          _phone,
+        );
+
+        if (_profileImageUrl.isNotEmpty) {
+          await prefs.setString(
+            'profile_image_url',
+            _profileImageUrl,
+          );
+        } else {
+          await prefs.remove(
+            'profile_image_url',
+          );
+        }
       } catch (e) {
+        debugPrint('======================================');
         debugPrint('PROFILE API ERROR: $e');
-
-        // Login data remains available.
-        debugPrint('USING SAVED LOGIN DATA INSTEAD');
+        debugPrint('USING SAVED DATA');
+        debugPrint('======================================');
       }
 
       // ==========================================================
-      // LOAD LOCAL PROFILE IMAGE
+      // DO NOT LOAD OLD LOCAL PROFILE IMAGE
+      // ==========================================================
+      //
+      // The backend is now the source of truth.
+      //
+      // We intentionally do NOT load:
+      //
+      // buyer_profile_image
+      //
+      // here.
+      //
       // ==========================================================
 
       _profileImage = null;
-
-      final imagePath = prefs.getString('buyer_profile_image');
-
-      if (imagePath != null && imagePath.isNotEmpty) {
-        final file = File(imagePath);
-
-        if (await file.exists()) {
-          _profileImage = file;
-        }
-      }
 
       // ==========================================================
       // REFRESH UI
@@ -158,21 +270,31 @@ class BuyerProfileProvider extends ChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      debugPrint('LOAD BUYER PROFILE ERROR: $e');
+      debugPrint(
+        'LOAD BUYER PROFILE ERROR: $e',
+      );
     }
   }
+
   // ============================================================
   // PICK + UPLOAD PROFILE IMAGE
   // ============================================================
 
   Future<void> pickProfileImage() async {
     try {
-      final XFile? image = await _picker.pickImage(
+      // ==========================================================
+      // PICK IMAGE
+      // ==========================================================
+
+      final XFile? image =
+          await _picker.pickImage(
         source: ImageSource.gallery,
         imageQuality: 85,
       );
 
-      if (image == null) return;
+      if (image == null) {
+        return;
+      }
 
       final file = File(image.path);
 
@@ -182,54 +304,100 @@ class BuyerProfileProvider extends ChangeNotifier {
       debugPrint('USER ID: $_userId');
       debugPrint('======================================');
 
-      // Make sure we know which database user to update
+      // ==========================================================
+      // CHECK USER ID
+      // ==========================================================
+
       if (_userId == null) {
-        debugPrint('PROFILE IMAGE ERROR: USER ID IS NULL');
+        debugPrint(
+          'PROFILE IMAGE ERROR: USER ID IS NULL',
+        );
+
         return;
       }
 
-      // Show selected image immediately
+      // ==========================================================
+      // SHOW IMAGE IMMEDIATELY
+      // ==========================================================
+
       _profileImage = file;
+
       notifyListeners();
 
       // ==========================================================
-      // UPLOAD IMAGE TO FASTAPI
+      // UPLOAD TO FASTAPI
       // ==========================================================
-      debugPrint('🚀 UPLOADING IMAGE TO FASTAPI...');
-      debugPrint('🚀 USER ID: $_userId');
-      debugPrint('🚀 IMAGE PATH: ${file.path}');
 
-      final updatedUser = await ApiService.uploadProfileImage(
+      debugPrint(
+        'UPLOADING IMAGE TO FASTAPI...',
+      );
+
+      final updatedUser =
+          await ApiService.uploadProfileImage(
         userId: _userId!,
         imagePath: file.path,
       );
 
-      debugPrint('✅ API METHOD RETURNED');
+      // ==========================================================
+      // GET BACKEND IMAGE URL
+      // ==========================================================
+
+      _profileImageUrl =
+          updatedUser['profile_image_url']
+                  ?.toString() ??
+              '';
+
       debugPrint('======================================');
       debugPrint('PROFILE IMAGE UPLOAD SUCCESS');
-      debugPrint('UPDATED USER: $updatedUser');
-      debugPrint('PROFILE IMAGE URL: ${updatedUser['profile_image_url']}');
+      debugPrint(
+        'UPDATED USER: $updatedUser',
+      );
+      debugPrint(
+        'PROFILE IMAGE URL: $_profileImageUrl',
+      );
+      debugPrint(
+        'FULL IMAGE URL: $fullProfileImageUrl',
+      );
       debugPrint('======================================');
 
       // ==========================================================
-      // SAVE IMAGE PATH LOCALLY
+      // SAVE BACKEND IMAGE URL LOCALLY
       // ==========================================================
 
-      final prefs = await SharedPreferences.getInstance();
+      final prefs =
+          await SharedPreferences.getInstance();
 
-      await prefs.setString('buyer_profile_image', file.path);
-
-      // Save backend URL too
-      final imageUrl = updatedUser['profile_image_url']?.toString() ?? '';
-
-      if (imageUrl.isNotEmpty) {
-        await prefs.setString('profile_image_url', imageUrl);
+      if (_profileImageUrl.isNotEmpty) {
+        await prefs.setString(
+          'profile_image_url',
+          _profileImageUrl,
+        );
       }
+
+      // ==========================================================
+      // OPTIONAL LOCAL PATH
+      // ==========================================================
+      //
+      // This is only kept for the current session/immediate
+      // display. Backend URL remains the source of truth.
+      //
+      // ==========================================================
+
+      await prefs.setString(
+        'buyer_profile_image',
+        file.path,
+      );
+
+      // ==========================================================
+      // REFRESH UI
+      // ==========================================================
 
       notifyListeners();
     } catch (e) {
       debugPrint('======================================');
-      debugPrint('PROFILE IMAGE UPLOAD ERROR: $e');
+      debugPrint(
+        'PROFILE IMAGE UPLOAD ERROR: $e',
+      );
       debugPrint('======================================');
     }
   }
@@ -237,6 +405,7 @@ class BuyerProfileProvider extends ChangeNotifier {
   // ============================================================
   // SAVE PROFILE
   // ============================================================
+
   Future<bool> saveProfile({
     required String name,
     required String email,
@@ -245,10 +414,13 @@ class BuyerProfileProvider extends ChangeNotifier {
     required String gender,
   }) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
+      final prefs =
+          await SharedPreferences.getInstance();
 
       final newName = name.trim();
+
       final newEmail = email.trim();
+
       final newPhone = phone.trim();
 
       debugPrint('======================================');
@@ -259,23 +431,38 @@ class BuyerProfileProvider extends ChangeNotifier {
       debugPrint('USER ID: $_userId');
       debugPrint('======================================');
 
-      if (newName.isEmpty || newEmail.isEmpty || newPhone.isEmpty) {
-        debugPrint('PROFILE VALIDATION FAILED');
+      // ==========================================================
+      // VALIDATION
+      // ==========================================================
+
+      if (newName.isEmpty ||
+          newEmail.isEmpty ||
+          newPhone.isEmpty) {
+        debugPrint(
+          'PROFILE VALIDATION FAILED',
+        );
+
         return false;
       }
 
       if (_userId == null) {
-        debugPrint('ERROR: USER ID IS NULL');
+        debugPrint(
+          'ERROR: USER ID IS NULL',
+        );
+
         return false;
       }
 
-      // ==========================================
-      // SEND DATA TO FASTAPI
-      // ==========================================
+      // ==========================================================
+      // UPDATE FASTAPI
+      // ==========================================================
 
-      debugPrint('CALLING API UPDATE...');
+      debugPrint(
+        'CALLING API UPDATE...',
+      );
 
-      final updatedUser = await ApiService.updateUser(
+      final updatedUser =
+          await ApiService.updateUser(
         userId: _userId!,
         name: newName,
         email: newEmail,
@@ -284,45 +471,107 @@ class BuyerProfileProvider extends ChangeNotifier {
 
       debugPrint('======================================');
       debugPrint('API UPDATE SUCCESS');
-      debugPrint('UPDATED USER: $updatedUser');
+      debugPrint(
+        'UPDATED USER: $updatedUser',
+      );
       debugPrint('======================================');
 
-      // ==========================================
+      // ==========================================================
       // UPDATE PROVIDER
-      // ==========================================
+      // ==========================================================
 
-      _userId = updatedUser['user_id'];
+      _userId =
+          updatedUser['user_id'];
 
-      _name = updatedUser['name']?.toString() ?? newName;
+      _name =
+          updatedUser['name']?.toString() ??
+              newName;
 
-      _email = updatedUser['email']?.toString() ?? newEmail;
+      _email =
+          updatedUser['email']?.toString() ??
+              newEmail;
 
-      _phone = updatedUser['phone']?.toString() ?? newPhone;
+      _phone =
+          updatedUser['phone']?.toString() ??
+              newPhone;
 
       _dob = dob;
+
       _gender = gender;
 
-      // ==========================================
-      // SAVE LOCAL DATA
-      // ==========================================
+      // ==========================================================
+      // GET IMAGE URL IF API RETURNS IT
+      // ==========================================================
 
-      await prefs.setString('buyer_name', _name);
-      await prefs.setString('buyer_email', _email);
-      await prefs.setString('buyer_phone', _phone);
-      await prefs.setString('buyer_dob', _dob);
-      await prefs.setString('buyer_gender', _gender);
+      if (updatedUser.containsKey(
+        'profile_image_url',
+      )) {
+        _profileImageUrl =
+            updatedUser['profile_image_url']
+                    ?.toString() ??
+                '';
+      }
 
-      // Keep login/profile data synchronized
-      await prefs.setString('profile_name', _name);
-      await prefs.setString('user_email', _email);
-      await prefs.setString('user_phone', _phone);
+      // ==========================================================
+      // SAVE PROFILE DATA LOCALLY
+      // ==========================================================
+
+      await prefs.setString(
+        'buyer_name',
+        _name,
+      );
+
+      await prefs.setString(
+        'buyer_email',
+        _email,
+      );
+
+      await prefs.setString(
+        'buyer_phone',
+        _phone,
+      );
+
+      await prefs.setString(
+        'buyer_dob',
+        _dob,
+      );
+
+      await prefs.setString(
+        'buyer_gender',
+        _gender,
+      );
+
+      // ==========================================================
+      // KEEP LOGIN DATA SYNCHRONIZED
+      // ==========================================================
+
+      await prefs.setString(
+        'profile_name',
+        _name,
+      );
+
+      await prefs.setString(
+        'user_email',
+        _email,
+      );
+
+      await prefs.setString(
+        'user_phone',
+        _phone,
+      );
+
+      // ==========================================================
+      // REFRESH UI
+      // ==========================================================
 
       notifyListeners();
 
       return true;
     } catch (e) {
       debugPrint('======================================');
-      debugPrint('SAVE PROFILE ERROR: $e');
+      debugPrint(
+        'SAVE PROFILE ERROR: $e',
+      );
       debugPrint('======================================');
 
       return false;
@@ -330,16 +579,50 @@ class BuyerProfileProvider extends ChangeNotifier {
   }
 
   // ============================================================
-  // CLEAR PROFILE IMAGE
+  // REMOVE PROFILE IMAGE
   // ============================================================
 
   Future<void> removeProfileImage() async {
-    final prefs = await SharedPreferences.getInstance();
+    try {
+      final prefs =
+          await SharedPreferences.getInstance();
 
-    await prefs.remove('buyer_profile_image');
+      // Remove local values
+      await prefs.remove(
+        'buyer_profile_image',
+      );
 
-    _profileImage = null;
+      await prefs.remove(
+        'profile_image_url',
+      );
 
-    notifyListeners();
+      // Clear provider values
+      _profileImage = null;
+
+      _profileImageUrl = '';
+
+      notifyListeners();
+
+      debugPrint(
+        'PROFILE IMAGE REMOVED LOCALLY',
+      );
+
+      // ==========================================================
+      // IMPORTANT
+      // ==========================================================
+      //
+      // At this point we have NOT created a DELETE endpoint
+      // on FastAPI yet.
+      //
+      // Therefore this only removes the image from Flutter.
+      //
+      // We can add backend deletion next.
+      //
+      // ==========================================================
+    } catch (e) {
+      debugPrint(
+        'REMOVE PROFILE IMAGE ERROR: $e',
+      );
+    }
   }
 }

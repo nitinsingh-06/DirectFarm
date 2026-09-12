@@ -3,7 +3,6 @@ import 'package:farmdirect/core/provider/buyer_profile_provider.dart';
 import 'package:farmdirect/core/provider/card_provider.dart';
 import 'package:farmdirect/core/provider/farmer_profile_provider.dart';
 import 'package:farmdirect/core/provider/theme_provider.dart';
-import 'package:farmdirect/core/theme/app_theme.dart';
 import 'package:farmdirect/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 
@@ -44,9 +43,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
 
-      theme: AppTheme.lightTheme,
 
-      darkTheme: AppTheme.darkTheme,
 
       themeMode: themeProvider.themeMode,
 

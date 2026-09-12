@@ -1,4 +1,7 @@
+from pathlib import Path
+
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 
 from .database import engine, Base
@@ -23,6 +26,20 @@ app = FastAPI(
 
 Base.metadata.create_all(
     bind=engine
+)
+
+
+# ============================================================
+# STATIC FILES - PROFILE IMAGES
+# ============================================================
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+UPLOADS_DIR = BASE_DIR / "uploads"
+
+app.mount(
+    "/uploads",
+    StaticFiles(directory=str(UPLOADS_DIR)),
+    name="uploads",
 )
 
 
