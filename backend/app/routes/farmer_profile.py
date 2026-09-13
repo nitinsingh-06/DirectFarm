@@ -6,7 +6,8 @@ from ..models.user import User
 from ..models.farmer_profile import FarmerProfile
 from ..schemas.farmer_profile import (
     FarmerProfileCreate,
-    FarmerProfileResponse
+    FarmerProfileResponse,
+    FarmerProfileUpdate
 )
 
 
@@ -125,3 +126,67 @@ def get_farmer_profile(
         )
 
     return profile
+
+
+
+# ============================================================
+# UPDATE FARMER PROFILE
+# ============================================================
+
+@router.put(
+    "/{user_id}",
+    response_model=FarmerProfileResponse
+)
+def update_farmer_profile(
+    user_id: int,
+    profile_data: FarmerProfileUpdate,
+    db: Session = Depends(get_db)
+):
+
+    # --------------------------------------------------------
+    # Find farmer profile
+    # --------------------------------------------------------
+
+    profile = (
+        db.query(FarmerProfile)
+        .filter(
+            FarmerProfile.user_id == user_id
+        )
+        .first()
+    )
+
+    if not profile:
+        raise HTTPException(
+            status_code=404,
+            detail="Farmer profile not found"
+        )
+
+    # --------------------------------------------------------
+    # Update fields
+    # --------------------------------------------------------
+
+    profile.farm_name = profile_data.farm_name
+
+    profile.farm_type = profile_data.farm_type
+
+    profile.farm_size = profile_data.farm_size
+
+    profile.crops = profile_data.crops
+
+    profile.certifications = profile_data.certifications
+
+    profile.years_of_experience = (
+        profile_data.years_of_experience
+    )
+
+    # --------------------------------------------------------
+    # Save
+    # --------------------------------------------------------
+
+    db.commit()
+
+    db.refresh(profile)
+
+    return profile
+
+

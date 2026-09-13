@@ -4,7 +4,6 @@ import 'package:farmdirect/Authentification/screens/comming_soon.dart';
 import 'package:farmdirect/Authentification/screens/login_screen.dart';
 import 'package:farmdirect/core/provider/farmer_profile_provider.dart';
 import 'package:farmdirect/core/provider/theme_provider.dart';
-import 'package:farmdirect/core/widgets/farmer/profile_image.dart';
 import 'package:farmdirect/features/farmer/dashboard/farmer_profile/about_us_screen.dart';
 import 'package:farmdirect/features/farmer/dashboard/farmer_profile/farm_details_screen.dart';
 import 'package:farmdirect/features/farmer/dashboard/farmer_profile/farm_help_section.dart';
@@ -282,6 +281,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // ============================================================
   // PROFILE HEADER
   // ============================================================
+  // ============================================================
+  // PROFILE HEADER
+  // ============================================================
   Widget _buildProfileHeader() {
     return Consumer<ProfileProvider>(
       builder: (context, profile, child) {
@@ -304,7 +306,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   border: Border.all(color: const Color(0xFFB8D9A8), width: 2),
                 ),
 
-                child: const ProfileImage(size: 36),
+                child: ClipOval(
+                  child: profile.fullProfileImageUrl.isNotEmpty
+                      ? Image.network(
+                          profile.fullProfileImageUrl,
+                          width: 36,
+                          height: 36,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Image.asset(
+                              profile.defaultImage,
+                              width: 36,
+                              height: 36,
+                              fit: BoxFit.cover,
+                            );
+                          },
+                        )
+                      : Image.asset(
+                          profile.defaultImage,
+                          width: 36,
+                          height: 36,
+                          fit: BoxFit.cover,
+                        ),
+                ),
               ),
 
               const SizedBox(width: 10),
@@ -326,7 +350,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                   const SizedBox(height: 2),
 
-                    Text(
+                  Text(
                     'Farm ID: #${profile.farmId}',
                     style: const TextStyle(
                       color: Color(0xFF9ACB51),

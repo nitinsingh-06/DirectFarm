@@ -3,7 +3,6 @@
 // ============================================================
 
 import 'package:farmdirect/core/provider/farmer_profile_provider.dart';
-import 'package:farmdirect/core/widgets/farmer/profile_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -42,74 +41,115 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   }
-// ============================================================
-// HEADER
-// ============================================================
-Widget _buildHeader() {
-  return Consumer<ProfileProvider>(
-    builder: (context, profile, child) {
-      return Container(
-        width: double.infinity,
-        height: 62,
-        color: const Color(0xFF075640),
-        padding: const EdgeInsets.symmetric(horizontal: 13),
 
-        child: Row(
-          children: [
+  // ============================================================
+  // HEADER
+  // ============================================================
+  Widget _buildHeader() {
+    return Consumer<ProfileProvider>(
+      builder: (context, profile, child) {
+        final String name = profile.name.trim();
 
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+        final String firstLetter = name.isNotEmpty
+            ? name[0].toUpperCase()
+            : 'U';
 
-                  Text(
-                    'Namaste, ${profile.name}! 🌾',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+        return Container(
+          width: double.infinity,
+          height: 62,
+          color: const Color(0xFF075640),
+          padding: const EdgeInsets.symmetric(horizontal: 13),
+
+          child: Row(
+            children: [
+              // ==================================================
+              // FARMER NAME
+              // ==================================================
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Namaste, ${profile.name}! 🌾',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
 
-                  const SizedBox(height: 3),
+                    const SizedBox(height: 3),
 
-                  Text(
-                    'Farm ID: #${profile.farmId}',
-                    style: const TextStyle(
-                      color: Color(0xFF9ACB51),
-                      fontSize: 9,
-                      fontWeight: FontWeight.w600,
+                    Text(
+                      'Farm ID: #${profile.farmId}',
+                      style: const TextStyle(
+                        color: Color(0xFF9ACB51),
+                        fontSize: 9,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-
-            Container(
-              width: 40,
-              height: 40,
-              padding: const EdgeInsets.all(2),
-
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: const Color(0xFFB5D56A),
-                  width: 2,
+                  ],
                 ),
               ),
 
-              child: ProfileImage(
-                size: 36,
+              // ==================================================
+              // PROFILE IMAGE / FIRST LETTER
+              // ==================================================
+              Container(
+                width: 40,
+                height: 40,
+                padding: const EdgeInsets.all(2),
+
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: const Color(0xFFB5D56A), width: 2),
+                ),
+
+                child: ClipOval(
+                  child: profile.fullProfileImageUrl.isNotEmpty
+                      ? Image.network(
+                          profile.fullProfileImageUrl,
+                          width: 36,
+                          height: 36,
+                          fit: BoxFit.cover,
+
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              color: const Color(0xFFE8F5E9),
+                              alignment: Alignment.center,
+                              child: Text(
+                                firstLetter,
+                                style: const TextStyle(
+                                  color: Color(0xFF075B4A),
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            );
+                          },
+                        )
+                      : Container(
+                          color: const Color(0xFFE8F5E9),
+                          alignment: Alignment.center,
+                          child: Text(
+                            firstLetter,
+                            style: const TextStyle(
+                              color: Color(0xFF075B4A),
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                ),
               ),
-            ),
-          ],
-        ),
-      );
-    },
-  );
-} 
- // ============================================================
+            ],
+          ),
+        );
+      },
+    );
+  }
+  // ============================================================
   // STATISTICS
   // ============================================================
 
@@ -354,7 +394,10 @@ Widget _buildHeader() {
 
                 Text(
                   details,
-                  style: const TextStyle(fontSize: 10, color: Color(0xFF7A8491)),
+                  style: const TextStyle(
+                    fontSize: 10,
+                    color: Color(0xFF7A8491),
+                  ),
                 ),
               ],
             ),

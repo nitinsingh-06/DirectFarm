@@ -109,8 +109,76 @@ class _FarmerProfileSettingsState extends State<FarmerProfileSettings> {
               // ==================================================
               // PROFILE IMAGE
               // ==================================================
-              Center(child: const ProfileImage(size: 72, showCamera: true)),
+              Consumer<ProfileProvider>(
+                builder: (context, profile, child) {
+                  final String name = profile.name.trim();
 
+                  final String firstLetter = name.isNotEmpty
+                      ? name[0].toUpperCase()
+                      : 'U';
+
+                  final String imageUrl = profile.fullProfileImageUrl;
+
+                  return Center(
+                    child: GestureDetector(
+                      onTap: () async {
+                        await profile.pickProfileImage();
+                      },
+                      child: Stack(
+                        alignment: Alignment.bottomRight,
+                        children: [
+                          Container(
+                            width: 72,
+                            height: 72,
+                            padding: const EdgeInsets.all(2),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: const Color(0xFF075B47),
+                                width: 2,
+                              ),
+                            ),
+                            child: ClipOval(
+                              child: imageUrl.isNotEmpty
+                                  ? Image.network(
+                                      imageUrl,
+                                      width: 68,
+                                      height: 68,
+                                      fit: BoxFit.cover,
+                                      errorBuilder:
+                                          (context, error, stackTrace) {
+                                            return _buildFirstLetter(
+                                              firstLetter,
+                                            );
+                                          },
+                                    )
+                                  : _buildFirstLetter(firstLetter),
+                            ),
+                          ),
+
+                          // Camera button
+                          Container(
+                            width: 24,
+                            height: 24,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF075B47),
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 2),
+                            ),
+                            child: const Icon(
+                              Icons.camera_alt,
+                              color: Colors.white,
+                              size: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+
+              
               const SizedBox(height: 18),
 
               // ==================================================
@@ -318,6 +386,25 @@ class _FarmerProfileSettingsState extends State<FarmerProfileSettings> {
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: const BorderSide(color: Color(0xFF075B47)),
+        ),
+      ),
+    );
+  }
+
+  //===================
+  // Build First Letter
+  //===================
+
+  Widget _buildFirstLetter(String firstLetter) {
+    return Container(
+      color: const Color(0xFFE8F5E9),
+      alignment: Alignment.center,
+      child: Text(
+        firstLetter,
+        style: const TextStyle(
+          color: Color(0xFF075B4A),
+          fontSize: 30,
+          fontWeight: FontWeight.bold,
         ),
       ),
     );

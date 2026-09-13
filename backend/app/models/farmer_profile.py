@@ -1,4 +1,13 @@
-from sqlalchemy import Column, BigInteger, String, Text, ForeignKey, DateTime
+from sqlalchemy import (
+    Column,
+    BigInteger,
+    String,
+    Text,
+    ForeignKey,
+    DateTime,
+    Integer,
+    Float,
+)
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.sql import func
 
@@ -49,7 +58,37 @@ class FarmerProfile(Base):
         nullable=True
     )
 
+    # ========================================================
+    # FARM DETAILS
+    # ========================================================
+
+    farm_type = Column(
+        String(50),
+        nullable=True
+    )
+
+    farm_size = Column(
+        Float,
+        nullable=True
+    )
+
+    certifications = Column(
+        Text,
+        nullable=True
+    )
+
+    years_of_experience = Column(
+        Integer,
+        nullable=True
+    )
+
     created_at = Column(
         DateTime,
         server_default=func.now()
+    )
+
+    updated_at = Column(
+        DateTime,
+        server_default=func.now(),
+        onupdate=func.now()
     )

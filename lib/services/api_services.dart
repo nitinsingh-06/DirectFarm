@@ -122,4 +122,79 @@ class ApiService {
 
     throw Exception('Failed to upload profile image: ${response.body}');
   }
+
+
+
+  static Future<Map<String, dynamic>> getFarmerProfile({
+  required int userId,
+}) async {
+  final response = await http.get(
+    Uri.parse(
+      '${ApiConfig.baseUrl}/farmer-profile/$userId',
+    ),
+    headers: {
+      'Accept': 'application/json',
+    },
+  );
+
+  debugPrint(
+    'GET FARMER PROFILE STATUS: ${response.statusCode}',
+  );
+
+  debugPrint(
+    'GET FARMER PROFILE RESPONSE: ${response.body}',
+  );
+
+  if (response.statusCode == 200) {
+    return jsonDecode(response.body) as Map<String, dynamic>;
+  }
+
+  throw Exception(
+    'Failed to load farmer profile: ${response.body}',
+  );
+}
+
+static Future<Map<String, dynamic>> updateFarmerProfile({
+  required int userId,
+  required String farmName,
+  required String farmType,
+  required double? farmSize,
+  required List<String> crops,
+  required String certifications,
+  required int? yearsOfExperience,
+}) async {
+  final response = await http.put(
+    Uri.parse(
+      '${ApiConfig.baseUrl}/farmer-profile/$userId',
+    ),
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
+    body: jsonEncode({
+      'farm_name': farmName,
+      'farm_type': farmType,
+      'farm_size': farmSize,
+      'crops': crops,
+      'certifications': certifications,
+      'years_of_experience': yearsOfExperience,
+    }),
+  );
+
+  debugPrint(
+    'UPDATE FARMER PROFILE STATUS: ${response.statusCode}',
+  );
+
+  debugPrint(
+    'UPDATE FARMER PROFILE RESPONSE: ${response.body}',
+  );
+
+  if (response.statusCode == 200) {
+    return jsonDecode(response.body) as Map<String, dynamic>;
+  }
+
+  throw Exception(
+    'Failed to update farmer profile: ${response.body}',
+  );
+}
 }

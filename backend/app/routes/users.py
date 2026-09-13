@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 
-from backend.app.models.farmer_profile import FarmerProfile
+from ..models.farmer_profile import FarmerProfile
 
 from ..database import get_db
 from ..models.user import User
