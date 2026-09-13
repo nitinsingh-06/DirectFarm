@@ -26,6 +26,7 @@ class ProfileProvider extends ChangeNotifier {
 
   String get fullProfileImageUrl {
     if (_profileImageUrl.isEmpty) return '';
+
     return '${ApiConfig.baseUrl}$_profileImageUrl';
   }
 
@@ -41,6 +42,9 @@ class ProfileProvider extends ChangeNotifier {
   String _farmName = '';
   String _location = '';
   String _aadhaar = '';
+  String _description = '';
+  String _farmId = '';
+
   List<String> _crops = [];
 
   int? _userId;
@@ -62,6 +66,8 @@ class ProfileProvider extends ChangeNotifier {
 
   String get aadhaar => _aadhaar;
 
+  String get farmId => _farmId;
+  String get description => _description;
   List<String> get crops => List.unmodifiable(_crops);
 
   int? get userId => _userId;
@@ -69,17 +75,16 @@ class ProfileProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
 
   // ============================================================
-  // LOAD PROFILE
+  // LOAD PROFILE FROM DATABASE
   // ============================================================
-
   Future<void> loadProfile() async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      // --------------------------------------------------------
-      // Firebase current user
-      // --------------------------------------------------------
+      // ============================================================
+      // GET CURRENT FIREBASE USER
+      // ============================================================
 
       final User? firebaseUser = FirebaseAuth.instance.currentUser;
 
@@ -94,9 +99,9 @@ class ProfileProvider extends ChangeNotifier {
         '${firebaseUser.uid}',
       );
 
-      // --------------------------------------------------------
+      // ============================================================
       // GET USERS FROM FASTAPI
-      // --------------------------------------------------------
+      // ============================================================
 
       final usersResponse = await http
           .get(Uri.parse('${ApiConfig.baseUrl}/users/'))
@@ -113,9 +118,9 @@ class ProfileProvider extends ChangeNotifier {
 
       final List<dynamic> users = jsonDecode(usersResponse.body);
 
-      // --------------------------------------------------------
+      // ============================================================
       // FIND CURRENT USER
-      // --------------------------------------------------------
+      // ============================================================
 
       Map<String, dynamic>? currentUser;
 
@@ -131,9 +136,9 @@ class ProfileProvider extends ChangeNotifier {
         throw Exception('User not found in PostgreSQL');
       }
 
-      // --------------------------------------------------------
-      // USER DATA
-      // --------------------------------------------------------
+      // ============================================================
+      // LOAD USER DATA
+      // ============================================================
 
       _userId = int.parse(currentUser['user_id'].toString());
 
@@ -145,17 +150,22 @@ class ProfileProvider extends ChangeNotifier {
 
       _profileImageUrl = currentUser['profile_image_url']?.toString() ?? '';
 
-      debugPrint('Farmer profile image URL: $_profileImageUrl');
-
-      debugPrint('Farmer full profile image URL: $fullProfileImageUrl');
-
       debugPrint('PostgreSQL user_id: $_userId');
 
       debugPrint('Farmer name: $_name');
 
-      // --------------------------------------------------------
+      debugPrint('Farmer email: $_email');
+
+      debugPrint('Farmer phone: $_phone');
+
+      debugPrint(
+        'Farmer profile image URL: '
+        '$_profileImageUrl',
+      );
+
+      // ============================================================
       // GET FARMER PROFILE
-      // --------------------------------------------------------
+      // ============================================================
 
       final profileResponse = await http
           .get(Uri.parse('${ApiConfig.baseUrl}/farmer-profile/$_userId'))
@@ -171,8 +181,22 @@ class ProfileProvider extends ChangeNotifier {
         '${profileResponse.body}',
       );
 
+      // ============================================================
+      // FARMER PROFILE FOUND
+      // ============================================================
+
       if (profileResponse.statusCode == 200) {
         final Map<String, dynamic> profile = jsonDecode(profileResponse.body);
+
+        // ----------------------------------------------------------
+        // FARMER ID
+        // ----------------------------------------------------------
+
+        _farmId = profile['farmer_id']?.toString() ?? '';
+
+        // ----------------------------------------------------------
+        // FARM DATA
+        // ----------------------------------------------------------
 
         _farmName = profile['farm_name']?.toString() ?? '';
 
@@ -180,28 +204,57 @@ class ProfileProvider extends ChangeNotifier {
 
         _aadhaar = profile['aadhaar']?.toString() ?? '';
 
+        _description = profile['description']?.toString() ?? '';
+
+        // ----------------------------------------------------------
+        // CROPS
+        // ----------------------------------------------------------
+
         final dynamic cropsData = profile['crops'];
 
         if (cropsData is List) {
           _crops = cropsData.map((crop) => crop.toString()).toList();
+        } else {
+          _crops = [];
         }
 
+        // ----------------------------------------------------------
+        // DEBUG
+        // ----------------------------------------------------------
+
+        debugPrint('Farmer ID: $_farmId');
+
+        debugPrint('Farm name: $_farmName');
+
+        debugPrint('Farm location: $_location');
+
+        debugPrint('Aadhaar: $_aadhaar');
+
+        debugPrint('Description: $_description');
+
+        debugPrint('Crops: $_crops');
+
         debugPrint('Farmer profile loaded successfully.');
-      } else if (profileResponse.statusCode == 404) {
+      }
+      // ============================================================
+      // FARMER PROFILE NOT FOUND
+      // ============================================================
+      else if (profileResponse.statusCode == 404) {
         debugPrint('Farmer profile does not exist.');
 
+        _farmId = '';
         _farmName = '';
         _location = '';
         _aadhaar = '';
+        _description = '';
         _crops = [];
-      } else {
+      }
+      // ============================================================
+      // OTHER ERROR
+      // ============================================================
+      else {
         throw Exception('Failed to load Farmer profile');
       }
-
-      // --------------------------------------------------------
-      // LOAD LOCAL PROFILE IMAGE
-      // --------------------------------------------------------
-
     } catch (e) {
       debugPrint('Profile loading error: $e');
     } finally {
@@ -210,86 +263,146 @@ class ProfileProvider extends ChangeNotifier {
     }
   }
 
-
   // ============================================================
   // PICK PROFILE IMAGE
   // ============================================================
 
   Future<void> pickProfileImage() async {
-  final XFile? image = await _picker.pickImage(
-    source: ImageSource.gallery,
-    imageQuality: 85,
-  );
-
-  if (image == null) return;
-
-  if (_userId == null) {
-    debugPrint('Cannot upload image: user ID is null');
-    return;
-  }
-
-  // Show selected image immediately
-  _profileImage = File(image.path);
-  notifyListeners();
-
-  try {
-    debugPrint(
-      'Uploading farmer profile image for user: $_userId',
+    final XFile? image = await _picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
     );
 
-    final updatedUser = await ApiService.uploadProfileImage(
-      userId: _userId!,
-      imagePath: image.path,
-    );
+    if (image == null) return;
 
-    _profileImageUrl =
-        updatedUser['profile_image_url']?.toString() ?? '';
+    if (_userId == null) {
+      debugPrint('Cannot upload image: user ID is null');
 
-    debugPrint(
-      'Farmer profile image uploaded: $_profileImageUrl',
-    );
-
-    debugPrint(
-      'Full image URL: $fullProfileImageUrl',
-    );
-
-    // Save backend URL locally for faster startup
-    final prefs = await SharedPreferences.getInstance();
-
-    if (_profileImageUrl.isNotEmpty) {
-      await prefs.setString(
-        'profile_image_url',
-        _profileImageUrl,
-      );
+      return;
     }
 
+    // ----------------------------------------------------------
+    // SHOW SELECTED IMAGE IMMEDIATELY
+    // ----------------------------------------------------------
+
+    _profileImage = File(image.path);
+
     notifyListeners();
-  } catch (e) {
-    debugPrint(
-      'Farmer profile image upload error: $e',
-    );
+
+    try {
+      debugPrint(
+        'Uploading farmer profile image '
+        'for user: $_userId',
+      );
+
+      final updatedUser = await ApiService.uploadProfileImage(
+        userId: _userId!,
+        imagePath: image.path,
+      );
+
+      _profileImageUrl = updatedUser['profile_image_url']?.toString() ?? '';
+
+      debugPrint(
+        'Farmer profile image uploaded: '
+        '$_profileImageUrl',
+      );
+
+      debugPrint(
+        'Full image URL: '
+        '$fullProfileImageUrl',
+      );
+
+      // --------------------------------------------------------
+      // SAVE BACKEND URL LOCALLY
+      // --------------------------------------------------------
+
+      final prefs = await SharedPreferences.getInstance();
+
+      if (_profileImageUrl.isNotEmpty) {
+        await prefs.setString('profile_image_url', _profileImageUrl);
+      }
+
+      notifyListeners();
+    } catch (e) {
+      debugPrint(
+        'Farmer profile image upload error: '
+        '$e',
+      );
+    }
   }
-}
 
   // ============================================================
   // UPDATE NAME LOCALLY
   // ============================================================
-  //
-  // Keep this for now.
-  // Later we'll connect name editing to FastAPI.
-  //
+  Future<bool> updateProfile({
+    required String name,
+    required String phone,
+    required String email,
+    required String bio,
+  }) async {
+    if (_userId == null) {
+      debugPrint('Cannot update profile: user ID is null');
+      return false;
+    }
 
-  Future<void> updateName(String newName) async {
-    final name = newName.trim();
+    final trimmedName = name.trim();
+    final trimmedPhone = phone.trim();
+    final trimmedEmail = email.trim();
+    final trimmedBio = bio.trim();
 
-    if (name.isEmpty) return;
+    if (trimmedName.isEmpty) {
+      debugPrint('Name cannot be empty');
+      return false;
+    }
 
-    _name = name;
+    try {
+      _isLoading = true;
+      notifyListeners();
 
-    final prefs = await SharedPreferences.getInstance();
+      final response = await http
+          .put(
+            Uri.parse('${ApiConfig.baseUrl}/users/$_userId/profile'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({
+              'name': trimmedName,
+              'email': trimmedEmail,
+              'phone': trimmedPhone,
+              'bio': trimmedBio,
+            }),
+          )
+          .timeout(const Duration(seconds: 10));
 
-    await prefs.setString('profile_name', name);
+      debugPrint('Update profile status: ${response.statusCode}');
 
-    notifyListeners();
+      debugPrint('Update profile response: ${response.body}');
+
+      if (response.statusCode != 200) {
+        debugPrint('Profile update failed: ${response.body}');
+
+        return false;
+      }
+
+      // --------------------------------------------------------
+      // UPDATE PROVIDER IMMEDIATELY
+      // --------------------------------------------------------
+      _name = trimmedName;
+      _phone = trimmedPhone;
+      _email = trimmedEmail;
+      _description = trimmedBio;
+      // --------------------------------------------------------
+      // RELOAD FROM DATABASE
+      // --------------------------------------------------------
+
+      await loadProfile();
+
+      return true;
+    } catch (e) {
+      debugPrint('Profile update error: $e');
+
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 }

@@ -326,9 +326,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                   const SizedBox(height: 2),
 
-                  const Text(
-                    'Farm ID: #83422',
-                    style: TextStyle(fontSize: 8, color: Color(0xFFD1E8E1)),
+                    Text(
+                    'Farm ID: #${profile.farmId}',
+                    style: const TextStyle(
+                      color: Color(0xFF9ACB51),
+                      fontSize: 9,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ],
               ),

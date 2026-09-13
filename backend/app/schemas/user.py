@@ -21,3 +21,10 @@ class UserResponse(BaseModel):
     
     class Config:
         from_attributes = True
+
+
+class UserProfileUpdate(BaseModel):
+    name: str
+    email: str
+    phone: str
+    bio: str

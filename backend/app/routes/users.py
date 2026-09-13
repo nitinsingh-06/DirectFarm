@@ -5,9 +5,11 @@ from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 
+from backend.app.models.farmer_profile import FarmerProfile
+
 from ..database import get_db
 from ..models.user import User
-from ..schemas.user import UserCreate, UserResponse
+from ..schemas.user import UserCreate, UserProfileUpdate, UserResponse
 
 
 router = APIRouter(
@@ -193,6 +195,105 @@ async def upload_profile_image(
     user.profile_image_url = image_url
 
     db.commit()
+    db.refresh(user)
+
+    return user
+
+
+# ============================================================
+# UPDATE USER PROFILE
+# ============================================================
+
+@router.put("/{user_id}/profile", response_model=UserResponse)
+def update_user_profile(
+    user_id: int,
+    profile_data: UserProfileUpdate,
+    db: Session = Depends(get_db)
+):
+
+    # --------------------------------------------------------
+    # FIND USER
+    # --------------------------------------------------------
+
+    user = (
+        db.query(User)
+        .filter(User.user_id == user_id)
+        .first()
+    )
+
+    if not user:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found"
+        )
+
+    # --------------------------------------------------------
+    # CHECK EMAIL
+    # --------------------------------------------------------
+
+    existing_email = (
+        db.query(User)
+        .filter(
+            User.email == profile_data.email,
+            User.user_id != user_id
+        )
+        .first()
+    )
+
+    if existing_email:
+        raise HTTPException(
+            status_code=400,
+            detail="Email already exists"
+        )
+
+    # --------------------------------------------------------
+    # CHECK PHONE
+    # --------------------------------------------------------
+
+    existing_phone = (
+        db.query(User)
+        .filter(
+            User.phone == profile_data.phone,
+            User.user_id != user_id
+        )
+        .first()
+    )
+
+    if existing_phone:
+        raise HTTPException(
+            status_code=400,
+            detail="Phone number already exists"
+        )
+
+    # --------------------------------------------------------
+    # UPDATE USERS TABLE
+    # --------------------------------------------------------
+
+    user.name = profile_data.name.strip()
+    user.email = profile_data.email.strip()
+    user.phone = profile_data.phone.strip()
+
+    # --------------------------------------------------------
+    # UPDATE FARMER PROFILE
+    # --------------------------------------------------------
+
+    farmer_profile = (
+        db.query(FarmerProfile)
+        .filter(
+            FarmerProfile.user_id == user_id
+        )
+        .first()
+    )
+
+    if farmer_profile:
+        farmer_profile.description = profile_data.bio.strip()
+
+    # --------------------------------------------------------
+    # SAVE
+    # --------------------------------------------------------
+
+    db.commit()
+
     db.refresh(user)
 
     return user

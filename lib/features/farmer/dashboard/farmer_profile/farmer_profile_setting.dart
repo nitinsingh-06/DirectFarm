@@ -14,11 +14,11 @@ class _FarmerProfileSettingsState extends State<FarmerProfileSettings> {
   final TextEditingController _nameController = TextEditingController();
 
   final TextEditingController _phoneController = TextEditingController(
-    text: '+91 98765 43210',
+    text: '',
   );
 
   final TextEditingController _emailController = TextEditingController(
-    text: 'ramesh.kumar@farmdirect.in',
+    text: '',
   );
 
   final TextEditingController _bioController = TextEditingController(text: '');
@@ -29,6 +29,9 @@ class _FarmerProfileSettingsState extends State<FarmerProfileSettings> {
     final profile = context.read<ProfileProvider>();
 
     _nameController.text = profile.name;
+    _phoneController.text = profile.phone;
+    _emailController.text = profile.email;
+    _bioController.text = profile.description;
   }
 
   @override
@@ -168,21 +171,34 @@ class _FarmerProfileSettingsState extends State<FarmerProfileSettings> {
               onPressed: () async {
                 FocusScope.of(context).unfocus();
 
-                await context.read<ProfileProvider>().updateName(
-                  _nameController.text,
-                );
+                final success = await context
+                    .read<ProfileProvider>()
+                    .updateProfile(
+                      name: _nameController.text,
+                      phone: _phoneController.text,
+                      email: _emailController.text,
+                      bio: _bioController.text,
+                    );
 
                 if (!context.mounted) return;
 
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Profile updated successfully')),
-                );
+                if (success) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Profile updated successfully'),
+                    ),
+                  );
 
-                await Future.delayed(const Duration(milliseconds: 500));
+                  await Future.delayed(const Duration(milliseconds: 500));
 
-                if (!context.mounted) return;
+                  if (!context.mounted) return;
 
-                Navigator.pop(context, 'save changes');
+                  Navigator.pop(context, 'save changes');
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Failed to update profile')),
+                  );
+                }
               },
 
               style: ElevatedButton.styleFrom(

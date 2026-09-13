@@ -45,7 +45,6 @@ class HomeScreen extends StatelessWidget {
 // ============================================================
 // HEADER
 // ============================================================
-
 Widget _buildHeader() {
   return Consumer<ProfileProvider>(
     builder: (context, profile, child) {
@@ -58,15 +57,12 @@ Widget _buildHeader() {
         child: Row(
           children: [
 
-            // ==================================================
-            // NAME
-            // ==================================================
-
             Expanded(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+
                   Text(
                     'Namaste, ${profile.name}! 🌾',
                     style: const TextStyle(
@@ -78,9 +74,9 @@ Widget _buildHeader() {
 
                   const SizedBox(height: 3),
 
-                  const Text(
-                    'Farm ID: #88432',
-                    style: TextStyle(
+                  Text(
+                    'Farm ID: #${profile.farmId}',
+                    style: const TextStyle(
                       color: Color(0xFF9ACB51),
                       fontSize: 9,
                       fontWeight: FontWeight.w600,
@@ -89,10 +85,6 @@ Widget _buildHeader() {
                 ],
               ),
             ),
-
-            // ==================================================
-            // PROFILE IMAGE
-            // ==================================================
 
             Container(
               width: 40,
@@ -107,7 +99,7 @@ Widget _buildHeader() {
                 ),
               ),
 
-              child: const ProfileImage(
+              child: ProfileImage(
                 size: 36,
               ),
             ),
@@ -116,9 +108,8 @@ Widget _buildHeader() {
       );
     },
   );
-}
-
-  // ============================================================
+} 
+ // ============================================================
   // STATISTICS
   // ============================================================
 

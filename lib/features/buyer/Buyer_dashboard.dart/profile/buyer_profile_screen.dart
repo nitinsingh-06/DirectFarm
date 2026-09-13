@@ -756,7 +756,7 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
                       Navigator.pop(dialogContext);
 
                       _performLogout();
-                      Navigator.push(
+                      Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(builder: (context) => LoginPage()),
                       );
