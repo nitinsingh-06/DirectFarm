@@ -23,6 +23,7 @@ from .routes.users import router as users_router
 from .routes.auth import router as auth_router
 from .routes.farmer_profile import router as farmer_profile_router
 from .routes.product import router as products_router
+from .routes.product_images import router as product_images_router
 
 
 app = FastAPI(
@@ -64,7 +65,7 @@ app.include_router(auth_router)
 app.include_router(farmer_profile_router)
 
 app.include_router(products_router)
-
+app.include_router(product_images_router)
 
 # ============================================================
 # ROOT
@@ -98,3 +99,11 @@ def health():
             "database": "disconnected",
             "error": str(e)
         }
+# ==============================================================
+# UPLOAD PRODUCT IMAGES
+# ==============================================================
+app.mount(
+    "/uploads",
+    StaticFiles(directory=str(UPLOADS_DIR)),
+    name="uploads"
+)

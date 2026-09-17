@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:farmdirect/features/farmer/dashboard/add_product.dart';
 import 'package:farmdirect/features/farmer/dashboard/my_product.dart';
-import 'package:farmdirect/features/farmer/dashboard/models/product_model.dart';
-
 
 // COLORS
 class AppColors {
@@ -28,17 +26,12 @@ class ProductScreen extends StatefulWidget {
 class _ProductScreenState extends State<ProductScreen> {
   int selectedIndex = 1;
 
-  final List<Product> products = [];
-
   @override
   Widget build(BuildContext context) {
     final screens = [
       const SimplePage(title: 'Home'),
 
-      MyProductsScreen(
-        products: products,
-        onAddProduct: _openAddProduct,
-      ),
+      MyProductsScreen(products: const [], onAddProduct: _openAddProduct),
 
       const SimplePage(title: 'Orders'),
       const SimplePage(title: 'Earnings'),
@@ -46,26 +39,15 @@ class _ProductScreenState extends State<ProductScreen> {
     ];
 
     return Scaffold(
-      body: SafeArea(
-        bottom: false,
-        child: screens[selectedIndex],
-      ),
+      body: SafeArea(bottom: false, child: screens[selectedIndex]),
     );
   }
 
   Future<void> _openAddProduct() async {
-    final Product? product = await Navigator.push<Product>(
+    await Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => const AddProductScreen(),
-      ),
+      MaterialPageRoute(builder: (_) => const AddProductScreen()),
     );
-
-    if (product != null) {
-      setState(() {
-        products.add(product);
-      });
-    }
   }
 }
 
@@ -74,20 +56,14 @@ class _ProductScreenState extends State<ProductScreen> {
 class SimplePage extends StatelessWidget {
   final String title;
 
-  const SimplePage({
-    super.key,
-    required this.title,
-  });
+  const SimplePage({super.key, required this.title});
 
   @override
   Widget build(BuildContext context) {
     return Center(
       child: Text(
         title,
-        style: const TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-        ),
+        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
       ),
     );
   }

@@ -1,3 +1,5 @@
+import 'package:farmdirect/services/api_services.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:farmdirect/features/farmer/dashboard/widgets/product_card.dart';
 import 'package:farmdirect/features/farmer/dashboard/models/product_model.dart';
@@ -5,7 +7,7 @@ import 'package:farmdirect/features/farmer/dashboard/product_screen.dart';
 
 class MyProductsScreen extends StatefulWidget {
   final List<Product> products;
-  final VoidCallback onAddProduct;
+  final Future<void> Function() onAddProduct;
 
   const MyProductsScreen({
     super.key,
@@ -18,6 +20,9 @@ class MyProductsScreen extends StatefulWidget {
 }
 
 class _MyProductsScreenState extends State<MyProductsScreen> {
+  bool isLoadingProducts = false;
+  List<Product> backendProducts = [];
+
   int selectedCategory = 0;
 
   final categories = ['All', 'Grains', 'Vegetables', 'Fruits', 'Dairy'];
@@ -35,12 +40,22 @@ class _MyProductsScreenState extends State<MyProductsScreen> {
         searchText = searchController.text.toLowerCase().trim();
       });
     });
+
+    _loadProducts();
   }
 
   @override
   void dispose() {
     searchController.dispose();
     super.dispose();
+  }
+
+  Future<void> _addProductAndRefresh() async {
+    await widget.onAddProduct();
+
+    if (!mounted) return;
+
+    await _loadProducts();
   }
 
   @override
@@ -69,6 +84,61 @@ class _MyProductsScreenState extends State<MyProductsScreen> {
         ),
       ],
     );
+  }
+
+  // --------------------------------------------------------
+  //  LOAD PRODUCT--------------------->
+  // --------------------------------------------------------
+
+  Future<void> _loadProducts() async {
+    final firebaseUser = FirebaseAuth.instance.currentUser;
+
+    if (firebaseUser == null) {
+      return;
+    }
+
+    try {
+      setState(() {
+        isLoadingProducts = true;
+      });
+
+      final idToken = await firebaseUser.getIdToken();
+
+      if (idToken == null || idToken.isEmpty) {
+        return;
+      }
+
+      final productsData = await ApiService.getMyProducts(idToken: idToken);
+
+      final loadedProducts = productsData.map<Product>((data) {
+        return Product(
+          name: data['name']?.toString() ?? '',
+          price: data['price']?.toString() ?? '0',
+          unit: data['unit']?.toString() ?? '',
+          category: _getCategoryName(data['category_id']),
+          stock:
+              double.tryParse(data['quantity_available']?.toString() ?? '0') ??
+              0,
+          imageUrl: data['image_url']?.toString(),
+          organic: false,
+        );
+      }).toList();
+
+      if (!mounted) return;
+
+      setState(() {
+        backendProducts = loadedProducts;
+        isLoadingProducts = false;
+      });
+    } catch (e) {
+      debugPrint('LOAD PRODUCTS ERROR: $e');
+
+      if (!mounted) return;
+
+      setState(() {
+        isLoadingProducts = false;
+      });
+    }
   }
 
   // ----------------------------------------------------------
@@ -172,19 +242,7 @@ class _MyProductsScreenState extends State<MyProductsScreen> {
   // ----------------------------------------------------------
 
   Widget _buildProductsGrid() {
-    final defaultProducts = [
-      Product(
-        name: 'Pure Cow Ghee',
-        price: '650',
-        unit: 'kg',
-        category: 'Dairy',
-        stock: 0,
-        images: [],
-        organic: false,
-      ),
-    ];
-
-    final allProducts = [...defaultProducts, ...widget.products];
+    final allProducts = [...backendProducts];
 
     final filteredProducts = allProducts.where((product) {
       // SEARCH FILTER
@@ -214,7 +272,7 @@ class _MyProductsScreenState extends State<MyProductsScreen> {
         // ADD NEW PRODUCT CARD
         cards.add(
           GestureDetector(
-            onTap: widget.onAddProduct,
+            onTap: _addProductAndRefresh,
             child: Container(
               height: 145,
               decoration: BoxDecoration(
@@ -267,7 +325,7 @@ class _MyProductsScreenState extends State<MyProductsScreen> {
               const SizedBox(height: 15),
 
               GestureDetector(
-                onTap: widget.onAddProduct,
+                onTap: _addProductAndRefresh,
                 child: Container(
                   height: 40,
                   padding: const EdgeInsets.symmetric(horizontal: 18),
@@ -306,4 +364,30 @@ class _MyProductsScreenState extends State<MyProductsScreen> {
       },
     );
   }
+
+  // --------------------------------------------------
+  // GET CATEGORYNAME
+  // --------------------------------------------------
+  String _getCategoryName(dynamic categoryId) {
+    switch (int.tryParse(categoryId.toString())) {
+      case 1:
+        return 'Vegetables';
+
+      case 2:
+        return 'Fruits';
+
+      case 3:
+        return 'Grains';
+
+      case 5:
+        return 'Dairy';
+
+      default:
+        return 'Other';
+    }
+  }
+
+  // ---------------------------------------
+  //
+  // ---------------------------------------
 }

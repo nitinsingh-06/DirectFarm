@@ -533,7 +533,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
     }
 
     // ----------------------------------------------------------
-    // GET CURRENT FIREBASE USER
+    // FIREBASE USER
     // ----------------------------------------------------------
 
     final firebaseUser = FirebaseAuth.instance.currentUser;
@@ -544,9 +544,9 @@ class _AddProductScreenState extends State<AddProductScreen> {
     }
 
     try {
-      // ----------------------------------------------------------
-      // GET FIREBASE ID TOKEN
-      // ----------------------------------------------------------
+      // --------------------------------------------------------
+      // FIREBASE TOKEN
+      // --------------------------------------------------------
 
       final idToken = await firebaseUser.getIdToken();
 
@@ -555,15 +555,31 @@ class _AddProductScreenState extends State<AddProductScreen> {
         return;
       }
 
-      // ----------------------------------------------------------
-      // GET CATEGORY ID
-      // ----------------------------------------------------------
+      // --------------------------------------------------------
+      // CATEGORY
+      // --------------------------------------------------------
 
       final categoryId = _getCategoryId(selectedCategory);
 
-      // ----------------------------------------------------------
-      // SEND PRODUCT TO FASTAPI
-      // ----------------------------------------------------------
+      // --------------------------------------------------------
+      // UPLOAD PRIMARY IMAGE
+      // --------------------------------------------------------
+
+      String? imageUrl;
+
+      if (selectedImages.isNotEmpty) {
+        _showMessage('Uploading product image...');
+
+        imageUrl = await ApiService.uploadProductImage(
+          imagePath: selectedImages.first.path,
+        );
+
+        debugPrint('PRODUCT IMAGE URL: $imageUrl');
+      }
+
+      // --------------------------------------------------------
+      // CREATE PRODUCT
+      // --------------------------------------------------------
 
       final response = await ApiService.createProduct(
         idToken: idToken,
@@ -573,14 +589,14 @@ class _AddProductScreenState extends State<AddProductScreen> {
         price: price,
         unit: _getShortUnit(selectedUnit),
         quantityAvailable: stock,
-        imageUrl: null,
+        imageUrl: imageUrl,
       );
 
       debugPrint('PRODUCT CREATED: $response');
 
-      // ----------------------------------------------------------
+      // --------------------------------------------------------
       // SUCCESS
-      // ----------------------------------------------------------
+      // --------------------------------------------------------
 
       if (!mounted) return;
 
@@ -592,10 +608,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
       Navigator.pop(context);
     } catch (e) {
-      // ----------------------------------------------------------
-      // ERROR
-      // ----------------------------------------------------------
-
       debugPrint('CREATE PRODUCT ERROR: $e');
 
       if (!mounted) return;

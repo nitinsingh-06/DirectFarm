@@ -229,4 +229,123 @@ class ApiService {
       throw Exception('Failed to create product: ${response.statusCode}');
     }
   }
+
+
+
+
+
+  // ----------------------------------------------------------------
+  //  GET MY PRODUCT (FARMER)
+  // ----------------------------------------------------------------
+  static Future<List<dynamic>> getMyProducts({
+  required String idToken,
+}) async {
+  final uri = Uri.parse(
+    '${ApiConfig.baseUrl}/products/my-products',
+  ).replace(
+    queryParameters: {
+      'id_token': idToken,
+    },
+  );
+
+  final response = await http.get(
+    uri,
+    headers: {
+      'Accept': 'application/json',
+    },
+  );
+
+  debugPrint(
+    'GET MY PRODUCTS STATUS: ${response.statusCode}',
+  );
+
+  debugPrint(
+    'GET MY PRODUCTS RESPONSE: ${response.body}',
+  );
+
+  if (response.statusCode == 200) {
+    return jsonDecode(response.body) as List<dynamic>;
+  }
+
+  try {
+    final body = jsonDecode(response.body);
+
+    throw Exception(
+      body['detail'] ?? 'Failed to load products',
+    );
+  } on FormatException {
+    throw Exception(
+      'Failed to load products: ${response.statusCode}',
+    );
+  }
+
+}
+
+
+
+  // -------------------------------------------------------
+  //  UPLOAD IMAGES OF PRODUCT
+  // -------------------------------------------------------
+ static Future<String> uploadProductImage({
+  required String imagePath,
+}) async {
+  final request = http.MultipartRequest(
+    'POST',
+    Uri.parse(
+      '${ApiConfig.baseUrl}/products/upload-image',
+    ),
+  );
+
+  request.headers['Accept'] = 'application/json';
+
+  request.files.add(
+    await http.MultipartFile.fromPath(
+      'file',
+      imagePath,
+    ),
+  );
+
+  final streamedResponse = await request.send();
+
+  final response = await http.Response.fromStream(
+    streamedResponse,
+  );
+
+  debugPrint(
+    'UPLOAD PRODUCT IMAGE STATUS: ${response.statusCode}',
+  );
+
+  debugPrint(
+    'UPLOAD PRODUCT IMAGE RESPONSE: ${response.body}',
+  );
+
+  if (response.statusCode >= 200 &&
+      response.statusCode < 300) {
+    final body =
+        jsonDecode(response.body) as Map<String, dynamic>;
+
+    return body['image_url'].toString();
+  }
+
+  try {
+    final body =
+        jsonDecode(response.body) as Map<String, dynamic>;
+
+    throw Exception(
+      body['detail'] ?? 'Image upload failed',
+    );
+  } on FormatException {
+    throw Exception(
+      'Image upload failed: ${response.statusCode}',
+    );
+  }
+}   
+
+
+
+
+
+
+
+
 }
