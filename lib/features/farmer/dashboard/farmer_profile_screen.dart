@@ -287,6 +287,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildProfileHeader() {
     return Consumer<ProfileProvider>(
       builder: (context, profile, child) {
+        final String name = profile.name.trim();
+
+        final String firstLetter = name.isNotEmpty
+            ? name[0].toUpperCase()
+            : 'U';
         return Container(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
@@ -298,12 +303,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
               // PROFILE IMAGE
               // ====================================================
               Container(
-                width: 44,
-                height: 44,
+                width: 40,
+                height: 40,
                 padding: const EdgeInsets.all(2),
+
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFFB8D9A8), width: 2),
+                  border: Border.all(color: const Color(0xFFB5D56A), width: 2),
                 ),
 
                 child: ClipOval(
@@ -313,20 +319,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           width: 36,
                           height: 36,
                           fit: BoxFit.cover,
+
                           errorBuilder: (context, error, stackTrace) {
-                            return Image.asset(
-                              profile.defaultImage,
-                              width: 36,
-                              height: 36,
-                              fit: BoxFit.cover,
+                            return Container(
+                              color: const Color(0xFFE8F5E9),
+                              alignment: Alignment.center,
+                              child: Text(
+                                firstLetter,
+                                style: const TextStyle(
+                                  color: Color(0xFF075B4A),
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             );
                           },
                         )
-                      : Image.asset(
-                          profile.defaultImage,
-                          width: 36,
-                          height: 36,
-                          fit: BoxFit.cover,
+                      : Container(
+                          color: const Color(0xFFE8F5E9),
+                          alignment: Alignment.center,
+                          child: Text(
+                            firstLetter,
+                            style: const TextStyle(
+                              color: Color(0xFF075B4A),
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                 ),
               ),

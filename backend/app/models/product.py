@@ -1,5 +1,15 @@
-from sqlalchemy import Column, BigInteger, String, Text, Numeric, Integer, DateTime, ForeignKey
+from sqlalchemy import (
+    Column,
+    BigInteger,
+    String,
+    Text,
+    Numeric,
+    Boolean,
+    DateTime,
+    ForeignKey,
+)
 from sqlalchemy.sql import func
+
 from ..database import Base
 
 
@@ -22,7 +32,24 @@ class Product(Base):
 
     farmer_id = Column(
         BigInteger,
-        ForeignKey("users.user_id"),
+        ForeignKey(
+            "farmer_profiles.farmer_id",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
+        index=True
+    )
+
+    # ============================================================
+    # CATEGORY
+    # ============================================================
+
+    category_id = Column(
+        BigInteger,
+        ForeignKey(
+            "categories.category_id",
+            ondelete="RESTRICT"
+        ),
         nullable=False,
         index=True
     )
@@ -41,14 +68,8 @@ class Product(Base):
         nullable=True
     )
 
-    category = Column(
-        String(100),
-        nullable=False,
-        index=True
-    )
-
     # ============================================================
-    # PRICE & QUANTITY
+    # PRICE
     # ============================================================
 
     price = Column(
@@ -56,19 +77,41 @@ class Product(Base):
         nullable=False
     )
 
-    quantity = Column(
-        Integer,
-        nullable=False,
-        default=0
+    # ============================================================
+    # UNIT
+    # ============================================================
+
+    unit = Column(
+        String(30),
+        nullable=False
     )
 
     # ============================================================
-    # PRODUCT IMAGE
+    # QUANTITY
+    # ============================================================
+
+    quantity_available = Column(
+        Numeric(10, 2),
+        nullable=False
+    )
+
+    # ============================================================
+    # IMAGE
     # ============================================================
 
     image_url = Column(
-        String(500),
+        Text,
         nullable=True
+    )
+
+    # ============================================================
+    # AVAILABILITY
+    # ============================================================
+
+    is_available = Column(
+        Boolean,
+        nullable=True,
+        default=True
     )
 
     # ============================================================
@@ -77,11 +120,11 @@ class Product(Base):
 
     created_at = Column(
         DateTime,
-        server_default=func.now()
+        server_default=func.current_timestamp()
     )
 
     updated_at = Column(
         DateTime,
-        server_default=func.now(),
-        onupdate=func.now()
+        server_default=func.current_timestamp(),
+        onupdate=func.current_timestamp()
     )

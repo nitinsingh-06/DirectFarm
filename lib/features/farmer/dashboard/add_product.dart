@@ -1,7 +1,8 @@
 import 'dart:io';
 
-import 'package:farmdirect/features/farmer/dashboard/models/product_model.dart';
 import 'package:farmdirect/features/farmer/dashboard/product_screen.dart';
+import 'package:farmdirect/services/api_services.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -44,12 +45,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(
-                  14,
-                  12,
-                  14,
-                  25,
-                ),
+                padding: const EdgeInsets.fromLTRB(14, 12, 14, 25),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -95,8 +91,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                       children: [
                         Expanded(
                           child: Column(
-                            crossAxisAlignment:
-                                CrossAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               _buildLabel('Price (₹)'),
 
@@ -107,8 +102,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
                                 hint: '350',
                                 keyboardType:
                                     const TextInputType.numberWithOptions(
-                                  decimal: true,
-                                ),
+                                      decimal: true,
+                                    ),
                               ),
                             ],
                           ),
@@ -118,8 +113,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
                         Expanded(
                           child: Column(
-                            crossAxisAlignment:
-                                CrossAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               _buildLabel('Per Unit'),
 
@@ -157,8 +151,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                     _buildTextField(
                       controller: stockController,
                       hint: '100',
-                      keyboardType:
-                          const TextInputType.numberWithOptions(
+                      keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),
                     ),
@@ -202,11 +195,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 14),
       decoration: const BoxDecoration(
         color: Colors.white,
-        border: Border(
-          bottom: BorderSide(
-            color: AppColors.border,
-          ),
-        ),
+        border: Border(bottom: BorderSide(color: AppColors.border)),
       ),
       child: Row(
         children: [
@@ -265,23 +254,15 @@ class _AddProductScreenState extends State<AddProductScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: AppColors.border,
-        ),
+        border: Border.all(color: AppColors.border),
       ),
       child: TextField(
         controller: controller,
         keyboardType: keyboardType,
-        style: const TextStyle(
-          fontSize: 11,
-          color: AppColors.textDark,
-        ),
+        style: const TextStyle(fontSize: 11, color: AppColors.textDark),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: const TextStyle(
-            fontSize: 10,
-            color: Color(0xFF8B969D),
-          ),
+          hintStyle: const TextStyle(fontSize: 10, color: Color(0xFF8B969D)),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 11,
@@ -307,9 +288,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: AppColors.border,
-        ),
+        border: Border.all(color: AppColors.border),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
@@ -320,17 +299,11 @@ class _AddProductScreenState extends State<AddProductScreen> {
             size: 17,
             color: Color(0xFF68747D),
           ),
-          style: const TextStyle(
-            fontSize: 10,
-            color: AppColors.textDark,
-          ),
+          style: const TextStyle(fontSize: 10, color: AppColors.textDark),
           items: items.map((item) {
             return DropdownMenuItem<String>(
               value: item,
-              child: Text(
-                item,
-                overflow: TextOverflow.ellipsis,
-              ),
+              child: Text(item, overflow: TextOverflow.ellipsis),
             );
           }).toList(),
           onChanged: onChanged,
@@ -354,9 +327,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: AppColors.border,
-              ),
+              border: Border.all(color: AppColors.border),
             ),
             child: const Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -369,10 +340,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                 SizedBox(height: 4),
                 Text(
                   'Add Photo',
-                  style: TextStyle(
-                    fontSize: 7.5,
-                    color: AppColors.textGrey,
-                  ),
+                  style: TextStyle(fontSize: 7.5, color: AppColors.textGrey),
                 ),
               ],
             ),
@@ -387,8 +355,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: selectedImages.length,
-              separatorBuilder: (_, __) =>
-                  const SizedBox(width: 7),
+              separatorBuilder: (_, __) => const SizedBox(width: 7),
               itemBuilder: (context, index) {
                 return Stack(
                   children: [
@@ -444,9 +411,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
     if (images.isEmpty) return;
 
     setState(() {
-      selectedImages.addAll(
-        images.map((image) => File(image.path)),
-      );
+      selectedImages.addAll(images.map((image) => File(image.path)));
     });
   }
 
@@ -456,16 +421,11 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
   Widget _buildOrganicSwitch() {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 11,
-        vertical: 7,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: AppColors.border,
-        ),
+        border: Border.all(color: AppColors.border),
       ),
       child: Row(
         children: [
@@ -484,10 +444,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                 SizedBox(height: 2),
                 Text(
                   'This product is organically certified',
-                  style: TextStyle(
-                    fontSize: 7.5,
-                    color: AppColors.textGrey,
-                  ),
+                  style: TextStyle(fontSize: 7.5, color: AppColors.textGrey),
                 ),
               ],
             ),
@@ -520,9 +477,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
           elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
         child: const Text(
           'Save Product',
@@ -539,11 +494,14 @@ class _AddProductScreenState extends State<AddProductScreen> {
   // ----------------------------------------------------------
   // SAVE PRODUCT
   // ----------------------------------------------------------
-
-  void _saveProduct() {
+  Future<void> _saveProduct() async {
     final name = productNameController.text.trim();
     final priceText = priceController.text.trim();
     final stockText = stockController.text.trim();
+
+    // ----------------------------------------------------------
+    // VALIDATION
+    // ----------------------------------------------------------
 
     if (name.isEmpty) {
       _showMessage('Please enter product name');
@@ -574,19 +532,77 @@ class _AddProductScreenState extends State<AddProductScreen> {
       return;
     }
 
-    final product = Product(
-      name: name,
-      price: price.toString(),
-      unit: _getShortUnit(selectedUnit),
-      category: _getShortCategory(selectedCategory),
-      stock: stock,
-      images: selectedImages,
-      organic: certifiedOrganic,
-    );
+    // ----------------------------------------------------------
+    // GET CURRENT FIREBASE USER
+    // ----------------------------------------------------------
 
-    Navigator.pop(context, product);
+    final firebaseUser = FirebaseAuth.instance.currentUser;
+
+    if (firebaseUser == null) {
+      _showMessage('Please login again');
+      return;
+    }
+
+    try {
+      // ----------------------------------------------------------
+      // GET FIREBASE ID TOKEN
+      // ----------------------------------------------------------
+
+      final idToken = await firebaseUser.getIdToken();
+
+      if (idToken == null || idToken.isEmpty) {
+        _showMessage('Unable to get Firebase token');
+        return;
+      }
+
+      // ----------------------------------------------------------
+      // GET CATEGORY ID
+      // ----------------------------------------------------------
+
+      final categoryId = _getCategoryId(selectedCategory);
+
+      // ----------------------------------------------------------
+      // SEND PRODUCT TO FASTAPI
+      // ----------------------------------------------------------
+
+      final response = await ApiService.createProduct(
+        idToken: idToken,
+        name: name,
+        description: null,
+        categoryId: categoryId,
+        price: price,
+        unit: _getShortUnit(selectedUnit),
+        quantityAvailable: stock,
+        imageUrl: null,
+      );
+
+      debugPrint('PRODUCT CREATED: $response');
+
+      // ----------------------------------------------------------
+      // SUCCESS
+      // ----------------------------------------------------------
+
+      if (!mounted) return;
+
+      _showMessage('Product saved successfully');
+
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      if (!mounted) return;
+
+      Navigator.pop(context);
+    } catch (e) {
+      // ----------------------------------------------------------
+      // ERROR
+      // ----------------------------------------------------------
+
+      debugPrint('CREATE PRODUCT ERROR: $e');
+
+      if (!mounted) return;
+
+      _showMessage(e.toString().replaceFirst('Exception: ', ''));
+    }
   }
-
   // ----------------------------------------------------------
   // UNIT
   // ----------------------------------------------------------
@@ -614,22 +630,25 @@ class _AddProductScreenState extends State<AddProductScreen> {
   // CATEGORY
   // ----------------------------------------------------------
 
-  String _getShortCategory(String category) {
+  // ----------------------------------------------------------
+  // CATEGORY ID
+  // ----------------------------------------------------------
+  int _getCategoryId(String category) {
     switch (category) {
-      case 'Fruits / फल':
-        return 'Fruits';
-
       case 'Vegetables / सब्जियां':
-        return 'Vegetables';
+        return 1;
+
+      case 'Fruits / फल':
+        return 2;
 
       case 'Grains / अनाज':
-        return 'Grains';
+        return 3;
 
       case 'Dairy / डेयरी':
-        return 'Dairy';
+        return 5;
 
       default:
-        return category;
+        return 7;
     }
   }
 
@@ -638,10 +657,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
   // ----------------------------------------------------------
 
   void _showMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-      ),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 }

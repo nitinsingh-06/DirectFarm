@@ -123,78 +123,110 @@ class ApiService {
     throw Exception('Failed to upload profile image: ${response.body}');
   }
 
-
-
   static Future<Map<String, dynamic>> getFarmerProfile({
-  required int userId,
-}) async {
-  final response = await http.get(
-    Uri.parse(
-      '${ApiConfig.baseUrl}/farmer-profile/$userId',
-    ),
-    headers: {
-      'Accept': 'application/json',
-    },
-  );
+    required int userId,
+  }) async {
+    final response = await http.get(
+      Uri.parse('${ApiConfig.baseUrl}/farmer-profile/$userId'),
+      headers: {'Accept': 'application/json'},
+    );
 
-  debugPrint(
-    'GET FARMER PROFILE STATUS: ${response.statusCode}',
-  );
+    debugPrint('GET FARMER PROFILE STATUS: ${response.statusCode}');
 
-  debugPrint(
-    'GET FARMER PROFILE RESPONSE: ${response.body}',
-  );
+    debugPrint('GET FARMER PROFILE RESPONSE: ${response.body}');
 
-  if (response.statusCode == 200) {
-    return jsonDecode(response.body) as Map<String, dynamic>;
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    }
+
+    throw Exception('Failed to load farmer profile: ${response.body}');
   }
 
-  throw Exception(
-    'Failed to load farmer profile: ${response.body}',
-  );
-}
+  static Future<Map<String, dynamic>> updateFarmerProfile({
+    required int userId,
+    required String farmName,
+    required String farmType,
+    required double? farmSize,
+    required List<String> crops,
+    required String certifications,
+    required int? yearsOfExperience,
+  }) async {
+    final response = await http.put(
+      Uri.parse('${ApiConfig.baseUrl}/farmer-profile/$userId'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: jsonEncode({
+        'farm_name': farmName,
+        'farm_type': farmType,
+        'farm_size': farmSize,
+        'crops': crops,
+        'certifications': certifications,
+        'years_of_experience': yearsOfExperience,
+      }),
+    );
 
-static Future<Map<String, dynamic>> updateFarmerProfile({
-  required int userId,
-  required String farmName,
-  required String farmType,
-  required double? farmSize,
-  required List<String> crops,
-  required String certifications,
-  required int? yearsOfExperience,
-}) async {
-  final response = await http.put(
-    Uri.parse(
-      '${ApiConfig.baseUrl}/farmer-profile/$userId',
-    ),
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    },
-    body: jsonEncode({
-      'farm_name': farmName,
-      'farm_type': farmType,
-      'farm_size': farmSize,
-      'crops': crops,
-      'certifications': certifications,
-      'years_of_experience': yearsOfExperience,
-    }),
-  );
+    debugPrint('UPDATE FARMER PROFILE STATUS: ${response.statusCode}');
 
-  debugPrint(
-    'UPDATE FARMER PROFILE STATUS: ${response.statusCode}',
-  );
+    debugPrint('UPDATE FARMER PROFILE RESPONSE: ${response.body}');
 
-  debugPrint(
-    'UPDATE FARMER PROFILE RESPONSE: ${response.body}',
-  );
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    }
 
-  if (response.statusCode == 200) {
-    return jsonDecode(response.body) as Map<String, dynamic>;
+    throw Exception('Failed to update farmer profile: ${response.body}');
   }
 
-  throw Exception(
-    'Failed to update farmer profile: ${response.body}',
-  );
-}
+  // ============================================================
+  // CREATE PRODUCT
+  // FARMER ONLY
+  // ============================================================
+  static Future<Map<String, dynamic>> createProduct({
+    required String idToken,
+    required String name,
+    String? description,
+    required int categoryId,
+    required double price,
+    required String unit,
+    required double quantityAvailable,
+    String? imageUrl,
+  }) async {
+    final uri = Uri.parse(
+      '${ApiConfig.baseUrl}/products',
+    ).replace(queryParameters: {'id_token': idToken});
+
+    final response = await http.post(
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: jsonEncode({
+        'name': name,
+        'description': description,
+        'category_id': categoryId,
+        'price': price,
+        'unit': unit,
+        'quantity_available': quantityAvailable,
+        'image_url': imageUrl,
+      }),
+    );
+
+    debugPrint('CREATE PRODUCT STATUS: ${response.statusCode}');
+
+    debugPrint('CREATE PRODUCT RESPONSE: ${response.body}');
+
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    }
+
+    try {
+      final body = jsonDecode(response.body);
+
+      throw Exception(body['detail'] ?? 'Failed to create product');
+    } on FormatException {
+      throw Exception('Failed to create product: ${response.statusCode}');
+    }
+  }
 }

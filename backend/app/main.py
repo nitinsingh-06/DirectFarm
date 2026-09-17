@@ -13,7 +13,7 @@ from .database import engine, Base
 from .models.user import User
 from .models.farmer_profile import FarmerProfile
 from .models.product import Product
-
+from .models.category import Category
 
 # ============================================================
 # IMPORT ROUTES
