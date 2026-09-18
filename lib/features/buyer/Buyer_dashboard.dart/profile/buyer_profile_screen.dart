@@ -123,7 +123,7 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const OrderScreen(),
+                          builder: (context) => const OrdersScreen(),
                         ),
                       );
                     },

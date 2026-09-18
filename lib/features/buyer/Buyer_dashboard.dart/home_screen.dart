@@ -1,6 +1,8 @@
-import 'package:farmdirect/core/provider/buyer_profile_provider.dart';
+import 'package:farmdirect/features/buyer/widgets/product_card.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
+import 'package:farmdirect/core/provider/buyer_profile_provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -11,100 +13,145 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   Set<String> selectedCategories = {"All"};
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(13, 12, 13, 20),
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(13, 10, 13, 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // =====================================================
+            // =========================================================
             // HEADER
-            // =====================================================
+            // =========================================================
             Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Consumer<BuyerProfileProvider>(
-                        builder: (context, profile, child) {
-                          return Text(
-                            profile.name.isNotEmpty
-                                ? "Welcome, ${profile.name}! 🛒"
-                                : "Welcome! 🛒",
-                            style: const TextStyle(
-                              fontSize: 19,
-                              fontWeight: FontWeight.w800,
-                              color: Color(0xFF075B4A),
+                      // FARM DIRECT LOGO
+                      RichText(
+                        text: const TextSpan(
+                          children: [
+                            TextSpan(
+                              text: "Farm",
+                              style: TextStyle(
+                                fontSize: 21,
+                                fontWeight: FontWeight.w900,
+                                color: Color(0xFF087C59),
+                              ),
                             ),
-                          );
-                        },
+                            TextSpan(
+                              text: "Direct",
+                              style: TextStyle(
+                                fontSize: 21,
+                                fontWeight: FontWeight.w900,
+                                color: Color(0xFF075B4A),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
 
-                      const SizedBox(height: 3),
+                      const Text(
+                        "From Farms to Your Home",
+                        style: TextStyle(
+                          fontSize: 7.5,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF7B8782),
+                        ),
+                      ),
+
+                      const SizedBox(height: 5),
+
+                      // LOCATION
+                      Row(
+                        children: const [
+                          Icon(
+                            Icons.location_on_rounded,
+                            size: 13,
+                            color: Color(0xFF087C59),
+                          ),
+
+                          SizedBox(width: 3),
+
+                          Text(
+                            "Dehradun, Uttarakhand",
+                            style: TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF455A64),
+                            ),
+                          ),
+
+                          Icon(
+                            Icons.keyboard_arrow_down_rounded,
+                            size: 14,
+                            color: Color(0xFF60716B),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
 
-                // Profile image
-                // Profile image
-                // Profile image
+                // =====================================================
+                // NOTIFICATION
+                // =====================================================
+                Container(
+                  width: 30,
+                  height: 30,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: const Color(0xFFE2E8E5)),
+                  ),
+                  child: const Icon(
+                    Icons.notifications_none_rounded,
+                    size: 17,
+                    color: Color(0xFF263238),
+                  ),
+                ),
+
+                const SizedBox(width: 8),
+
+                // =====================================================
+                // PROFILE IMAGE
+                // =====================================================
                 Consumer<BuyerProfileProvider>(
                   builder: (context, profile, child) {
                     final name = profile.name.trim();
 
                     final firstLetter = name.isNotEmpty
                         ? name[0].toUpperCase()
-                        : 'U';
+                        : "U";
 
                     final imageUrl = profile.fullProfileImageUrl;
 
                     return Container(
-                      width: 36,
-                      height: 36,
+                      width: 34,
+                      height: 34,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
                           color: const Color(0xFF80D000),
-                          width: 2,
+                          width: 1.8,
                         ),
                       ),
                       child: ClipOval(
                         child: imageUrl.isNotEmpty
                             ? Image.network(
                                 imageUrl,
-                                width: 36,
-                                height: 36,
                                 fit: BoxFit.cover,
                                 errorBuilder: (context, error, stackTrace) {
-                                  return Container(
-                                    color: const Color(0xFFE8F5E9),
-                                    alignment: Alignment.center,
-                                    child: Text(
-                                      firstLetter,
-                                      style: const TextStyle(
-                                        color: Color(0xFF075B4A),
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  );
+                                  return _profileFallback(firstLetter);
                                 },
                               )
-                            : Container(
-                                color: const Color(0xFFE8F5E9),
-                                alignment: Alignment.center,
-                                child: Text(
-                                  firstLetter,
-                                  style: const TextStyle(
-                                    color: Color(0xFF075B4A),
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
+                            : _profileFallback(firstLetter),
                       ),
                     );
                   },
@@ -114,79 +161,135 @@ class _HomeScreenState extends State<HomeScreen> {
 
             const SizedBox(height: 12),
 
-            // =====================================================
-            // SEARCH BAR
-            // =====================================================
-            Container(
-              height: 39,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: const Color(0xFFE2E6E8)),
-              ),
-              child: const TextField(
-                style: TextStyle(fontSize: 11),
-                decoration: InputDecoration(
-                  border: InputBorder.none,
+            // =========================================================
+            // SEARCH BAR + FILTER
+            // =========================================================
+            Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    height: 39,
 
-                  prefixIcon: Icon(
-                    Icons.search,
-                    size: 18,
-                    color: Color(0xFF8A949B),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: const Color(0xFFE0E7E4)),
+                    ),
+
+                    child: const TextField(
+                      textAlignVertical: TextAlignVertical.center,
+
+                      style: TextStyle(fontSize: 10, color: Color(0xFF263238)),
+
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+
+                        isDense: true,
+
+                        prefixIcon: Icon(
+                          Icons.search_rounded,
+                          size: 18,
+                          color: Color(0xFF89958F),
+                        ),
+
+                        prefixIconConstraints: BoxConstraints(
+                          minWidth: 38,
+                          minHeight: 39,
+                        ),
+
+                        hintText: "Search for fresh products...",
+
+                        hintStyle: TextStyle(
+                          fontSize: 9.5,
+                          color: Color(0xFF9AA49F),
+                        ),
+
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
                   ),
-
-                  hintText: "Search fresh vegetables, mangoes, grains...",
-
-                  hintStyle: TextStyle(
-                    fontSize: 10.5,
-                    color: Color(0xFF9AA3A8),
-                  ),
-
-                  contentPadding: EdgeInsets.symmetric(vertical: 10),
                 ),
-              ),
+
+                const SizedBox(width: 7),
+
+                // FILTER BUTTON
+                Container(
+                  width: 39,
+                  height: 39,
+
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFE0E7E4)),
+                  ),
+
+                  child: Material(
+                    color: Colors.transparent,
+
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(10),
+
+                      onTap: () {
+                        // Filter action later
+                      },
+
+                      child: const Center(
+                        child: Icon(
+                          Icons.tune_rounded,
+                          size: 18,
+                          color: Color(0xFF075B4A),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
 
-            const SizedBox(height: 9),
+            const SizedBox(height: 13),
 
-            // =====================================================
+            // =========================================================
             // CATEGORIES
-            // =====================================================
+            // =========================================================
             SizedBox(
-              height: 32,
-              child: ListView(
+              height: 74,
+
+              child: ListView.builder(
                 scrollDirection: Axis.horizontal,
-                children: [
-                  _category("All"),
+                physics: const BouncingScrollPhysics(),
 
-                  _category("Vegetables"),
+                itemCount: categories.length,
 
-                  _category("Fruits"),
+                itemBuilder: (context, index) {
+                  final category = categories[index];
 
-                  _category("Grains"),
-
-                  _category("Organic"),
-                ],
+                  return _categoryCircle(
+                    title: category["name"] as String,
+                    icon: category["icon"] as IconData,
+                    color: category["color"] as Color,
+                  );
+                },
               ),
             ),
-
-            const SizedBox(height: 8),
-
-            // =====================================================
-            // SEASONAL OFFER
-            // =====================================================
-            _buildOfferBanner(),
 
             const SizedBox(height: 4),
 
-            // =====================================================
-            // FEATURED FARMS HEADER
-            // =====================================================
+            // =========================================================
+            // FARMER BANNER
+            // =========================================================
+            _buildFarmerBanner(),
+
+            const SizedBox(height: 15),
+
+            // =========================================================
+            // FRESH PRODUCTS HEADER
+            // =========================================================
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
               children: [
                 const Text(
-                  "Featured Farms",
+                  "Fresh Products",
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w800,
@@ -194,136 +297,106 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
 
-                TextButton(
-                  onPressed: () {},
-                  style: TextButton.styleFrom(
-                    padding: EdgeInsets.zero,
-                    minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
+                GestureDetector(
+                  onTap: () {},
+
                   child: const Text(
-                    "View All",
+                    "See All",
                     style: TextStyle(
-                      fontSize: 10,
+                      fontSize: 9,
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFF4DAE91),
+                      color: Color(0xFF087C59),
                     ),
                   ),
                 ),
               ],
             ),
 
-            const SizedBox(height: 6),
+            const SizedBox(height: 8),
 
-            // =====================================================
-            // FEATURED FARMS
-            // =====================================================
-            SizedBox(
-              height: 124,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                children: const [
-                  _FarmCard(
-                    image: "assets/images/farm1.png",
-                    name: "GreenLand FPO",
-                    rating: "4.9",
-                    orders: "120+ orders",
-                  ),
-
-                  SizedBox(width: 10),
-
-                  _FarmCard(
-                    image: "assets/images/farm2.png",
-                    name: "Saffron Valley",
-                    rating: "4.8",
-                    orders: "85 orders",
-                  ),
-                ],
+            // =========================================================
+            // PRODUCT GRID
+            // =========================================================
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: products.length,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 9,
+                mainAxisSpacing: 10,
+                childAspectRatio: 0.92,
               ),
+              itemBuilder: (context, index) {
+                final product = products[index];
+
+                return ProductCard(
+                  image: product["image"]!,
+                  name: product["name"]!,
+                  price: product["price"]!,
+                  farm: product["farm"]!,
+                  location: product["location"]!,
+                  description: product["description"]!,
+                  rating: product["rating"]!,
+                  unit: product["unit"]!,
+                );
+              },
             ),
 
-            const SizedBox(height: 13),
-
-            // =====================================================
-            // FRESH ARRIVALS HEADER
-            // =====================================================
-            const Text(
-              "Fresh Arrivals",
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w800,
-                color: Color(0xFF263238),
-              ),
-            ),
-
-            const SizedBox(height: 7),
-
-            // =====================================================
-            // FRESH ARRIVALS
-            // =====================================================
-            Row(
-              children: const [
-                Expanded(
-                  child: InkWell(
-                    child: _ProductCard(
-                      image: "assets/images/tomatoes.png",
-                      name: "Organic Tomatoes",
-                      price: "₹40 / kg",
-                      farm: "By Ramgarh Farms",
-                    ),
-                  ),
-                ),
-
-                SizedBox(width: 10),
-
-                Expanded(
-                  child: _ProductCard(
-                    image: "assets/images/mangoes.png",
-                    name: "Alphonso Mangoes",
-                    price: "₹450 / dozen",
-                    farm: "By Ratnagiri FPO",
-                  ),
-                ),
-              ],
-            ),
+            const SizedBox(height: 10),
           ],
         ),
       ),
     );
   }
 
-  // =============================================================
-  // CATEGORY
-  // =============================================================
-  Widget _category(String title) {
+  // ================================================================
+  // PROFILE FALLBACK
+  // ================================================================
+
+  Widget _profileFallback(String letter) {
+    return Container(
+      color: const Color(0xFFE8F5E9),
+
+      alignment: Alignment.center,
+
+      child: Text(
+        letter,
+
+        style: const TextStyle(
+          color: Color(0xFF075B4A),
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+  // ================================================================
+  // CATEGORY CIRCLE
+  // ================================================================
+
+  Widget _categoryCircle({
+    required String title,
+    required IconData icon,
+    required Color color,
+  }) {
     final bool isSelected = selectedCategories.contains(title);
 
     return GestureDetector(
       onTap: () {
         setState(() {
-          // =====================================================
-          // ALL
-          // =====================================================
-
           if (title == "All") {
-            // Selecting All removes every other selection
             selectedCategories = {"All"};
-          }
-          // =====================================================
-          // OTHER CATEGORIES
-          // =====================================================
-          else {
-            // Remove All when selecting an individual category
+          } else {
             selectedCategories.remove("All");
 
-            // Toggle the selected category
             if (selectedCategories.contains(title)) {
               selectedCategories.remove(title);
             } else {
               selectedCategories.add(title);
             }
 
-            // If nothing is selected, automatically select All
             if (selectedCategories.isEmpty) {
               selectedCategories.add("All");
             }
@@ -332,256 +405,310 @@ class _HomeScreenState extends State<HomeScreen> {
       },
 
       child: Container(
-        margin: const EdgeInsets.only(right: 7),
+        width: 59,
 
-        padding: const EdgeInsets.symmetric(horizontal: 14),
+        margin: const EdgeInsets.only(right: 9),
 
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF075B4A) : Colors.white,
-
-          borderRadius: BorderRadius.circular(18),
-
-          border: Border.all(
-            color: isSelected
-                ? const Color(0xFF075B4A)
-                : const Color(0xFFE1E5E8),
-          ),
-        ),
-
-        alignment: Alignment.center,
-
-        child: Text(
-          title,
-
-          style: TextStyle(
-            fontSize: 9.5,
-            fontWeight: FontWeight.w700,
-
-            color: isSelected ? Colors.white : const Color(0xFF455A64),
-          ),
-        ),
-      ),
-    );
-  }
-  // =============================================================
-  // OFFER BANNER
-  // =============================================================
-
-  Widget _buildOfferBanner() {
-    return Container(
-      height: 100,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(13),
-        image: const DecorationImage(
-          image: AssetImage("assets/images/mango_offer.jpg"),
-          fit: BoxFit.cover,
-        ),
-      ),
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(12, 10, 10, 8),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(13),
-          color: Colors.black.withOpacity(0.25),
-        ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+
+              width: 47,
+              height: 47,
+
               decoration: BoxDecoration(
-                color: const Color(0xFF80D000),
-                borderRadius: BorderRadius.circular(3),
-              ),
-              child: const Text(
-                "SEASONAL OFFER",
-                style: TextStyle(
-                  fontSize: 7,
-                  fontWeight: FontWeight.w900,
-                  color: Color(0xFF164000),
+                color: isSelected
+                    ? color.withOpacity(0.12)
+                    : const Color(0xFFF3F5F4),
+
+                shape: BoxShape.circle,
+
+                border: Border.all(
+                  color: isSelected ? color : Colors.transparent,
+
+                  width: 1.5,
                 ),
               ),
+
+              child: Icon(icon, size: 22, color: color),
             ),
 
             const SizedBox(height: 5),
 
-            const Text(
-              "Get 20% Off on Fresh Mangoes!",
+            Text(
+              title,
+
+              maxLines: 1,
+
+              overflow: TextOverflow.ellipsis,
+
+              textAlign: TextAlign.center,
+
               style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w800,
-                color: Colors.white,
+                fontSize: 7.5,
+
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+
+                color: isSelected
+                    ? const Color(0xFF075B4A)
+                    : const Color(0xFF6D7974),
               ),
-            ),
-
-            const SizedBox(height: 2),
-
-            const Text(
-              "Directly from Ratnagiri Farms • Use Code: MANGO20",
-              style: TextStyle(fontSize: 8.5, color: Colors.white),
             ),
           ],
         ),
       ),
     );
   }
-}
 
-// =================================================================
-// FARM CARD
-// =================================================================
+  // ================================================================
+  // FARMER BANNER
+  // ================================================================
 
-class _FarmCard extends StatelessWidget {
-  final String image;
-  final String name;
-  final String rating;
-  final String orders;
-
-  const _FarmCard({
-    required this.image,
-    required this.name,
-    required this.rating,
-    required this.orders,
-  });
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildFarmerBanner() {
     return Container(
-      width: 130,
-      padding: const EdgeInsets.all(7),
+      height: 101,
+      width: double.infinity,
+
+      clipBehavior: Clip.antiAlias,
+
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE3E7EA)),
+        borderRadius: BorderRadius.circular(13),
+
+        gradient: const LinearGradient(
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+
+          colors: [Color(0xFF075B4A), Color(0xFF15835D)],
+        ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+
+      child: Stack(
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(7),
+          // ----------------------------------------------------------
+          // RIGHT IMAGE
+          // ----------------------------------------------------------
+          Positioned(
+            right: -5,
+            top: 0,
+            bottom: 0,
+            width: 145,
+
             child: Image.asset(
-              image,
-              width: double.infinity,
-              height: 57,
+              "assets/images/farm1.png",
+
               fit: BoxFit.cover,
+
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Color(0xFF2B785E), Color(0xFF83A86C)],
+                    ),
+                  ),
+                );
+              },
             ),
           ),
 
-          const SizedBox(height: 5),
+          // ----------------------------------------------------------
+          // DARK OVERLAY
+          // ----------------------------------------------------------
+          Positioned(
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: 220,
 
-          Text(
-            name,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w800,
-              color: Color(0xFF263238),
-            ),
-          ),
-
-          const SizedBox(height: 3),
-
-          Row(
-            children: [
-              const Icon(Icons.star, size: 11, color: Color(0xFFFFB300)),
-
-              const SizedBox(width: 3),
-
-              Text(
-                "$rating (${orders})",
-                style: const TextStyle(fontSize: 7.5, color: Color(0xFF7B8794)),
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    const Color(0xFF075B4A),
+                    const Color(0xFF075B4A).withOpacity(0.88),
+                    Colors.transparent,
+                  ],
+                ),
               ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// =================================================================
-// PRODUCT CARD
-// =================================================================
-
-class _ProductCard extends StatelessWidget {
-  final String image;
-  final String name;
-  final String price;
-  final String farm;
-
-  const _ProductCard({
-    required this.image,
-    required this.name,
-    required this.price,
-    required this.farm,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 165,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE3E7EA)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(11)),
-            child: Image.asset(
-              image,
-              width: double.infinity,
-              height: 91,
-              fit: BoxFit.cover,
             ),
           ),
 
-          Padding(
-            padding: const EdgeInsets.fromLTRB(8, 7, 7, 5),
+          // ----------------------------------------------------------
+          // TEXT
+          // ----------------------------------------------------------
+          const Positioned(
+            left: 13,
+            top: 13,
+
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+
               children: [
                 Text(
-                  name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 10.5,
+                  "Fresh from Farmers",
+
+                  style: TextStyle(
+                    fontSize: 14,
                     fontWeight: FontWeight.w800,
-                    color: Color(0xFF263238),
+                    color: Colors.white,
                   ),
                 ),
 
-                const SizedBox(height: 3),
-
                 Text(
-                  price,
-                  style: const TextStyle(
-                    fontSize: 10,
+                  "Direct to You",
+
+                  style: TextStyle(
+                    fontSize: 14,
                     fontWeight: FontWeight.w800,
-                    color: Color(0xFF087C59),
+                    color: Colors.white,
                   ),
                 ),
 
-                const SizedBox(height: 2),
+                SizedBox(height: 5),
 
                 Text(
-                  farm,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 7.5,
-                    color: Color(0xFF8A949B),
+                  "Support local farmers.\n"
+                  "Get fresh. Eat healthy.",
+
+                  style: TextStyle(
+                    fontSize: 8,
+                    height: 1.3,
+                    color: Colors.white,
                   ),
                 ),
               ],
             ),
           ),
+
+          // ----------------------------------------------------------
+          // ARROW
+          // ----------------------------------------------------------
+          Positioned(
+            left: 145,
+            top: 37,
+
+            child: Container(
+              width: 28,
+              height: 28,
+
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+              ),
+
+              child: const Icon(
+                Icons.arrow_forward_rounded,
+                size: 16,
+                color: Color(0xFF087C59),
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
 }
+
+// ==================================================================
+// PRODUCT DATA
+// ==================================================================
+
+final List<Map<String, String>> products = [
+  {
+    "image": "assets/images/tomatoes.png",
+
+    "name": "Tomato",
+
+    "price": "40",
+
+    "unit": "kg",
+
+    "rating": "4.8",
+
+    "farm": "Ramesh Singh",
+
+    "location": "Dehradun, Uttarakhand",
+
+    "description": "Fresh farm-grown tomatoes directly from local farmers.",
+  },
+
+  {
+    "image": "assets/images/potato.png",
+
+    "name": "Potato",
+
+    "price": "25",
+
+    "unit": "kg",
+
+    "rating": "4.7",
+
+    "farm": "Suresh Negi",
+
+    "location": "Rishikesh, Uttarakhand",
+
+    "description": "Fresh quality potatoes sourced directly from the farm.",
+  },
+
+  {
+    "image": "assets/images/onion.png",
+
+    "name": "Onion",
+
+    "price": "30",
+
+    "unit": "kg",
+
+    "rating": "4.7",
+
+    "farm": "Local Farmers",
+
+    "location": "Dehradun, Uttarakhand",
+
+    "description": "Fresh onions directly sourced from local farmers.",
+  },
+
+  {
+    "image": "assets/images/spinach.png",
+
+    "name": "Spinach",
+
+    "price": "20",
+
+    "unit": "bunch",
+
+    "rating": "4.8",
+
+    "farm": "Green Farm",
+
+    "location": "Dehradun, Uttarakhand",
+
+    "description": "Fresh and naturally grown spinach from local farms.",
+  },
+];
+
+// ==================================================================
+// CATEGORIES
+// ==================================================================
+
+final List<Map<String, dynamic>> categories = [
+  {"name": "All", "icon": Icons.grid_view_rounded, "color": Color(0xFF087C59)},
+
+  {"name": "Vegetables", "icon": Icons.eco_rounded, "color": Color(0xFF63B33F)},
+
+  {"name": "Fruits", "icon": Icons.apple, "color": Color(0xFFE53935)},
+
+  {"name": "Grains", "icon": Icons.grain_rounded, "color": Color(0xFFE7A72B)},
+
+  {
+    "name": "Dairy",
+    "icon": Icons.local_drink_rounded,
+    "color": Color(0xFF42A5F5),
+  },
+
+  {
+    "name": "Other",
+    "icon": Icons.more_horiz_rounded,
+    "color": Color(0xFF607D8B),
+  },
+];

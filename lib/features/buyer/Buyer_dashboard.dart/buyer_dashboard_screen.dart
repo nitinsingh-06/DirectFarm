@@ -1,9 +1,11 @@
+import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/categories_screen.dart';
 import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/home_screen.dart';
 import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/market_place_screen.dart';
 import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/marketplace/add_to_cart.dart';
 import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/order/order_screen.dart';
 import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/profile/buyer_profile_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class BuyerDashboard extends StatefulWidget {
   const BuyerDashboard({super.key});
@@ -41,9 +43,9 @@ class _BuyerDashboardState extends State<BuyerDashboard> {
             label: "Home",
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.search_outlined),
-            activeIcon: Icon(Icons.search),
-            label: "Market",
+            icon: Icon(Icons.category),
+            activeIcon: Icon(Icons.category),
+            label: "Categories",
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.shopping_bag_outlined),
@@ -71,7 +73,7 @@ class _BuyerDashboardState extends State<BuyerDashboard> {
         return const HomeScreen();
 
       case 1:
-        return const MarketplaceScreen();
+        return const CategoriesScreen();
       
 
       case 2:
@@ -79,7 +81,7 @@ class _BuyerDashboardState extends State<BuyerDashboard> {
       
 
       case 3:
-        return const OrderScreen();
+        return const OrdersScreen();
 
       case 4:
         return const BuyerProfileScreen();

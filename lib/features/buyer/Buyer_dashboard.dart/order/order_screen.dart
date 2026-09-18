@@ -1,31 +1,141 @@
-import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/order/order_tracking.dart';
 import 'package:flutter/material.dart';
 
-class OrderScreen extends StatefulWidget {
-  const OrderScreen({super.key});
+class OrdersScreen extends StatefulWidget {
+  const OrdersScreen({super.key});
 
   @override
-  State<OrderScreen> createState() => _OrderScreenState();
+  State<OrdersScreen> createState() => _OrdersScreenState();
 }
 
-class _OrderScreenState extends State<OrderScreen> {
-  // ============================================================
-  // COLORS
-  // ============================================================
-
-  static const Color primaryGreen = Color(0xFF006B4F);
-  static const Color backgroundColor = Color(0xFFF7F9F8);
-  static const Color textColor = Color(0xFF26332F);
-  static const Color secondaryText = Color(0xFF89938F);
-  static const Color borderColor = Color(0xFFE2E7E5);
-
-  // ============================================================
-  // SELECTED TAB
-  // ============================================================
-
+class _OrdersScreenState extends State<OrdersScreen> {
   int selectedTab = 0;
 
-  final List<String> tabs = ["Active (2)", "Completed", "Cancelled"];
+  final List<String> tabs = [
+    "All Orders",
+    "Processing",
+    "Shipped",
+    "Delivered",
+    "Cancelled",
+  ];
+
+  // ============================================================
+  // DEMO ORDER DATA
+  // UI ONLY - BACKEND WILL BE CONNECTED LATER
+  // ============================================================
+
+  final List<Map<String, dynamic>> orders = [
+    {
+      "id": "#FD1258",
+      "date": "12 Dec 2024, 10:24 AM",
+      "status": "Delivered",
+      "farmer": "Ramesh Singh",
+      "location": "Dehradun, Uttarakhand",
+      "items": "4 items",
+      "total": "₹210",
+      "action": "Buy Again",
+      "images": [
+        "https://images.unsplash.com/photo-1546094096-0df4bcaaa337?w=200",
+        "https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=200",
+        "https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=200",
+        "https://images.unsplash.com/photo-1445282768818-728615cc910a?w=200",
+      ],
+      "quantities": ["2", "1", "1", "1"],
+    },
+    {
+      "id": "#FD1247",
+      "date": "8 Dec 2024, 3:15 PM",
+      "status": "Processing",
+      "farmer": "Suresh Negi",
+      "location": "Rishikesh, Uttarakhand",
+      "items": "3 items",
+      "total": "₹320",
+      "action": "Cancel Order",
+      "images": [
+        "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=200",
+        "https://images.unsplash.com/photo-1546094096-0df4bcaaa337?w=200",
+        "https://images.unsplash.com/photo-1563298723-dcfebaa392e3?w=200",
+      ],
+      "quantities": ["2", "1", "1"],
+    },
+    {
+      "id": "#FD1236",
+      "date": "3 Dec 2024, 9:40 AM",
+      "status": "Shipped",
+      "farmer": "Anita Rawat",
+      "location": "Haridwar, Uttarakhand",
+      "items": "3 items",
+      "total": "₹150",
+      "action": "Track Order",
+      "images": [
+        "https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=200",
+        "https://images.unsplash.com/photo-1568584711075-3d021a7c3ca3?w=200",
+        "https://images.unsplash.com/photo-1546094096-0df4bcaaa337?w=200",
+      ],
+      "quantities": ["1", "1", "2"],
+    },
+    {
+      "id": "#FD1221",
+      "date": "28 Nov 2024, 6:20 PM",
+      "status": "Cancelled",
+      "farmer": "Vikram Thapa",
+      "location": "Roorkee, Uttarakhand",
+      "items": "2 items",
+      "total": "₹90",
+      "action": "Buy Again",
+      "images": [
+        "https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=200",
+        "https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=200",
+      ],
+      "quantities": ["2", "1"],
+    },
+    {
+      "id": "#FD1210",
+      "date": "22 Nov 2024, 11:10 AM",
+      "status": "Delivered",
+      "farmer": "Mohan Singh",
+      "location": "Dehradun, Uttarakhand",
+      "items": "3 items",
+      "total": "₹280",
+      "action": "Buy Again",
+      "images": [
+        "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=200",
+        "https://images.unsplash.com/photo- 香蕉?w=200",
+        "https://images.unsplash.com/photo-1546094096-0df4bcaaa337?w=200",
+      ],
+      "quantities": ["3", "2", "1"],
+    },
+    {
+      "id": "#FD1198",
+      "date": "18 Nov 2024, 4:30 PM",
+      "status": "Processing",
+      "farmer": "Deepak Rawat",
+      "location": "Mussoorie, Uttarakhand",
+      "items": "5 items",
+      "total": "₹390",
+      "action": "Cancel Order",
+      "images": [
+        "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=200",
+        "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=200",
+      ],
+      "quantities": ["2", "3"],
+    },
+  ];
+
+  // ============================================================
+  // FILTER ORDERS
+  // ============================================================
+
+  List<Map<String, dynamic>> get filteredOrders {
+    if (selectedTab == 0) {
+      return orders;
+    }
+
+    final selectedStatus = tabs[selectedTab];
+
+    return orders.where((order) {
+      return order["status"] == selectedStatus;
+    }).toList();
+  }
 
   // ============================================================
   // BUILD
@@ -34,28 +144,44 @@ class _OrderScreenState extends State<OrderScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: const Color(0xFFF7FAF8),
 
       body: SafeArea(
         child: Column(
           children: [
-            // ==================================================
-            // FIXED HEADER
-            // ==================================================
+
+            // TOP HEADER
             _buildHeader(),
 
-            // ==================================================
-            // FIXED FILTER TABS
-            // ==================================================
+            // STATUS TABS
             _buildTabs(),
 
-            // ==================================================
             // SCROLLABLE ORDERS
-            // ==================================================
-            Expanded(child: _buildOrdersList()),
+            Expanded(
+              child: filteredOrders.isEmpty
+                  ? _buildEmptyState()
+                  : ListView.builder(
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.fromLTRB(
+                        10,
+                        8,
+                        10,
+                        20,
+                      ),
+                      itemCount: filteredOrders.length,
+                      itemBuilder: (context, index) {
+                        return _buildOrderCard(
+                          filteredOrders[index],
+                        );
+                      },
+                    ),
+            ),
           ],
         ),
       ),
+
+    
+     
     );
   }
 
@@ -65,41 +191,113 @@ class _OrderScreenState extends State<OrderScreen> {
 
   Widget _buildHeader() {
     return Container(
-      height: 48,
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      color: Colors.white,
+      height: 67,
+      padding: const EdgeInsets.fromLTRB(
+        11,
+        7,
+        10,
+        5,
+      ),
+      color: const Color(0xFFF7FAF8),
 
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const Text(
-            "My Orders",
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w800,
-              color: primaryGreen,
+
+          // TITLE
+          const Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+
+                Text(
+                  "My Orders",
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF17252C),
+                  ),
+                ),
+
+                SizedBox(height: 1),
+
+                Text(
+                  "Track and manage your orders",
+                  style: TextStyle(
+                    fontSize: 8,
+                    color: Color(0xFF718079),
+                  ),
+                ),
+              ],
             ),
           ),
 
-          const Spacer(),
+          // SEARCH
+          _headerButton(
+            icon: Icons.search_rounded,
+            onTap: () {},
+          ),
 
-          // Search / filter button
-          Container(
-            width: 30,
-            height: 30,
+          const SizedBox(width: 7),
 
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(9),
-              border: Border.all(color: borderColor),
-            ),
+          // CART
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
 
-            child: const Icon(
-              Icons.circle_outlined,
-              size: 13,
-              color: primaryGreen,
-            ),
+              _headerButton(
+                icon: Icons.shopping_cart_outlined,
+                onTap: () {},
+              ),
+
+              Positioned(
+                right: -3,
+                top: -4,
+                child: Container(
+                  width: 15,
+                  height: 15,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFFF4D55),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Center(
+                    child: Text(
+                      "3",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 7,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _headerButton({
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 35,
+        height: 35,
+        decoration: const BoxDecoration(
+          color: Color(0xFFEFF5F2),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(
+          icon,
+          size: 18,
+          color: const Color(0xFF263238),
+        ),
       ),
     );
   }
@@ -110,142 +308,69 @@ class _OrderScreenState extends State<OrderScreen> {
 
   Widget _buildTabs() {
     return Container(
-      height: 42,
-      color: Colors.white,
-
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-
-      child: Row(
-        children: List.generate(tabs.length, (index) {
-          return Padding(
-            padding: const EdgeInsets.only(right: 7),
-            child: _buildTab(title: tabs[index], index: index),
-          );
-        }),
+      height: 39,
+      margin: const EdgeInsets.symmetric(
+        horizontal: 10,
       ),
-    );
-  }
+      decoration: BoxDecoration(
+        color: const Color(0xFFEAF1ED),
+        borderRadius: BorderRadius.circular(9),
+      ),
 
-  // ============================================================
-  // SINGLE TAB
-  // ============================================================
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        itemCount: tabs.length,
+        itemBuilder: (context, index) {
 
-  Widget _buildTab({required String title, required int index}) {
-    final bool isSelected = selectedTab == index;
+          final bool selected =
+              selectedTab == index;
 
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          selectedTab = index;
-        });
-      },
+          return GestureDetector(
+            onTap: () {
+              setState(() {
+                selectedTab = index;
+              });
+            },
 
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
+            child: AnimatedContainer(
+              duration: const Duration(
+                milliseconds: 180,
+              ),
 
-        padding: const EdgeInsets.symmetric(horizontal: 13),
+              margin: const EdgeInsets.all(3),
 
-        decoration: BoxDecoration(
-          color: isSelected ? primaryGreen : Colors.white,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 14,
+              ),
 
-          borderRadius: BorderRadius.circular(16),
+              decoration: BoxDecoration(
+                color: selected
+                    ? const Color(0xFF087C59)
+                    : Colors.transparent,
 
-          border: Border.all(color: isSelected ? primaryGreen : borderColor),
-        ),
+                borderRadius:
+                    BorderRadius.circular(7),
+              ),
 
-        child: Center(
-          child: Text(
-            title,
+              alignment: Alignment.center,
 
-            style: TextStyle(
-              fontSize: 8,
-              fontWeight: FontWeight.w700,
-
-              color: isSelected ? Colors.white : textColor,
+              child: Text(
+                tabs[index],
+                style: TextStyle(
+                  fontSize: 8,
+                  fontWeight: selected
+                      ? FontWeight.w700
+                      : FontWeight.w500,
+                  color: selected
+                      ? Colors.white
+                      : const Color(0xFF61716A),
+                ),
+              ),
             ),
-          ),
-        ),
+          );
+        },
       ),
-    );
-  }
-
-  // ============================================================
-  // ORDERS LIST
-  // ============================================================
-
-  Widget _buildOrdersList() {
-    return ListView(
-      physics: const BouncingScrollPhysics(),
-
-      padding: const EdgeInsets.fromLTRB(9, 9, 9, 25),
-
-      children: [
-        _buildOrderCard(
-          orderNumber: "#FD-894201",
-          date: "26 Oct 2026",
-          status: "Processing",
-          statusColor: const Color(0xFFFFB300),
-          statusBackground: const Color(0xFFFFF1C7),
-
-          seller: "GreenLand FPO",
-          products: "Organic Tomatoes, Alphonso Mangoes",
-          itemCount: "3 items total",
-          amount: "₹730",
-
-          // Order Details
-          buyerName: "Priya Sharma",
-
-          buyerAddress: "Flat 402, Sector 15, Dwarka, Delhi NCR, 110075",
-
-          productName: "Organic Tomatoes",
-
-          quantity: "2 kg",
-
-          price: "40",
-
-          logistics: "40",
-
-          totalAmount: "730",
-        ),
-
-        const SizedBox(height: 10),
-        _buildOrderCard(
-          orderNumber: "#FD-893112",
-          date: "22 Oct 2026",
-          status: "Shipped",
-
-          statusColor: const Color(0xFF4D8EFF),
-          statusBackground: const Color(0xFFE4EEFF),
-
-          seller: "Ratnagiri Farms FPO",
-
-          products: "Fresh Cauliflower, Organic Green Chillies",
-
-          itemCount: "2 items total",
-
-          amount: "₹205",
-
-          // Order Details
-          buyerName: "Priya Sharma",
-
-          buyerAddress: "Flat 402, Sector 15, Dwarka, Delhi NCR, 110075",
-
-          productName: "Fresh Cauliflower",
-
-          quantity: "2 kg",
-
-          price: "205",
-
-          logistics: "40",
-
-          totalAmount: "205",
-        ),
-
-        const SizedBox(height: 10),
-
-        // Example third order
-
-      ],
     );
   }
 
@@ -253,236 +378,248 @@ class _OrderScreenState extends State<OrderScreen> {
   // ORDER CARD
   // ============================================================
 
-  Widget _buildOrderCard({
-    required String orderNumber,
-    required String date,
-    required String status,
-    required Color statusColor,
-    required Color statusBackground,
-    required String seller,
-    required String products,
-    required String itemCount,
-    required String amount,
-
-    // Order details
-    required String buyerName,
-    required String buyerAddress,
-    required String productName,
-    required String quantity,
-    required String price,
-    required String logistics,
-    required String totalAmount,
-  }) {
+  Widget _buildOrderCard(
+    Map<String, dynamic> order,
+  ) {
     return Container(
-      width: double.infinity,
+      margin: const EdgeInsets.only(
+        bottom: 9,
+      ),
 
-      padding: const EdgeInsets.fromLTRB(11, 10, 10, 9),
+      padding: const EdgeInsets.fromLTRB(
+        9,
+        8,
+        9,
+        7,
+      ),
 
       decoration: BoxDecoration(
         color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
 
-        borderRadius: BorderRadius.circular(11),
+        border: Border.all(
+          color: const Color(0xFFE4EAE7),
+          width: 0.7,
+        ),
 
-        border: Border.all(color: borderColor, width: 0.8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.025),
+            blurRadius: 5,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
 
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-
         children: [
-          // ==================================================
-          // ORDER NUMBER + STATUS
-          // ==================================================
+
+          // =====================================================
+          // ORDER HEADER
+          // =====================================================
+
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment:
+                CrossAxisAlignment.start,
 
             children: [
+
               Expanded(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-
+                  crossAxisAlignment:
+                      CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      "Order $orderNumber",
 
+                    Text(
+                      "Order ${order["id"]}",
                       style: const TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w800,
-                        color: textColor,
+                        color: Color(0xFF17252C),
                       ),
                     ),
 
                     const SizedBox(height: 2),
 
                     Text(
-                      "Placed on $date",
-
-                      style: const TextStyle(fontSize: 8, color: secondaryText),
+                      order["date"],
+                      style: const TextStyle(
+                        fontSize: 7,
+                        color: Color(0xFF718079),
+                      ),
                     ),
                   ],
                 ),
               ),
 
-              // ------------------------------------------
-              // STATUS
-              // ------------------------------------------
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              _buildStatusBadge(
+                order["status"],
+              ),
 
-                decoration: BoxDecoration(
-                  color: statusBackground,
+              const SizedBox(width: 5),
 
-                  borderRadius: BorderRadius.circular(6),
+              const Icon(
+                Icons.chevron_right_rounded,
+                size: 17,
+                color: Color(0xFF7C8984),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 7),
+
+          // =====================================================
+          // PRODUCTS + TOTAL
+          // =====================================================
+
+          Row(
+            crossAxisAlignment:
+                CrossAxisAlignment.start,
+
+            children: [
+
+              // PRODUCT IMAGES
+              Expanded(
+                flex: 6,
+                child: _buildProductImages(
+                  order,
                 ),
+              ),
 
-                child: Text(
-                  status,
+              const SizedBox(width: 8),
 
-                  style: TextStyle(
-                    fontSize: 7,
-                    fontWeight: FontWeight.w700,
-                    color: statusColor,
-                  ),
+              // VERTICAL DIVIDER
+              Container(
+                width: 1,
+                height: 42,
+                color: const Color(0xFFE1E6E3),
+              ),
+
+              const SizedBox(width: 9),
+
+              // TOTAL
+              Expanded(
+                flex: 3,
+                child: Column(
+                  crossAxisAlignment:
+                      CrossAxisAlignment.start,
+                  children: [
+
+                    const SizedBox(height: 4),
+
+                    Text(
+                      order["items"],
+                      style: const TextStyle(
+                        fontSize: 7.5,
+                        color: Color(0xFF718079),
+                      ),
+                    ),
+
+                    const SizedBox(height: 2),
+
+                    Text(
+                      order["total"],
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF087C59),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
 
-          const SizedBox(height: 9),
-
-          // ==================================================
-          // SELLER
-          // ==================================================
-          RichText(
-            text: TextSpan(
-              children: [
-                const TextSpan(
-                  text: "Seller: ",
-                  style: TextStyle(
-                    fontSize: 8,
-                    color: primaryGreen,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-
-                TextSpan(
-                  text: seller,
-                  style: const TextStyle(
-                    fontSize: 8,
-                    color: primaryGreen,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 3),
-
-          // ==================================================
-          // PRODUCTS
-          // ==================================================
-          Text(
-            products,
-
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-
-            style: const TextStyle(fontSize: 8, color: textColor),
-          ),
-
-          const SizedBox(height: 3),
-
-          // ==================================================
-          // ITEM COUNT
-          // ==================================================
-          Text(
-            itemCount,
-
-            style: const TextStyle(fontSize: 8, color: secondaryText),
-          ),
-
           const SizedBox(height: 7),
 
-          // ==================================================
-          // DIVIDER
-          // ==================================================
-          const Divider(height: 1, thickness: 0.7, color: borderColor),
+          // =====================================================
+          // FARMER + ACTION BUTTONS
+          // =====================================================
 
-          const SizedBox(height: 7),
-
-          // ==================================================
-          // TOTAL + TRACK ORDER
-          // ==================================================
           Row(
+            crossAxisAlignment:
+                CrossAxisAlignment.center,
+
             children: [
-              // ------------------------------------------
-              // TOTAL
-              // ------------------------------------------
+
+              // FARMER
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-
+                child: Row(
                   children: [
-                    const Text(
-                      "Total Amount",
 
-                      style: TextStyle(fontSize: 7, color: secondaryText),
+                    Container(
+                      width: 28,
+                      height: 28,
+                      decoration:
+                          const BoxDecoration(
+                        color: Color(0xFFEAF3EE),
+                        shape: BoxShape.circle,
+                      ),
+
+                      child: const Icon(
+                        Icons.person_rounded,
+                        size: 16,
+                        color: Color(0xFF087C59),
+                      ),
                     ),
 
-                    const SizedBox(height: 2),
+                    const SizedBox(width: 6),
 
-                    Text(
-                      amount,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment:
+                            CrossAxisAlignment.start,
+                        children: [
 
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w800,
-                        color: primaryGreen,
+                          Text(
+                            order["farmer"],
+                            maxLines: 1,
+                            overflow:
+                                TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 8,
+                              fontWeight:
+                                  FontWeight.w700,
+                              color: Color(0xFF263238),
+                            ),
+                          ),
+
+                          const SizedBox(height: 1),
+
+                          Text(
+                            order["location"],
+                            maxLines: 1,
+                            overflow:
+                                TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 6.5,
+                              color: Color(0xFF7B8782),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
               ),
 
-              // ------------------------------------------
-              // TRACK ORDER
-              // ------------------------------------------
-              SizedBox(
-                height: 25,
+              const SizedBox(width: 5),
 
-                child: ElevatedButton(
-                  onPressed: () {
-                    _trackOrder(orderNumber);
+              // FIRST ACTION
+              _buildActionButton(
+                text: order["action"],
+                filled: false,
+                onTap: () {},
+              ),
 
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => OrderTrackingScreen()
-                      ),
-                    );
-                  },
+              const SizedBox(width: 5),
 
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryGreen,
-
-                    foregroundColor: Colors.white,
-
-                    elevation: 0,
-
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(7),
-                    ),
-                  ),
-
-                  child: const Text(
-                    "Track Order",
-
-                    style: TextStyle(fontSize: 8, fontWeight: FontWeight.w700),
-                  ),
-                ),
+              // DETAILS
+              _buildActionButton(
+                text: "View Details",
+                filled: true,
+                onTap: () {},
               ),
             ],
           ),
@@ -492,12 +629,281 @@ class _OrderScreenState extends State<OrderScreen> {
   }
 
   // ============================================================
-  // TRACK ORDER
+  // PRODUCT IMAGES
   // ============================================================
 
-  void _trackOrder(String orderNumber) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text("Tracking order $orderNumber")));
+  Widget _buildProductImages(
+    Map<String, dynamic> order,
+  ) {
+    final List images = order["images"];
+    final List quantities = order["quantities"];
+
+    return SizedBox(
+      height: 43,
+
+      child: Row(
+        children: List.generate(
+          images.length,
+          (index) {
+
+            return Padding(
+              padding: EdgeInsets.only(
+                right: index == images.length - 1
+                    ? 0
+                    : 5,
+              ),
+
+              child: Stack(
+                children: [
+
+                  ClipRRect(
+                    borderRadius:
+                        BorderRadius.circular(6),
+
+                    child: Image.network(
+                      images[index],
+                      width: 43,
+                      height: 43,
+                      fit: BoxFit.cover,
+
+                      errorBuilder: (
+                        context,
+                        error,
+                        stackTrace,
+                      ) {
+                        return Container(
+                          width: 43,
+                          height: 43,
+                          color: const Color(
+                            0xFFEAF1ED,
+                          ),
+                          child: const Icon(
+                            Icons.image_outlined,
+                            size: 18,
+                            color: Color(
+                              0xFF94A19B,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+
+                  // QUANTITY BADGE
+                  Positioned(
+                    right: 2,
+                    bottom: 2,
+
+                    child: Container(
+                      width: 15,
+                      height: 15,
+
+                      decoration:
+                          const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+
+                      child: Center(
+                        child: Text(
+                          quantities[index],
+                          style:
+                              const TextStyle(
+                            fontSize: 7,
+                            fontWeight:
+                                FontWeight.w800,
+                            color: Color(
+                              0xFF263238,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ),
+    );
   }
+
+  // ============================================================
+  // STATUS BADGE
+  // ============================================================
+
+  Widget _buildStatusBadge(
+    String status,
+  ) {
+    Color background;
+    Color textColor;
+    IconData icon;
+
+    switch (status) {
+
+      case "Delivered":
+        background = const Color(0xFFE5F5EB);
+        textColor = const Color(0xFF087C59);
+        icon = Icons.local_shipping_rounded;
+        break;
+
+      case "Processing":
+        background = const Color(0xFFE8F1FF);
+        textColor = const Color(0xFF2875D8);
+        icon = Icons.inventory_2_rounded;
+        break;
+
+      case "Shipped":
+        background = const Color(0xFFFFF1D5);
+        textColor = const Color(0xFFAD7100);
+        icon = Icons.local_shipping_rounded;
+        break;
+
+      case "Cancelled":
+        background = const Color(0xFFFFE9EB);
+        textColor = const Color(0xFFD62F3D);
+        icon = Icons.cancel_rounded;
+        break;
+
+      default:
+        background = const Color(0xFFEAF1ED);
+        textColor = const Color(0xFF087C59);
+        icon = Icons.info_outline;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 7,
+        vertical: 5,
+      ),
+
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(7),
+      ),
+
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+
+          Icon(
+            icon,
+            size: 11,
+            color: textColor,
+          ),
+
+          const SizedBox(width: 3),
+
+          Text(
+            status,
+            style: TextStyle(
+              fontSize: 7,
+              fontWeight: FontWeight.w700,
+              color: textColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ============================================================
+  // ACTION BUTTON
+  // ============================================================
+
+  Widget _buildActionButton({
+    required String text,
+    required bool filled,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+
+      child: Container(
+        height: 27,
+
+        padding: const EdgeInsets.symmetric(
+          horizontal: 9,
+        ),
+
+        decoration: BoxDecoration(
+          color: filled
+              ? const Color(0xFF087C59)
+              : Colors.white,
+
+          borderRadius: BorderRadius.circular(7),
+
+          border: Border.all(
+            color: const Color(0xFF087C59),
+            width: 0.8,
+          ),
+        ),
+
+        alignment: Alignment.center,
+
+        child: Text(
+          text,
+          style: TextStyle(
+            fontSize: 7,
+            fontWeight: FontWeight.w700,
+            color: filled
+                ? Colors.white
+                : const Color(0xFF263238),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ============================================================
+  // EMPTY STATE
+  // ============================================================
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+
+          Container(
+            width: 65,
+            height: 65,
+            decoration: const BoxDecoration(
+              color: Color(0xFFE7F3EC),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.receipt_long_outlined,
+              size: 30,
+              color: Color(0xFF087C59),
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          const Text(
+            "No Orders Found",
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w800,
+              color: Color(0xFF263238),
+            ),
+          ),
+
+          const SizedBox(height: 4),
+
+          const Text(
+            "Your orders will appear here.",
+            style: TextStyle(
+              fontSize: 8,
+              color: Color(0xFF7B8782),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+
 }
