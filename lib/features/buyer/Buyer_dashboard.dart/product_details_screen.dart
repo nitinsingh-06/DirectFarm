@@ -1,7 +1,10 @@
+import 'package:farmdirect/core/provider/card_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class ProductDetailsScreen extends StatefulWidget {
   final String image;
+  final int productId;
   final String name;
   final String price;
   final String unit;
@@ -20,6 +23,7 @@ class ProductDetailsScreen extends StatefulWidget {
     required this.farmName,
     required this.farmLocation,
     required this.description,
+    required this.productId,
   });
 
   @override
@@ -265,7 +269,7 @@ class _ProductDetailsScreenState
               // IMAGE
 
               Positioned.fill(
-                child: Image.asset(
+                child: Image.network(
                   widget.image,
                   fit: BoxFit.cover,
 
@@ -1081,96 +1085,96 @@ class _ProductDetailsScreenState
   // NUTRITION
   // =================================================================
 
-  Widget _buildNutrition() {
-    return _section(
-      title: "Nutritional Information (per 100g)",
+  // Widget _buildNutrition() {
+  //   return _section(
+  //     title: "Nutritional Information (per 100g)",
 
-      child: Column(
-        children: [
+  //     child: Column(
+  //       children: [
 
-          _nutritionRow(
-            Icons.local_fire_department_rounded,
-            "Calories",
-            "18 kcal",
-          ),
+  //         _nutritionRow(
+  //           Icons.local_fire_department_rounded,
+  //           "Calories",
+  //           "18 kcal",
+  //         ),
 
-          _nutritionRow(
-            Icons.grain_rounded,
-            "Carbohydrates",
-            "3.9 g",
-          ),
+  //         _nutritionRow(
+  //           Icons.grain_rounded,
+  //           "Carbohydrates",
+  //           "3.9 g",
+  //         ),
 
-          _nutritionRow(
-            Icons.fitness_center_rounded,
-            "Protein",
-            "0.9 g",
-          ),
+  //         _nutritionRow(
+  //           Icons.fitness_center_rounded,
+  //           "Protein",
+  //           "0.9 g",
+  //         ),
 
-          _nutritionRow(
-            Icons.water_drop_rounded,
-            "Fat",
-            "0.2 g",
-          ),
+  //         _nutritionRow(
+  //           Icons.water_drop_rounded,
+  //           "Fat",
+  //           "0.2 g",
+  //         ),
 
-          _nutritionRow(
-            Icons.local_drink_rounded,
-            "Vitamin C",
-            "13.7 mg",
-          ),
+  //         _nutritionRow(
+  //           Icons.local_drink_rounded,
+  //           "Vitamin C",
+  //           "13.7 mg",
+  //         ),
 
-          _nutritionRow(
-            Icons.eco_rounded,
-            "Potassium",
-            "237 mg",
-          ),
-        ],
-      ),
-    );
-  }
+  //         _nutritionRow(
+  //           Icons.eco_rounded,
+  //           "Potassium",
+  //           "237 mg",
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
-  Widget _nutritionRow(
-    IconData icon,
-    String name,
-    String value,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        vertical: 6,
-      ),
+  // Widget _nutritionRow(
+  //   IconData icon,
+  //   String name,
+  //   String value,
+  // ) {
+  //   return Padding(
+  //     padding: const EdgeInsets.symmetric(
+  //       vertical: 6,
+  //     ),
 
-      child: Row(
-        children: [
+  //     child: Row(
+  //       children: [
 
-          Icon(
-            icon,
-            size: 14,
-            color: const Color(0xFF087C59),
-          ),
+  //         Icon(
+  //           icon,
+  //           size: 14,
+  //           color: const Color(0xFF087C59),
+  //         ),
 
-          const SizedBox(width: 8),
+  //         const SizedBox(width: 8),
 
-          Expanded(
-            child: Text(
-              name,
-              style: const TextStyle(
-                fontSize: 8.5,
-                color: Color(0xFF65736D),
-              ),
-            ),
-          ),
+  //         Expanded(
+  //           child: Text(
+  //             name,
+  //             style: const TextStyle(
+  //               fontSize: 8.5,
+  //               color: Color(0xFF65736D),
+  //             ),
+  //           ),
+  //         ),
 
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 8.5,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF455A64),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  //         Text(
+  //           value,
+  //           style: const TextStyle(
+  //             fontSize: 8.5,
+  //             fontWeight: FontWeight.w600,
+  //             color: Color(0xFF455A64),
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   // =================================================================
   // REVIEWS
@@ -1633,8 +1637,37 @@ class _ProductDetailsScreenState
 
               child: ElevatedButton.icon(
                 onPressed: () {
-                  // Add to cart logic later
-                },
+  final cart = context.read<CartProvider>();
+final productPrice = double.tryParse(
+  widget.price
+      .replaceAll('₹', '')
+      .replaceAll(',', '')
+      .trim(),
+) ?? 0.0;
+
+for (int i = 0; i < quantity; i++) {
+  cart.addToCart(
+    productId: widget.productId,
+    name: widget.name,
+    price: productPrice,
+    unit: widget.unit,
+    image: widget.image,
+    farm: widget.farmName,
+    location: widget.farmLocation,
+  );
+}
+  ScaffoldMessenger.of(context)
+    ..hideCurrentSnackBar()
+    ..showSnackBar(
+      SnackBar(
+        content: Text(
+          '${widget.name} added to cart',
+        ),
+        backgroundColor: const Color(0xFF087C59),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+},
 
                 icon: const Icon(
                   Icons.shopping_cart_outlined,

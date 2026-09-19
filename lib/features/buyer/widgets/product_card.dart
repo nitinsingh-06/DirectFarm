@@ -86,6 +86,7 @@ class ProductCard extends StatelessWidget {
             builder: (_) => ProductDetailsScreen(
               image: image,
               name: name,
+              productId: productId,
               price: price,
               unit: unit,
               rating: rating,

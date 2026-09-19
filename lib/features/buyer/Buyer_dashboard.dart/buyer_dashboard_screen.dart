@@ -1,11 +1,9 @@
 import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/categories_screen.dart';
 import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/home_screen.dart';
-import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/market_place_screen.dart';
 import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/marketplace/add_to_cart.dart';
 import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/order/order_screen.dart';
 import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/profile/buyer_profile_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class BuyerDashboard extends StatefulWidget {
   const BuyerDashboard({super.key});
