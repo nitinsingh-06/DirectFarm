@@ -24,6 +24,7 @@ from .routes.auth import router as auth_router
 from .routes.farmer_profile import router as farmer_profile_router
 from .routes.product import router as products_router
 from .routes.product_images import router as product_images_router
+from fastapi.staticfiles import StaticFiles
 
 
 app = FastAPI(
@@ -47,9 +48,10 @@ Base.metadata.create_all(
 BASE_DIR = Path(__file__).resolve().parent.parent
 UPLOADS_DIR = BASE_DIR / "uploads"
 
+
 app.mount(
     "/uploads",
-    StaticFiles(directory=str(UPLOADS_DIR)),
+    StaticFiles(directory="uploads"),
     name="uploads",
 )
 

@@ -123,27 +123,38 @@ class _BuyerProfileSettingsScreenState
                             .pickProfileImage();
                       },
                       child: Consumer<BuyerProfileProvider>(
-                        builder: (context, provider, child) {
+                        builder: (context, profile, child) {
+                          final name = profile.name.trim();
+
+                          final firstLetter = name.isNotEmpty
+                              ? name[0].toUpperCase()
+                              : "U";
+
+                          final imageUrl = profile.fullProfileImageUrl;
+
                           return Container(
-                            width: 80,
-                            height: 80,
+                            width: 50,
+                            height: 50,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color: const Color(0xFF006B4F),
-                                width: 2,
+                                color: const Color(0xFF80D000),
+                                width: 1.8,
                               ),
                             ),
                             child: ClipOval(
-                              child: provider.profileImage != null
-                                  ? Image.file(
-                                      provider.profileImage!,
+                              child: imageUrl.isNotEmpty
+                                  ? Image.network(
+                                      imageUrl,
                                       fit: BoxFit.cover,
+                                      errorBuilder:
+                                          (context, error, stackTrace) {
+                                            return _profileFallback(
+                                              firstLetter,
+                                            );
+                                          },
                                     )
-                                  : Image.asset(
-                                      provider.defaultImage,
-                                      fit: BoxFit.cover,
-                                    ),
+                                  : _profileFallback(firstLetter),
                             ),
                           );
                         },
@@ -266,20 +277,25 @@ class _BuyerProfileSettingsScreenState
   // DEFAULT IMAGE
   // ==============================================================
 
-  Widget _defaultImage(BuyerProfileProvider profile) {
-    return Image.asset(
-      profile.defaultImage,
-      fit: BoxFit.cover,
-      errorBuilder: (context, error, stackTrace) {
-        return _defaultIcon();
-      },
-    );
-  }
+  // ================================================================
+  // PROFILE FALLBACK
+  // ================================================================
 
-  Widget _defaultIcon() {
+  Widget _profileFallback(String letter) {
     return Container(
-      color: const Color(0xFFE8F7F1),
-      child: const Icon(Icons.person, color: primaryGreen, size: 38),
+      color: const Color(0xFFE8F5E9),
+
+      alignment: Alignment.center,
+
+      child: Text(
+        letter,
+
+        style: const TextStyle(
+          color: Color(0xFF075B4A),
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
     );
   }
 
@@ -497,7 +513,7 @@ class _BuyerProfileSettingsScreenState
   // ==============================================================
   // SAVE PROFILE
   // ==============================================================
-  
+
   Future<void> _saveProfile() async {
     final provider = context.read<BuyerProfileProvider>();
 
@@ -543,4 +559,6 @@ class _BuyerProfileSettingsScreenState
   //     ),
   //   );
   // }
+
+  
 }

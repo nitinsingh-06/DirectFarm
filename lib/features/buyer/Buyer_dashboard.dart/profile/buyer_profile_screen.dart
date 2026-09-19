@@ -300,51 +300,40 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
           // ======================================================
           // PROFILE IMAGE
           // ======================================================
-          Container(
-            width: 62,
-            height: 62,
-            padding: const EdgeInsets.all(2),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 2),
-            ),
-            child: ClipOval(
-              child: profile.profileImage != null
-                  ? Image.file(
-                      profile.profileImage!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return profile.fullProfileImageUrl.isNotEmpty
+          Consumer<BuyerProfileProvider>(
+                  builder: (context, profile, child) {
+                    final name = profile.name.trim();
+
+                    final firstLetter = name.isNotEmpty
+                        ? name[0].toUpperCase()
+                        : "U";
+
+                    final imageUrl = profile.fullProfileImageUrl;
+
+                    return Container(
+                      width: 50,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: const Color(0xFF0F4C3A),
+                          width: 1.8,
+                        ),
+                      ),
+                      child: ClipOval(
+                        child: imageUrl.isNotEmpty
                             ? Image.network(
-                                profile.fullProfileImageUrl,
+                                imageUrl,
                                 fit: BoxFit.cover,
                                 errorBuilder: (context, error, stackTrace) {
-                                  return Image.asset(
-                                    profile.defaultImage,
-                                    fit: BoxFit.cover,
-                                  );
+                                  return _profileFallback(firstLetter);
                                 },
                               )
-                            : Image.asset(
-                                profile.defaultImage,
-                                fit: BoxFit.cover,
-                              );
-                      },
-                    )
-                  : profile.fullProfileImageUrl.isNotEmpty
-                  ? Image.network(
-                      profile.fullProfileImageUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Image.asset(
-                          profile.defaultImage,
-                          fit: BoxFit.cover,
-                        );
-                      },
-                    )
-                  : Image.asset(profile.defaultImage, fit: BoxFit.cover),
-            ),
-          ),
+                            : _profileFallback(firstLetter),
+                      ),
+                    );
+                  },
+                ),
 
           const SizedBox(width: 14),
 
@@ -846,4 +835,29 @@ class _BuyerProfileScreenState extends State<BuyerProfileScreen> {
       context,
     ).showSnackBar(const SnackBar(content: Text("Logged out successfully")));
   }
+
+
+  
+  // ================================================================
+  // PROFILE FALLBACK
+  // ================================================================
+
+  Widget _profileFallback(String letter) {
+    return Container(
+      color: const Color(0xFFE8F5E9),
+
+      alignment: Alignment.center,
+
+      child: Text(
+        letter,
+
+        style: const TextStyle(
+          color: Color(0xFF075B4A),
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
 }

@@ -1,7 +1,12 @@
+import 'package:farmdirect/core/provider/card_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
 import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/product_details_screen.dart';
 
 class ProductCard extends StatelessWidget {
+  final int productId;
+
   final String image;
   final String name;
   final String price;
@@ -13,6 +18,7 @@ class ProductCard extends StatelessWidget {
 
   const ProductCard({
     super.key,
+    required this.productId,
     required this.image,
     required this.name,
     required this.price,
@@ -22,6 +28,53 @@ class ProductCard extends StatelessWidget {
     required this.rating,
     required this.unit,
   });
+
+  double _getPrice() {
+    return double.tryParse(
+          price.replaceAll('₹', '').replaceAll(',', '').trim(),
+        ) ??
+        0.0;
+  }
+
+  void _addToCart(BuildContext context) {
+    final cart = context.read<CartProvider>();
+
+    cart.addToCart(
+      productId: productId,
+      name: name,
+      price: _getPrice(),
+      unit: unit,
+      image: image,
+      farm: farm,
+      location: location,
+    );
+
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.check_circle, color: Colors.white),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  '$name added to cart',
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: const Color(0xFF087C59),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 1),
+          margin: const EdgeInsets.all(12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,10 +101,7 @@ class ProductCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(9),
-          border: Border.all(
-            color: const Color(0xFFE1E5E3),
-            width: 0.8,
-          ),
+          border: Border.all(color: const Color(0xFFE1E5E3), width: 0.8),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.035),
@@ -66,53 +116,56 @@ class ProductCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             // =====================================================
-            // IMAGE SECTION
+            // IMAGE
             // =====================================================
-
             SizedBox(
               height: 88,
               width: double.infinity,
               child: Stack(
                 children: [
-
-                  // PRODUCT IMAGE
                   Positioned.fill(
-                    child: Image.asset(
-                      image,
-                      fit: BoxFit.cover,
-                      errorBuilder: (
-                        context,
-                        error,
-                        stackTrace,
-                      ) {
-                        return Container(
-                          color: const Color(0xFFEAF2EE),
-                          child: const Center(
-                            child: Icon(
-                              Icons.image_outlined,
-                              size: 28,
-                              color: Color(0xFF9AA49F),
-                            ),
+                    child: image.isEmpty
+                        ? _imagePlaceholder()
+                        : Image.network(
+                            image,
+                            fit: BoxFit.cover,
+
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) {
+                                return child;
+                              }
+
+                              return Container(
+                                color: const Color(0xFFEAF2EE),
+                                child: const Center(
+                                  child: SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Color(0xFF087C59),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+
+                            errorBuilder: (context, error, stackTrace) {
+                              return _imagePlaceholder();
+                            },
                           ),
-                        );
-                      },
-                    ),
                   ),
 
                   // =================================================
                   // FRESH BADGE
                   // =================================================
-
                   Positioned(
                     left: 6,
                     bottom: 5,
                     child: Container(
                       height: 18,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 7,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 7),
                       decoration: BoxDecoration(
                         color: const Color(0xFF087C59),
                         borderRadius: BorderRadius.circular(5),
@@ -130,9 +183,8 @@ class ProductCard extends StatelessWidget {
                   ),
 
                   // =================================================
-                  // HEART
+                  // FAVORITE
                   // =================================================
-
                   Positioned(
                     top: 6,
                     right: 6,
@@ -159,25 +211,15 @@ class ProductCard extends StatelessWidget {
             ),
 
             // =====================================================
-            // INFORMATION SECTION
+            // INFORMATION
             // =====================================================
-
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  7,
-                  5,
-                  6,
-                  5,
-                ),
+                padding: const EdgeInsets.fromLTRB(7, 5, 6, 5),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-
-                    // =================================================
                     // PRODUCT NAME
-                    // =================================================
-
                     Text(
                       name,
                       maxLines: 1,
@@ -191,10 +233,7 @@ class ProductCard extends StatelessWidget {
 
                     const SizedBox(height: 1),
 
-                    // =================================================
                     // PRICE
-                    // =================================================
-
                     Text(
                       "₹$price/$unit",
                       maxLines: 1,
@@ -209,14 +248,12 @@ class ProductCard extends StatelessWidget {
                     const SizedBox(height: 3),
 
                     // =================================================
-                    // FARMER + ADD BUTTON
+                    // FARMER + CART BUTTON
                     // =================================================
-
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-
-                        // FARMER AVATAR
+                        // FARMER ICON
                         Container(
                           width: 20,
                           height: 20,
@@ -236,17 +273,13 @@ class ProductCard extends StatelessWidget {
                         // FARMER INFORMATION
                         Expanded(
                           child: Column(
-                            mainAxisAlignment:
-                                MainAxisAlignment.center,
-                            crossAxisAlignment:
-                                CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-
                               Text(
                                 farm,
                                 maxLines: 1,
-                                overflow:
-                                    TextOverflow.ellipsis,
+                                overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
                                   fontSize: 6.8,
                                   fontWeight: FontWeight.w600,
@@ -259,8 +292,7 @@ class ProductCard extends StatelessWidget {
                               Text(
                                 location,
                                 maxLines: 1,
-                                overflow:
-                                    TextOverflow.ellipsis,
+                                overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
                                   fontSize: 6.5,
                                   color: Color(0xFF999999),
@@ -273,12 +305,12 @@ class ProductCard extends StatelessWidget {
                         const SizedBox(width: 3),
 
                         // =================================================
-                        // PLUS BUTTON
+                        // ADD TO CART
                         // =================================================
-
                         GestureDetector(
+                          behavior: HitTestBehavior.opaque,
                           onTap: () {
-                            // Add to cart functionality later
+                            _addToCart(context);
                           },
                           child: Container(
                             width: 27,
@@ -302,6 +334,15 @@ class ProductCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _imagePlaceholder() {
+    return Container(
+      color: const Color(0xFFEAF2EE),
+      child: const Center(
+        child: Icon(Icons.image_outlined, size: 28, color: Color(0xFF9AA49F)),
       ),
     );
   }

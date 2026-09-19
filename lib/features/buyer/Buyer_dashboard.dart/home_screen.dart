@@ -1,3 +1,4 @@
+import 'package:farmdirect/core/provider/buyer_product_provider.dart';
 import 'package:farmdirect/features/buyer/widgets/product_card.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -13,6 +14,15 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   Set<String> selectedCategories = {"All"};
+
+  @override
+  void initState() {
+    super.initState();
+
+    Future.microtask(() {
+      context.read<BuyerProductProvider>().loadProducts();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -298,7 +308,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
 
                 GestureDetector(
-                  onTap: () {},
+                  onTap: () {
+
+                  },
 
                   child: const Text(
                     "See All",
@@ -314,31 +326,91 @@ class _HomeScreenState extends State<HomeScreen> {
 
             const SizedBox(height: 8),
 
-            // =========================================================
-            // PRODUCT GRID
-            // =========================================================
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: products.length,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 9,
-                mainAxisSpacing: 10,
-                childAspectRatio: 0.92,
-              ),
-              itemBuilder: (context, index) {
-                final product = products[index];
+            Consumer<BuyerProductProvider>(
+              builder: (context, provider, child) {
+                // ==========================================================
+                // LOADING
+                // ==========================================================
 
-                return ProductCard(
-                  image: product["image"]!,
-                  name: product["name"]!,
-                  price: product["price"]!,
-                  farm: product["farm"]!,
-                  location: product["location"]!,
-                  description: product["description"]!,
-                  rating: product["rating"]!,
-                  unit: product["unit"]!,
+                if (provider.isLoading) {
+                  return const SizedBox(
+                    height: 180,
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        color: Color(0xFF087C59),
+                      ),
+                    ),
+                  );
+                }
+
+                // ==========================================================
+                // ERROR
+                // ==========================================================
+
+                if (provider.error != null) {
+                  return SizedBox(
+                    height: 180,
+                    child: Center(
+                      child: Text(
+                        provider.error!,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(fontSize: 10, color: Colors.red),
+                      ),
+                    ),
+                  );
+                }
+
+                // ==========================================================
+                // EMPTY
+                // ==========================================================
+
+                if (provider.products.isEmpty) {
+                  return const SizedBox(
+                    height: 180,
+                    child: Center(
+                      child: Text(
+                        'No products available',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Color(0xFF7B8782),
+                        ),
+                      ),
+                    ),
+                  );
+                }
+
+                // ==========================================================
+                // PRODUCTS FROM POSTGRESQL
+                // ==========================================================
+
+                return GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+
+                  itemCount: provider.products.length,
+
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 9,
+                    mainAxisSpacing: 10,
+                    childAspectRatio: 0.92,
+                  ),
+
+                  itemBuilder: (context, index) {
+                    final product = provider.products[index];
+
+                   return ProductCard(
+  productId: product.productId,
+  image: product.fullImageUrl,
+  name: product.name,
+  price: product.price.toStringAsFixed(2),
+  farm: 'Farmer ${product.farmerId}',
+  location: 'Local Farm',
+  description: product.description,
+  rating: '4.8',
+  unit: product.unit,
+);
+                  },
                 );
               },
             ),

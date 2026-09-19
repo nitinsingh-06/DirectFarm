@@ -130,7 +130,7 @@ class _ProductDetailsScreenState
                     // NUTRITION
                     // =================================================
 
-                    _buildNutrition(),
+                    // _buildNutrition(),
 
                     // =================================================
                     // REVIEWS

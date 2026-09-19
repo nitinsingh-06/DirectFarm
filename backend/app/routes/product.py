@@ -258,3 +258,38 @@ def get_my_products(
             status_code=401,
             detail=str(e)
         )
+
+
+# ============================================================
+# GET ALL PRODUCTS
+# BUYER HOME
+# ============================================================
+
+@router.get(
+    "",
+    response_model=list[ProductResponse]
+)
+def get_all_products(
+    db: Session = Depends(get_db)
+):
+    try:
+
+        products = (
+            db.query(Product)
+            .filter(
+                Product.is_available == True
+            )
+            .order_by(
+                Product.created_at.desc()
+            )
+            .all()
+        )
+
+        return products
+
+    except Exception as e:
+
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to fetch products: {str(e)}"
+        )
