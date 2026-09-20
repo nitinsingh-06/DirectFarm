@@ -225,8 +225,6 @@ class _OrdersScreenState extends State<OrdersScreen> {
       ),
 
       // FIXED BOTTOM NAVIGATION
-      bottomNavigationBar:
-          _buildBottomNavigation(),
     );
   }
 

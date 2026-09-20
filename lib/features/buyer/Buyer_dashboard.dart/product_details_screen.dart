@@ -6,6 +6,8 @@ import 'package:provider/provider.dart';
 class ProductDetailsScreen extends StatefulWidget {
   final String image;
   final int productId;
+  final int farmerId; 
+
   final String name;
   final String price;
   final String unit;
@@ -14,7 +16,6 @@ class ProductDetailsScreen extends StatefulWidget {
   final String farmLocation;
   final String description;
 
-  // NEW
   final String category;
   final String farmType;
   final String harvestedOn;
@@ -23,6 +24,9 @@ class ProductDetailsScreen extends StatefulWidget {
   const ProductDetailsScreen({
     super.key,
     required this.image,
+    required this.productId,
+    required this.farmerId, 
+
     required this.name,
     required this.price,
     required this.unit,
@@ -31,14 +35,12 @@ class ProductDetailsScreen extends StatefulWidget {
     required this.farmLocation,
     required this.description,
 
-    // NEW
     required this.category,
     required this.farmType,
     required this.harvestedOn,
     required this.shelfLife,
-
-    required this.productId,
   });
+
 
   @override
   State<ProductDetailsScreen> createState() => _ProductDetailsScreenState();
@@ -681,7 +683,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => FarmerProfileScreenview(),
+                  builder: (context) =>
+                      FarmerProfileScreenview(farmerId: widget.farmerId),
                 ),
               );
             },
@@ -840,40 +843,36 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   // =================================================================
   // SPECIFICATIONS
   // =================================================================
- Widget _buildSpecifications() {
-  return _section(
-    title: "Specifications",
-    child: Column(
-      children: [
-        _specification(
-          Icons.category_outlined,
-          "Category",
-          widget.category,
-        ),
-        _specification(
-          Icons.home_work_outlined,
-          "Farm Type",
-          widget.farmType,
-        ),
-        _specification(
-          Icons.location_on_outlined,
-          "Origin",
-          widget.farmLocation,
-        ),
-        _specification(
-          Icons.calendar_today_outlined,
-          "Harvested On",
-          widget.harvestedOn,
-        ),
-        _specification(
-          Icons.access_time_rounded,
-          "Shelf Life",
-          widget.shelfLife,
-        ),
-      ],
-    ),
-  );
-}
+  Widget _buildSpecifications() {
+    return _section(
+      title: "Specifications",
+      child: Column(
+        children: [
+          _specification(Icons.category_outlined, "Category", widget.category),
+          _specification(
+            Icons.home_work_outlined,
+            "Farm Type",
+            widget.farmType,
+          ),
+          _specification(
+            Icons.location_on_outlined,
+            "Origin",
+            widget.farmLocation,
+          ),
+          _specification(
+            Icons.calendar_today_outlined,
+            "Harvested On",
+            widget.harvestedOn,
+          ),
+          _specification(
+            Icons.access_time_rounded,
+            "Shelf Life",
+            widget.shelfLife,
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _specification(IconData icon, String title, String value) {
     return Padding(

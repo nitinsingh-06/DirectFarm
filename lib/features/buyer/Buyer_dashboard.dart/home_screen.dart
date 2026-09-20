@@ -438,6 +438,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     return ProductCard(
                       productId: product.productId,
+                      farmerId: product.farmerId,
+                      
                       image: product.fullImageUrl,
                       name: product.name,
                       price: product.price.toStringAsFixed(2),

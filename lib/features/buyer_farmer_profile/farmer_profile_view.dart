@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 
 class FarmerProfileScreenview extends StatefulWidget {
-  const FarmerProfileScreenview({super.key});
+  final int farmerId;
+
+  const FarmerProfileScreenview({super.key, required this.farmerId});
 
   @override
-  State<FarmerProfileScreenview> createState() => _FarmerProfileScreenviewState();
+  State<FarmerProfileScreenview> createState() =>
+      _FarmerProfileScreenviewState();
 }
 
 class _FarmerProfileScreenviewState extends State<FarmerProfileScreenview> {
@@ -13,7 +16,6 @@ class _FarmerProfileScreenviewState extends State<FarmerProfileScreenview> {
   static const Color textColor = Color(0xFF17212B);
 
   int selectedTab = 0;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -103,12 +105,7 @@ class _FarmerProfileScreenviewState extends State<FarmerProfileScreenview> {
                   color: Colors.white,
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
-                  shadows: [
-                    Shadow(
-                      color: Colors.black54,
-                      blurRadius: 4,
-                    ),
-                  ],
+                  shadows: [Shadow(color: Colors.black54, blurRadius: 4)],
                 ),
               ),
             ),
@@ -118,20 +115,14 @@ class _FarmerProfileScreenviewState extends State<FarmerProfileScreenview> {
           Positioned(
             right: 14,
             top: 12,
-            child: _circleButton(
-              icon: Icons.more_vert,
-              onTap: () {},
-            ),
+            child: _circleButton(icon: Icons.more_vert, onTap: () {}),
           ),
         ],
       ),
     );
   }
 
-  Widget _circleButton({
-    required IconData icon,
-    required VoidCallback onTap,
-  }) {
+  Widget _circleButton({required IconData icon, required VoidCallback onTap}) {
     return Material(
       color: Colors.white.withOpacity(0.92),
       shape: const CircleBorder(),
@@ -141,11 +132,7 @@ class _FarmerProfileScreenviewState extends State<FarmerProfileScreenview> {
         child: SizedBox(
           width: 34,
           height: 34,
-          child: Icon(
-            icon,
-            size: 17,
-            color: textColor,
-          ),
+          child: Icon(icon, size: 17, color: textColor),
         ),
       ),
     );
@@ -160,9 +147,7 @@ class _FarmerProfileScreenviewState extends State<FarmerProfileScreenview> {
       width: double.infinity,
       decoration: const BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(25),
-        ),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
       ),
       padding: const EdgeInsets.fromLTRB(14, 0, 14, 15),
       child: Column(
@@ -185,11 +170,7 @@ class _FarmerProfileScreenviewState extends State<FarmerProfileScreenview> {
                 ),
               ),
               const SizedBox(width: 5),
-              Icon(
-                Icons.eco,
-                size: 18,
-                color: primaryGreen,
-              ),
+              Icon(Icons.eco, size: 18, color: primaryGreen),
             ],
           ),
 
@@ -208,18 +189,11 @@ class _FarmerProfileScreenviewState extends State<FarmerProfileScreenview> {
 
           Row(
             children: [
-              Icon(
-                Icons.location_on,
-                size: 12,
-                color: Colors.grey.shade700,
-              ),
+              Icon(Icons.location_on, size: 12, color: Colors.grey.shade700),
               const SizedBox(width: 2),
               Text(
                 'Tehri Garhwal, Uttarakhand',
-                style: TextStyle(
-                  fontSize: 9.5,
-                  color: Colors.grey.shade700,
-                ),
+                style: TextStyle(fontSize: 9.5, color: Colors.grey.shade700),
               ),
             ],
           ),
@@ -259,7 +233,9 @@ class _FarmerProfileScreenviewState extends State<FarmerProfileScreenview> {
       child: Stack(
         clipBehavior: Clip.none,
         children: [
-          // Profile picture
+          // ==========================================================
+          // FARMER PROFILE IMAGE
+          // ==========================================================
           Positioned(
             left: 2,
             top: -30,
@@ -277,55 +253,29 @@ class _FarmerProfileScreenviewState extends State<FarmerProfileScreenview> {
                   ),
                 ],
               ),
-              child: ClipOval(
-                child: Image.network(
-                  'https://images.unsplash.com/photo-1560250097-0b93528c311a'
-                  '?auto=format&fit=crop&w=300&q=80',
-                  fit: BoxFit.cover,
-                ),
-              ),
+              child: ClipOval(child: _farmerProfileFallback()),
             ),
           ),
 
-          // Verified badge
-          Positioned(
-            right: 0,
-            top: 8,
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 8,
-                vertical: 4,
-              ),
-              decoration: BoxDecoration(
-                color: lightGreen,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.verified,
-                    size: 13,
-                    color: primaryGreen,
-                  ),
-                  const SizedBox(width: 4),
-                  const Text(
-                    'Verified Farmer',
-                    style: TextStyle(
-                      fontSize: 8.5,
-                      fontWeight: FontWeight.w700,
-                      color: primaryGreen,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          // ==========================================================
+          // VERIFIED BADGE
+          // ==========================================================
+          // Don't show this until verification comes from backend.
         ],
       ),
     );
   }
 
+  // =============================================
+  // FALLBACK PROFILE DATA
+  // =============================================
+  Widget _farmerProfileFallback() {
+    return Container(
+      color: lightGreen,
+      alignment: Alignment.center,
+      child: const Icon(Icons.person, size: 32, color: primaryGreen),
+    );
+  }
   // ----------------------------------------------------------
   // STATS
   // ----------------------------------------------------------
@@ -333,25 +283,15 @@ class _FarmerProfileScreenviewState extends State<FarmerProfileScreenview> {
   Widget _buildStats() {
     return Row(
       children: [
-        const Icon(
-          Icons.star,
-          color: Colors.amber,
-          size: 16,
-        ),
+        const Icon(Icons.star, color: Colors.amber, size: 16),
         const SizedBox(width: 3),
         const Text(
           '4.8',
-          style: TextStyle(
-            fontSize: 9.5,
-            fontWeight: FontWeight.w700,
-          ),
+          style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.w700),
         ),
         Text(
           ' (120 reviews)',
-          style: TextStyle(
-            fontSize: 9,
-            color: Colors.grey.shade600,
-          ),
+          style: TextStyle(fontSize: 9, color: Colors.grey.shade600),
         ),
 
         Container(
@@ -361,19 +301,12 @@ class _FarmerProfileScreenviewState extends State<FarmerProfileScreenview> {
           color: Colors.grey.shade300,
         ),
 
-        Icon(
-          Icons.people,
-          size: 14,
-          color: Colors.grey.shade700,
-        ),
+        Icon(Icons.people, size: 14, color: Colors.grey.shade700),
         const SizedBox(width: 4),
 
         Text(
           '250+ orders',
-          style: TextStyle(
-            fontSize: 9.5,
-            color: Colors.grey.shade700,
-          ),
+          style: TextStyle(fontSize: 9.5, color: Colors.grey.shade700),
         ),
       ],
     );
@@ -386,10 +319,7 @@ class _FarmerProfileScreenviewState extends State<FarmerProfileScreenview> {
   Widget _buildQuote() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(
-        horizontal: 10,
-        vertical: 9,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
       decoration: BoxDecoration(
         color: lightGreen,
         borderRadius: BorderRadius.circular(9),
@@ -397,11 +327,7 @@ class _FarmerProfileScreenviewState extends State<FarmerProfileScreenview> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            Icons.eco,
-            size: 17,
-            color: primaryGreen,
-          ),
+          Icon(Icons.eco, size: 17, color: primaryGreen),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
@@ -428,48 +354,40 @@ class _FarmerProfileScreenviewState extends State<FarmerProfileScreenview> {
     final tabs = ['About', 'Products', 'Reviews'];
 
     return Row(
-      children: List.generate(
-        tabs.length,
-        (index) {
-          final selected = selectedTab == index;
+      children: List.generate(tabs.length, (index) {
+        final selected = selectedTab == index;
 
-          return Expanded(
-            child: GestureDetector(
-              onTap: () {
-                setState(() {
-                  selectedTab = index;
-                });
-              },
-              child: Container(
-                padding: const EdgeInsets.only(bottom: 7),
-                decoration: BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(
-                      color: selected
-                          ? primaryGreen
-                          : Colors.transparent,
-                      width: 2,
-                    ),
+        return Expanded(
+          child: GestureDetector(
+            onTap: () {
+              setState(() {
+                selectedTab = index;
+              });
+            },
+            child: Container(
+              padding: const EdgeInsets.only(bottom: 7),
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                    color: selected ? primaryGreen : Colors.transparent,
+                    width: 2,
                   ),
                 ),
-                child: Center(
-                  child: Text(
-                    tabs[index],
-                    style: TextStyle(
-                      fontSize: 9,
-                      fontWeight:
-                          selected ? FontWeight.w700 : FontWeight.w500,
-                      color: selected
-                          ? primaryGreen
-                          : Colors.grey.shade600,
-                    ),
+              ),
+              child: Center(
+                child: Text(
+                  tabs[index],
+                  style: TextStyle(
+                    fontSize: 9,
+                    fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                    color: selected ? primaryGreen : Colors.grey.shade600,
                   ),
                 ),
               ),
             ),
-          );
-        },
-      ),
+          ),
+        );
+      }),
     );
   }
 
@@ -491,13 +409,7 @@ class _FarmerProfileScreenviewState extends State<FarmerProfileScreenview> {
               ),
             ),
             const SizedBox(width: 7),
-            Expanded(
-              child: _infoCard(
-                Icons.spa,
-                'Farm Size',
-                '5 Acres',
-              ),
-            ),
+            Expanded(child: _infoCard(Icons.spa, 'Farm Size', '5 Acres')),
           ],
         ),
 
@@ -571,23 +483,14 @@ class _FarmerProfileScreenviewState extends State<FarmerProfileScreenview> {
     );
   }
 
-  Widget _infoCard(
-    IconData icon,
-    String title,
-    String value,
-  ) {
+  Widget _infoCard(IconData icon, String title, String value) {
     return Container(
       height: 50,
-      padding: const EdgeInsets.symmetric(
-        horizontal: 8,
-        vertical: 7,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
       decoration: BoxDecoration(
         color: const Color(0xFFF7F9F8),
         borderRadius: BorderRadius.circular(9),
-        border: Border.all(
-          color: Colors.grey.shade100,
-        ),
+        border: Border.all(color: Colors.grey.shade100),
       ),
       child: Row(
         children: [
@@ -598,11 +501,7 @@ class _FarmerProfileScreenviewState extends State<FarmerProfileScreenview> {
               color: lightGreen,
               borderRadius: BorderRadius.circular(7),
             ),
-            child: Icon(
-              icon,
-              size: 14,
-              color: primaryGreen,
-            ),
+            child: Icon(icon, size: 14, color: primaryGreen),
           ),
 
           const SizedBox(width: 7),
@@ -616,10 +515,7 @@ class _FarmerProfileScreenviewState extends State<FarmerProfileScreenview> {
                   title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 7,
-                    color: Colors.grey.shade600,
-                  ),
+                  style: TextStyle(fontSize: 7, color: Colors.grey.shade600),
                 ),
                 const SizedBox(height: 2),
                 Text(
@@ -650,10 +546,7 @@ class _FarmerProfileScreenviewState extends State<FarmerProfileScreenview> {
       children: [
         const Text(
           'Farm Products',
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w800,
-          ),
+          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800),
         ),
         const SizedBox(height: 8),
 
@@ -667,10 +560,7 @@ class _FarmerProfileScreenviewState extends State<FarmerProfileScreenview> {
           child: const Text(
             'View fresh vegetables, fruits and grains available '
             'from this farmer.',
-            style: TextStyle(
-              fontSize: 9,
-              height: 1.4,
-            ),
+            style: TextStyle(fontSize: 9, height: 1.4),
           ),
         ),
       ],
@@ -687,32 +577,20 @@ class _FarmerProfileScreenviewState extends State<FarmerProfileScreenview> {
       children: [
         const Text(
           'Reviews',
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w800,
-          ),
+          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800),
         ),
         const SizedBox(height: 8),
 
-        _reviewCard(
-          'Great quality vegetables.',
-          'Buyer',
-        ),
+        _reviewCard('Great quality vegetables.', 'Buyer'),
 
         const SizedBox(height: 6),
 
-        _reviewCard(
-          'Very fresh and delivered on time.',
-          'Buyer',
-        ),
+        _reviewCard('Very fresh and delivered on time.', 'Buyer'),
       ],
     );
   }
 
-  Widget _reviewCard(
-    String review,
-    String name,
-  ) {
+  Widget _reviewCard(String review, String name) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(10),
@@ -725,47 +603,19 @@ class _FarmerProfileScreenviewState extends State<FarmerProfileScreenview> {
         children: [
           const Row(
             children: [
-              Icon(
-                Icons.star,
-                color: Colors.amber,
-                size: 13,
-              ),
-              Icon(
-                Icons.star,
-                color: Colors.amber,
-                size: 13,
-              ),
-              Icon(
-                Icons.star,
-                color: Colors.amber,
-                size: 13,
-              ),
-              Icon(
-                Icons.star,
-                color: Colors.amber,
-                size: 13,
-              ),
-              Icon(
-                Icons.star,
-                color: Colors.amber,
-                size: 13,
-              ),
+              Icon(Icons.star, color: Colors.amber, size: 13),
+              Icon(Icons.star, color: Colors.amber, size: 13),
+              Icon(Icons.star, color: Colors.amber, size: 13),
+              Icon(Icons.star, color: Colors.amber, size: 13),
+              Icon(Icons.star, color: Colors.amber, size: 13),
             ],
           ),
           const SizedBox(height: 4),
-          Text(
-            review,
-            style: const TextStyle(
-              fontSize: 8.5,
-            ),
-          ),
+          Text(review, style: const TextStyle(fontSize: 8.5)),
           const SizedBox(height: 3),
           Text(
             name,
-            style: TextStyle(
-              fontSize: 7.5,
-              color: Colors.grey.shade600,
-            ),
+            style: TextStyle(fontSize: 7.5, color: Colors.grey.shade600),
           ),
         ],
       ),
@@ -797,26 +647,15 @@ class _FarmerProfileScreenviewState extends State<FarmerProfileScreenview> {
               onPressed: () {
                 // TODO: Open chat
               },
-              icon: const Icon(
-                Icons.chat_bubble_outline,
-                size: 16,
-              ),
+              icon: const Icon(Icons.chat_bubble_outline, size: 16),
               label: const Text(
                 'Chat',
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700),
               ),
               style: OutlinedButton.styleFrom(
                 foregroundColor: primaryGreen,
-                side: const BorderSide(
-                  color: primaryGreen,
-                ),
-                minimumSize: const Size(
-                  0,
-                  38,
-                ),
+                side: const BorderSide(color: primaryGreen),
+                minimumSize: const Size(0, 38),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -832,25 +671,16 @@ class _FarmerProfileScreenviewState extends State<FarmerProfileScreenview> {
               onPressed: () {
                 // TODO: Open farmer products
               },
-              icon: const Icon(
-                Icons.shopping_cart_outlined,
-                size: 16,
-              ),
+              icon: const Icon(Icons.shopping_cart_outlined, size: 16),
               label: const Text(
                 'View Products',
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: primaryGreen,
                 foregroundColor: Colors.white,
                 elevation: 0,
-                minimumSize: const Size(
-                  0,
-                  38,
-                ),
+                minimumSize: const Size(0, 38),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),

@@ -20,6 +20,8 @@ class ProductCard extends StatelessWidget {
   final String farmType;
   final String harvestedOn;
   final String shelfLife;
+  final int farmerId;
+
 
   const ProductCard({
     super.key,
@@ -37,6 +39,10 @@ class ProductCard extends StatelessWidget {
     required this.farmType,
     required this.harvestedOn,
     required this.shelfLife,
+
+    required this.farmerId,
+
+
   });
 
   double _getPrice() {
@@ -97,6 +103,7 @@ class ProductCard extends StatelessWidget {
               image: image,
               name: name,
               productId: productId,
+              farmerId: farmerId,
               price: price,
               unit: unit,
               rating: rating,
