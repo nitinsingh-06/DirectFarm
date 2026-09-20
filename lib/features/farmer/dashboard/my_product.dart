@@ -2,7 +2,7 @@ import 'package:farmdirect/services/api_services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:farmdirect/features/farmer/dashboard/widgets/product_card.dart';
-import 'package:farmdirect/features/farmer/dashboard/models/product_model.dart';
+import 'package:farmdirect/models/product_model.dart';
 import 'package:farmdirect/features/farmer/dashboard/product_screen.dart';
 
 class MyProductsScreen extends StatefulWidget {

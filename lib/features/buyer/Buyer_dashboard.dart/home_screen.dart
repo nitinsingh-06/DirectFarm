@@ -308,9 +308,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
 
                 GestureDetector(
-                  onTap: () {
-
-                  },
+                  onTap: () {},
 
                   child: const Text(
                     "See All",
@@ -399,17 +397,26 @@ class _HomeScreenState extends State<HomeScreen> {
                   itemBuilder: (context, index) {
                     final product = provider.products[index];
 
-                   return ProductCard(
-  productId: product.productId,
-  image: product.fullImageUrl,
-  name: product.name,
-  price: product.price.toStringAsFixed(2),
-  farm: 'Farmer ${product.farmerId}',
-  location: 'Local Farm',
-  description: product.description,
-  rating: '4.8',
-  unit: product.unit,
-);
+                    return ProductCard(
+                      productId: product.productId,
+                      image: product.fullImageUrl,
+                      name: product.name,
+                      price: product.price.toStringAsFixed(2),
+                      farm: 'Farmer ${product.farmerId}',
+
+                      // Dynamic location
+                      location: product.origin ?? 'Local Farm',
+
+                      description: product.description,
+                      rating: '4.8',
+                      unit: product.unit,
+
+                      // Specifications
+                      category: product.category ?? 'Not specified',
+                      farmType: product.farmType ?? 'Not specified',
+                      harvestedOn: product.harvestedOn ?? 'Not specified',
+                      shelfLife: product.shelfLife ?? 'Not specified',
+                    );
                   },
                 );
               },

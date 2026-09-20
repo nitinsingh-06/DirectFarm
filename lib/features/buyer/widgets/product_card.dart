@@ -16,6 +16,11 @@ class ProductCard extends StatelessWidget {
   final String rating;
   final String unit;
 
+  final String category;
+  final String farmType;
+  final String harvestedOn;
+  final String shelfLife;
+
   const ProductCard({
     super.key,
     required this.productId,
@@ -27,6 +32,11 @@ class ProductCard extends StatelessWidget {
     required this.description,
     required this.rating,
     required this.unit,
+
+    required this.category,
+    required this.farmType,
+    required this.harvestedOn,
+    required this.shelfLife,
   });
 
   double _getPrice() {
@@ -93,6 +103,11 @@ class ProductCard extends StatelessWidget {
               farmName: farm,
               farmLocation: location,
               description: description,
+
+              category: category,
+              farmType: farmType,
+              harvestedOn: harvestedOn,
+              shelfLife: shelfLife,
             ),
           ),
         );
