@@ -14,6 +14,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   Set<String> selectedCategories = {"All"};
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
 
   @override
   void initState() {
@@ -22,6 +24,12 @@ class _HomeScreenState extends State<HomeScreen> {
     Future.microtask(() {
       context.read<BuyerProductProvider>().loadProducts();
     });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   @override
@@ -186,14 +194,23 @@ class _HomeScreenState extends State<HomeScreen> {
                       border: Border.all(color: const Color(0xFFE0E7E4)),
                     ),
 
-                    child: const TextField(
+                    child: TextField(
+                      controller: _searchController,
                       textAlignVertical: TextAlignVertical.center,
 
-                      style: TextStyle(fontSize: 10, color: Color(0xFF263238)),
+                      style: const TextStyle(
+                        fontSize: 10,
+                        color: Color(0xFF263238),
+                      ),
 
-                      decoration: InputDecoration(
+                      onChanged: (value) {
+                        setState(() {
+                          _searchQuery = value.trim().toLowerCase();
+                        });
+                      },
+
+                      decoration: const InputDecoration(
                         border: InputBorder.none,
-
                         isDense: true,
 
                         prefixIcon: Icon(
@@ -381,11 +398,33 @@ class _HomeScreenState extends State<HomeScreen> {
                 // PRODUCTS FROM POSTGRESQL
                 // ==========================================================
 
+                final filteredProducts = provider.products.where((product) {
+                  if (_searchQuery.isEmpty) {
+                    return true;
+                  }
+
+                  final name = product.name.toLowerCase();
+                  final description = product.description.toLowerCase();
+                  final unit = product.unit.toLowerCase();
+                  final price = product.price.toString().toLowerCase();
+                  final category = (product.category ?? '').toLowerCase();
+                  final origin = (product.origin ?? '').toLowerCase();
+                  final farmType = (product.farmType ?? '').toLowerCase();
+
+                  return name.contains(_searchQuery) ||
+                      description.contains(_searchQuery) ||
+                      unit.contains(_searchQuery) ||
+                      price.contains(_searchQuery) ||
+                      category.contains(_searchQuery) ||
+                      origin.contains(_searchQuery) ||
+                      farmType.contains(_searchQuery);
+                }).toList();
+
                 return GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
 
-                  itemCount: provider.products.length,
+                  itemCount: filteredProducts.length,
 
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
@@ -395,7 +434,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
 
                   itemBuilder: (context, index) {
-                    final product = provider.products[index];
+                    final product = filteredProducts[index];
 
                     return ProductCard(
                       productId: product.productId,
@@ -403,15 +442,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       name: product.name,
                       price: product.price.toStringAsFixed(2),
                       farm: 'Farmer ${product.farmerId}',
-
-                      // Dynamic location
                       location: product.origin ?? 'Local Farm',
-
                       description: product.description,
                       rating: '4.8',
                       unit: product.unit,
 
-                      // Specifications
                       category: product.category ?? 'Not specified',
                       farmType: product.farmType ?? 'Not specified',
                       harvestedOn: product.harvestedOn ?? 'Not specified',
