@@ -1,4 +1,4 @@
-import 'package:farmdirect/models/buyer_product_model.dart';
+import 'package:farmdirect/features/buyer/models/buyer_product_model.dart';
 import 'package:flutter/foundation.dart';
 
 import 'package:farmdirect/services/api_services.dart';

@@ -14,6 +14,7 @@ from .models.user import User
 from .models.farmer_profile import FarmerProfile
 from .models.product import Product
 from .models.category import Category
+from .models.address import Address
 
 # ============================================================
 # IMPORT ROUTES
@@ -24,7 +25,7 @@ from .routes.auth import router as auth_router
 from .routes.farmer_profile import router as farmer_profile_router
 from .routes.product import router as products_router
 from .routes.product_images import router as product_images_router
-from fastapi.staticfiles import StaticFiles
+from .routes.address import router as address_router
 
 
 app = FastAPI(
@@ -42,16 +43,20 @@ Base.metadata.create_all(
 
 
 # ============================================================
-# STATIC FILES - PROFILE IMAGES
+# STATIC FILES - PROFILE / PRODUCT IMAGES
 # ============================================================
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 UPLOADS_DIR = BASE_DIR / "uploads"
 
+UPLOADS_DIR.mkdir(
+    parents=True,
+    exist_ok=True
+)
 
 app.mount(
     "/uploads",
-    StaticFiles(directory="uploads"),
+    StaticFiles(directory=str(UPLOADS_DIR)),
     name="uploads",
 )
 
@@ -67,7 +72,11 @@ app.include_router(auth_router)
 app.include_router(farmer_profile_router)
 
 app.include_router(products_router)
+
 app.include_router(product_images_router)
+
+app.include_router(address_router)
+
 
 # ============================================================
 # ROOT
@@ -101,11 +110,3 @@ def health():
             "database": "disconnected",
             "error": str(e)
         }
-# ==============================================================
-# UPLOAD PRODUCT IMAGES
-# ==============================================================
-app.mount(
-    "/uploads",
-    StaticFiles(directory=str(UPLOADS_DIR)),
-    name="uploads"
-)

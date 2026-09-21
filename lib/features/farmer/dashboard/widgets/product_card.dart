@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:farmdirect/config/api_config.dart';
-import 'package:farmdirect/models/product_model.dart';
+import 'package:farmdirect/features/buyer/models/product_model.dart';
 import 'package:farmdirect/features/farmer/dashboard/product_screen.dart';
 
 class ProductCard extends StatelessWidget {

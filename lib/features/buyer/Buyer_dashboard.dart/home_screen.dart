@@ -13,6 +13,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  String _selectedLocation = 'Select location';
   Set<String> selectedCategories = {"All"};
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
@@ -87,31 +88,38 @@ class _HomeScreenState extends State<HomeScreen> {
                       const SizedBox(height: 5),
 
                       // LOCATION
-                      Row(
-                        children: const [
-                          Icon(
-                            Icons.location_on_rounded,
-                            size: 13,
-                            color: Color(0xFF087C59),
-                          ),
-
-                          SizedBox(width: 3),
-
-                          Text(
-                            "Dehradun, Uttarakhand",
-                            style: TextStyle(
-                              fontSize: 9,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF455A64),
+                      GestureDetector(
+                        onTap: _showLocationSelector,
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.location_on_rounded,
+                              size: 13,
+                              color: Color(0xFF087C59),
                             ),
-                          ),
 
-                          Icon(
-                            Icons.keyboard_arrow_down_rounded,
-                            size: 14,
-                            color: Color(0xFF60716B),
-                          ),
-                        ],
+                            const SizedBox(width: 3),
+
+                            Expanded(
+                              child: Text(
+                                _selectedLocation,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF455A64),
+                                ),
+                              ),
+                            ),
+
+                            const Icon(
+                              Icons.keyboard_arrow_down_rounded,
+                              size: 14,
+                              color: Color(0xFF60716B),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -439,7 +447,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     return ProductCard(
                       productId: product.productId,
                       farmerId: product.farmerId,
-                      
+
                       image: product.fullImageUrl,
                       name: product.name,
                       price: product.price.toStringAsFixed(2),
@@ -723,6 +731,13 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+
+
+  void _showLocationSelector() {
+  // show buyer's saved addresses here
+}
+
+
 }
 
 // ==================================================================

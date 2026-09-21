@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 class ProductDetailsScreen extends StatefulWidget {
   final String image;
   final int productId;
-  final int farmerId; 
+  final int farmerId;
 
   final String name;
   final String price;
@@ -25,7 +25,7 @@ class ProductDetailsScreen extends StatefulWidget {
     super.key,
     required this.image,
     required this.productId,
-    required this.farmerId, 
+    required this.farmerId,
 
     required this.name,
     required this.price,
@@ -40,7 +40,6 @@ class ProductDetailsScreen extends StatefulWidget {
     required this.harvestedOn,
     required this.shelfLife,
   });
-
 
   @override
   State<ProductDetailsScreen> createState() => _ProductDetailsScreenState();
@@ -1376,10 +1375,10 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
           Expanded(
             child: SizedBox(
               height: 42,
-
               child: ElevatedButton.icon(
                 onPressed: () {
                   final cart = context.read<CartProvider>();
+
                   final productPrice =
                       double.tryParse(
                         widget.price
@@ -1389,6 +1388,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                       ) ??
                       0.0;
 
+                  // Add the selected quantity
                   for (int i = 0; i < quantity; i++) {
                     cart.addToCart(
                       productId: widget.productId,
@@ -1400,31 +1400,29 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                       location: widget.farmLocation,
                     );
                   }
+
                   ScaffoldMessenger.of(context)
                     ..hideCurrentSnackBar()
                     ..showSnackBar(
                       SnackBar(
-                        content: Text('${widget.name} added to cart'),
+                        content: Text(
+                          '${widget.name} × $quantity added to cart',
+                        ),
                         backgroundColor: const Color(0xFF087C59),
                         behavior: SnackBarBehavior.floating,
+                        duration: const Duration(seconds: 1),
                       ),
                     );
                 },
-
                 icon: const Icon(Icons.shopping_cart_outlined, size: 17),
-
                 label: const Text(
-                  "Add to Cart",
+                  'Add to Cart',
                   style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800),
                 ),
-
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF087C59),
-
                   foregroundColor: Colors.white,
-
                   elevation: 0,
-
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(21),
                   ),

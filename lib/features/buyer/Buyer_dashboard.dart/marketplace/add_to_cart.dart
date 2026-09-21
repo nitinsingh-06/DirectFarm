@@ -1,5 +1,7 @@
+import 'package:farmdirect/core/provider/card_provider.dart';
 import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/cheakout/cheakout_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
@@ -9,142 +11,40 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
-
   // ============================================================
-  // CART PRODUCTS
-  // Later these can come from Provider / Backend
+  // PROMO
   // ============================================================
 
-  final List<Map<String, dynamic>> _cartItems = [
-    {
-      'name': 'Organic Alphonso Mango',
-      'farmer': 'Ratnagiri Farms',
-      'unit': 'Dozen',
-      'price': 790,
-      'oldPrice': 1000,
-      'quantity': 2,
-      'image':
-          'https://images.unsplash.com/photo-1553279768-865429fa0078?w=300',
-    },
-    {
-      'name': 'Fresh Cauliflower',
-      'farmer': 'Ramgarh Farms',
-      'unit': 'Piece',
-      'price': 105,
-      'oldPrice': null,
-      'quantity': 3,
-      'image':
-          'https://images.unsplash.com/photo-1568584711075-3d021a7c3ca3?w=300',
-    },
-  ];
-
-  // Promo discount
-  int promoDiscount = 200;
+  int promoDiscount = 0;
 
   // ============================================================
-  // CALCULATE SUBTOTAL
+  // PROMO APPLY
   // ============================================================
 
-  int get basketSubtotal {
-    int total = 0;
+  void _applyPromo() {
+    final cart = context.read<CartProvider>();
 
-    for (final item in _cartItems) {
-      total += (item['price'] as int) * (item['quantity'] as int);
+    if (cart.totalAmount < 500) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Minimum cart value of ₹500 required',
+          ),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
     }
 
-    return total;
-  }
-
-  // ============================================================
-  // GRAND TOTAL
-  // ============================================================
-
-  int get grandTotal {
-    return basketSubtotal - promoDiscount;
-  }
-
-  // ============================================================
-  // INCREASE QUANTITY
-  // ============================================================
-
-  void _increaseQuantity(int index) {
     setState(() {
-      _cartItems[index]['quantity']++;
-    });
-  }
-
-  // ============================================================
-  // DECREASE QUANTITY
-  // ============================================================
-
-  void _decreaseQuantity(int index) {
-    setState(() {
-      if (_cartItems[index]['quantity'] > 1) {
-        _cartItems[index]['quantity']--;
-      } else {
-        _removeItem(index);
-      }
-    });
-  }
-
-  // ============================================================
-  // REMOVE ITEM
-  // ============================================================
-
-  void _removeItem(int index) {
-    final removedItem = _cartItems[index]['name'];
-
-    setState(() {
-      _cartItems.removeAt(index);
+      promoDiscount = 200;
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('$removedItem removed from cart'),
-        duration: const Duration(seconds: 2),
+      const SnackBar(
+        content: Text('MANGO20 applied successfully'),
+        duration: Duration(seconds: 2),
       ),
-    );
-  }
-
-  // ============================================================
-  // CLEAR ALL
-  // ============================================================
-
-  void _clearCart() {
-    if (_cartItems.isEmpty) return;
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Clear Cart?'),
-          content: const Text(
-            'Are you sure you want to remove all items from your cart?',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  _cartItems.clear();
-                });
-
-                Navigator.pop(context);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                foregroundColor: Colors.white,
-              ),
-              child: const Text('Clear All'),
-            ),
-          ],
-        );
-      },
     );
   }
 
@@ -159,119 +59,205 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   // ============================================================
-  // CHECKOUT
+  // GRAND TOTAL
   // ============================================================
-void _proceedToCheckout() {
-  if (_cartItems.isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Your cart is empty'),
-      ),
-    );
-    return;
+
+  double _grandTotal(CartProvider cart) {
+    final total = cart.totalAmount - promoDiscount;
+
+    return total < 0 ? 0 : total;
   }
 
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => CheckoutScreen(
-        totalAmount: grandTotal,
+  // ============================================================
+  // CLEAR ALL
+  // ============================================================
+
+  void _clearCart() {
+    final cart = context.read<CartProvider>();
+
+    if (cart.items.isEmpty) return;
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Clear Cart?'),
+          content: const Text(
+            'Are you sure you want to remove all items from your cart?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext);
+              },
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                cart.clearCart();
+
+                setState(() {
+                  promoDiscount = 0;
+                });
+
+                Navigator.pop(dialogContext);
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Cart cleared'),
+                    duration: Duration(seconds: 1),
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Clear All'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // ============================================================
+  // REMOVE ITEM
+  // ============================================================
+
+  void _removeItem(int productId, String productName) {
+    final cart = context.read<CartProvider>();
+
+    cart.removeFromCart(productId);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('$productName removed from cart'),
+        duration: const Duration(seconds: 1),
       ),
-    ),
-  );
-}
+    );
+  }
+
+  // ============================================================
+  // CHECKOUT
+  // ============================================================
+
+  void _proceedToCheckout(CartProvider cart) {
+    if (cart.items.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Your cart is empty'),
+        ),
+      );
+      return;
+    }
+
+    final total = _grandTotal(cart);
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CheckoutScreen(
+          totalAmount: total.toInt(),
+        ),
+      ),
+    );
+  }
+
   // ============================================================
   // BUILD
   // ============================================================
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF7F8F8),
+    return Consumer<CartProvider>(
+      builder: (context, cart, child) {
+        final grandTotal = _grandTotal(cart);
 
-      // ========================================================
-      // APP BAR
-      // ========================================================
+        return Scaffold(
+          backgroundColor: const Color(0xFFF7F8F8),
 
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        automaticallyImplyLeading: false,
+          // ======================================================
+          // APP BAR
+          // ======================================================
 
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'My Cart (${_cartItems.length} items)',
+          appBar: AppBar(
+            backgroundColor: Colors.white,
+            elevation: 0,
+            automaticallyImplyLeading: false,
+            title: Text(
+              'My Cart (${cart.itemCount} items)',
               style: const TextStyle(
                 color: Color(0xFF145C4A),
                 fontSize: 19,
                 fontWeight: FontWeight.bold,
               ),
             ),
-
-            const SizedBox(height: 2),
-
-          
-          ],
-        ),
-
-        actions: [
-          TextButton(
-            onPressed: _clearCart,
-            child: const Text(
-              'Clear All',
-              style: TextStyle(
-                color: Colors.redAccent,
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
-      ),
-
-      // ========================================================
-      // BODY
-      // ========================================================
-
-      body: _cartItems.isEmpty
-          ? _buildEmptyCart()
-          : Column(
-              children: [
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.only(
-                      left: 8,
-                      right: 8,
-                      top: 8,
-                      bottom: 15,
-                    ),
-                    child: Column(
-                      children: [
-                        // Product list
-                        _buildCartItems(),
-
-                        const SizedBox(height: 12),
-
-                        // Promo
-                        _buildPromoSection(),
-
-                        const SizedBox(height: 12),
-
-                        // Bill details
-                        _buildBillDetails(),
-
-                        const SizedBox(height: 18),
-                      ],
+            actions: [
+              if (cart.items.isNotEmpty)
+                TextButton(
+                  onPressed: _clearCart,
+                  child: const Text(
+                    'Clear All',
+                    style: TextStyle(
+                      color: Colors.redAccent,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
+            ],
+          ),
 
-                // Checkout button
-                _buildCheckoutButton(),
-              ],
-            ),
+          // ======================================================
+          // BODY
+          // ======================================================
+
+          body: cart.items.isEmpty
+              ? _buildEmptyCart()
+              : Column(
+                  children: [
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.only(
+                          left: 8,
+                          right: 8,
+                          top: 8,
+                          bottom: 15,
+                        ),
+                        child: Column(
+                          children: [
+                            // Cart products
+                            _buildCartItems(cart),
+
+                            const SizedBox(height: 12),
+
+                            // Promo
+                            _buildPromoSection(),
+
+                            const SizedBox(height: 12),
+
+                            // Bill
+                            _buildBillDetails(
+                              cart,
+                              grandTotal,
+                            ),
+
+                            const SizedBox(height: 18),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    // Checkout
+                    _buildCheckoutButton(
+                      cart,
+                      grandTotal,
+                    ),
+                  ],
+                ),
+        );
+      },
     );
   }
 
@@ -279,16 +265,18 @@ void _proceedToCheckout() {
   // CART ITEMS
   // ============================================================
 
-  Widget _buildCartItems() {
+  Widget _buildCartItems(CartProvider cart) {
     return Column(
       children: List.generate(
-        _cartItems.length,
+        cart.items.length,
         (index) {
+          final item = cart.items[index];
+
           return Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: _buildCartItem(
-              item: _cartItems[index],
-              index: index,
+              cart: cart,
+              item: item,
             ),
           );
         },
@@ -301,8 +289,8 @@ void _proceedToCheckout() {
   // ============================================================
 
   Widget _buildCartItem({
-    required Map<String, dynamic> item,
-    required int index,
+    required CartProvider cart,
+    required CartItem item,
   }) {
     return Container(
       padding: const EdgeInsets.all(8),
@@ -328,25 +316,21 @@ void _proceedToCheckout() {
 
           ClipRRect(
             borderRadius: BorderRadius.circular(10),
-            child: Image.network(
-              item['image'],
-              width: 58,
-              height: 58,
-              fit: BoxFit.cover,
-
-              // If internet image fails
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  width: 58,
-                  height: 58,
-                  color: const Color(0xFFF0F0F0),
-                  child: const Icon(
-                    Icons.image_not_supported_outlined,
-                    color: Colors.grey,
-                  ),
-                );
-              },
-            ),
+            child: item.image.isNotEmpty
+                ? Image.network(
+                    item.image,
+                    width: 58,
+                    height: 58,
+                    fit: BoxFit.cover,
+                    errorBuilder: (
+                      context,
+                      error,
+                      stackTrace,
+                    ) {
+                      return _imageFallback();
+                    },
+                  )
+                : _imageFallback(),
           ),
 
           const SizedBox(width: 10),
@@ -360,7 +344,7 @@ void _proceedToCheckout() {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  item['name'],
+                  item.name,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
@@ -373,9 +357,23 @@ void _proceedToCheckout() {
                 const SizedBox(height: 3),
 
                 Text(
-                  '${item['farmer']} • ${item['unit']}',
+                  '${item.farm} • ${item.unit}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     fontSize: 9,
+                    color: Colors.grey,
+                  ),
+                ),
+
+                const SizedBox(height: 3),
+
+                Text(
+                  item.location,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 8,
                     color: Colors.grey,
                   ),
                 ),
@@ -385,7 +383,7 @@ void _proceedToCheckout() {
                 Row(
                   children: [
                     Text(
-                      '₹${item['price']}',
+                      '₹${_formatDouble(item.price)}',
                       style: const TextStyle(
                         color: Color(0xFF176B53),
                         fontWeight: FontWeight.bold,
@@ -393,87 +391,147 @@ void _proceedToCheckout() {
                       ),
                     ),
 
-                    if (item['oldPrice'] != null) ...[
-                      const SizedBox(width: 5),
-                      Text(
-                        '₹${item['oldPrice']}',
-                        style: const TextStyle(
-                          color: Colors.grey,
-                          fontSize: 9,
-                          decoration: TextDecoration.lineThrough,
-                        ),
+                    const SizedBox(width: 5),
+
+                    Text(
+                      'per ${item.unit}',
+                      style: const TextStyle(
+                        color: Colors.grey,
+                        fontSize: 8,
                       ),
-                    ],
+                    ),
                   ],
                 ),
+
+                const SizedBox(height: 2),
+
+                Text(
+                  'Total: ₹${_formatDouble(item.totalPrice)}',
+                  style: const TextStyle(
+                    color: Color(0xFF555555),
+                    fontSize: 9,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ],
             ),
           ),
 
+          const SizedBox(width: 5),
+
           // ======================================================
-          // QUANTITY CONTROLLER
+          // QUANTITY + DELETE
           // ======================================================
 
-          Container(
-            height: 30,
-            decoration: BoxDecoration(
-              color: const Color(0xFFF8F8F8),
-              borderRadius: BorderRadius.circular(7),
-              border: Border.all(
-                color: const Color(0xFFE6E6E6),
+          Column(
+            children: [
+              Container(
+                height: 30,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8F8F8),
+                  borderRadius: BorderRadius.circular(7),
+                  border: Border.all(
+                    color: const Color(0xFFE6E6E6),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // MINUS
+                    InkWell(
+                      onTap: () {
+                        cart.decreaseQuantity(
+                          item.productId,
+                        );
+                      },
+                      child: const SizedBox(
+                        width: 27,
+                        child: Center(
+                          child: Text(
+                            '−',
+                            style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // QUANTITY
+                    Text(
+                      '${item.quantity}',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+
+                    // PLUS
+                    InkWell(
+                      onTap: () {
+                        cart.increaseQuantity(
+                          item.productId,
+                        );
+                      },
+                      child: const SizedBox(
+                        width: 27,
+                        child: Center(
+                          child: Text(
+                            '+',
+                            style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Minus
-                InkWell(
-                  onTap: () => _decreaseQuantity(index),
-                  child: const SizedBox(
-                    width: 27,
-                    child: Center(
-                      child: Text(
-                        '−',
-                        style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
 
-                // Quantity
-                Text(
-                  '${item['quantity']}',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+              const SizedBox(height: 2),
 
-                // Plus
-                InkWell(
-                  onTap: () => _increaseQuantity(index),
-                  child: const SizedBox(
-                    width: 27,
-                    child: Center(
-                      child: Text(
-                        '+',
-                        style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ),
+              // DELETE
+              InkWell(
+                onTap: () {
+                  _removeItem(
+                    item.productId,
+                    item.name,
+                  );
+                },
+                child: const Padding(
+                  padding: EdgeInsets.all(3),
+                  child: Icon(
+                    Icons.delete_outline,
+                    size: 17,
+                    color: Colors.redAccent,
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ],
+      ),
+    );
+  }
+
+  // ============================================================
+  // IMAGE FALLBACK
+  // ============================================================
+
+  Widget _imageFallback() {
+    return Container(
+      width: 58,
+      height: 58,
+      color: const Color(0xFFF0F0F0),
+      child: const Icon(
+        Icons.image_not_supported_outlined,
+        color: Colors.grey,
+        size: 22,
       ),
     );
   }
@@ -485,7 +543,9 @@ void _proceedToCheckout() {
   Widget _buildPromoSection() {
     return Container(
       height: 44,
-      padding: const EdgeInsets.symmetric(horizontal: 14),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 14,
+      ),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(10),
@@ -531,6 +591,22 @@ void _proceedToCheckout() {
                   fontWeight: FontWeight.bold,
                 ),
               ),
+            )
+          else
+            TextButton(
+              onPressed: _applyPromo,
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.zero,
+                minimumSize: Size.zero,
+              ),
+              child: const Text(
+                'Apply',
+                style: TextStyle(
+                  color: Color(0xFF176B53),
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
         ],
       ),
@@ -541,7 +617,10 @@ void _proceedToCheckout() {
   // BILL DETAILS
   // ============================================================
 
-  Widget _buildBillDetails() {
+  Widget _buildBillDetails(
+    CartProvider cart,
+    double grandTotal,
+  ) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(
@@ -558,7 +637,8 @@ void _proceedToCheckout() {
         ),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment:
+            CrossAxisAlignment.start,
         children: [
           const Text(
             'Bill Details',
@@ -571,15 +651,15 @@ void _proceedToCheckout() {
 
           const SizedBox(height: 12),
 
-          // Basket subtotal
+          // SUBTOTAL
           _billRow(
             'Basket Subtotal',
-            '₹${_formatPrice(basketSubtotal)}',
+            '₹${_formatDouble(cart.totalAmount)}',
           ),
 
           const SizedBox(height: 9),
 
-          // Delivery
+          // DELIVERY
           _billRow(
             'Delivery Partner Fee',
             'FREE',
@@ -588,11 +668,11 @@ void _proceedToCheckout() {
 
           const SizedBox(height: 9),
 
-          // Promo
+          // PROMO
           _billRow(
             'Promo Discount',
             promoDiscount > 0
-                ? '-₹${_formatPrice(promoDiscount)}'
+                ? '-₹${_formatDouble(promoDiscount.toDouble())}'
                 : '₹0',
             valueColor: promoDiscount > 0
                 ? Colors.redAccent
@@ -600,16 +680,19 @@ void _proceedToCheckout() {
           ),
 
           const Padding(
-            padding: EdgeInsets.symmetric(vertical: 11),
+            padding: EdgeInsets.symmetric(
+              vertical: 11,
+            ),
             child: Divider(
               height: 1,
               color: Color(0xFFE7E7E7),
             ),
           ),
 
-          // Grand total
+          // GRAND TOTAL
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment:
+                MainAxisAlignment.spaceBetween,
             children: [
               const Text(
                 'Grand Total',
@@ -621,7 +704,7 @@ void _proceedToCheckout() {
               ),
 
               Text(
-                '₹${_formatPrice(grandTotal)}',
+                '₹${_formatDouble(grandTotal)}',
                 style: const TextStyle(
                   color: Color(0xFF176B53),
                   fontSize: 14,
@@ -642,10 +725,12 @@ void _proceedToCheckout() {
   Widget _billRow(
     String title,
     String value, {
-    Color valueColor = const Color(0xFF444444),
+    Color valueColor =
+        const Color(0xFF444444),
   }) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      mainAxisAlignment:
+          MainAxisAlignment.spaceBetween,
       children: [
         Text(
           title,
@@ -671,7 +756,10 @@ void _proceedToCheckout() {
   // CHECKOUT BUTTON
   // ============================================================
 
-  Widget _buildCheckoutButton() {
+  Widget _buildCheckoutButton(
+    CartProvider cart,
+    double grandTotal,
+  ) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(
@@ -686,17 +774,22 @@ void _proceedToCheckout() {
         child: SizedBox(
           height: 45,
           child: ElevatedButton(
-            onPressed: _proceedToCheckout,
+            onPressed: () {
+              _proceedToCheckout(cart);
+            },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF82D20B),
-              foregroundColor: const Color(0xFF145C4A),
+              backgroundColor:
+                  const Color(0xFF82D20B),
+              foregroundColor:
+                  const Color(0xFF145C4A),
               elevation: 0,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(9),
+                borderRadius:
+                    BorderRadius.circular(9),
               ),
             ),
             child: Text(
-              'Proceed to Checkout • ₹${_formatPrice(grandTotal)}',
+              'Proceed to Checkout • ₹${_formatDouble(grandTotal)}',
               style: const TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.bold,
@@ -715,13 +808,14 @@ void _proceedToCheckout() {
   Widget _buildEmptyCart() {
     return Center(
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment:
+            MainAxisAlignment.center,
         children: [
           Container(
             width: 85,
             height: 85,
-            decoration: BoxDecoration(
-              color: const Color(0xFFEAF7DD),
+            decoration: const BoxDecoration(
+              color: Color(0xFFEAF7DD),
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -760,10 +854,14 @@ void _proceedToCheckout() {
   // PRICE FORMAT
   // ============================================================
 
-  String _formatPrice(int price) {
-    return price.toString().replaceAllMapped(
-          RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
-          (match) => '${match.group(1)},',
-        );
+  String _formatDouble(double price) {
+    if (price == price.roundToDouble()) {
+      return price.toInt().toString().replaceAllMapped(
+            RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
+            (match) => '${match.group(1)},',
+          );
+    }
+
+    return price.toStringAsFixed(2);
   }
 }
