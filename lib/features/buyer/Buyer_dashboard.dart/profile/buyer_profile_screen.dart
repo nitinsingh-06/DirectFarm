@@ -7,7 +7,7 @@ import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/profile/about_us_
 import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/profile/app_language_selector.dart';
 import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/profile/notification_screen.dart';
 import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/profile/payment_method_screen.dart';
-import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/profile/saved_address_screen.dart';
+import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/profile/address/saved_address_screen.dart';
 import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/profile/wishlist_screen.dart';
 import 'package:farmdirect/features/farmer/dashboard/farmer_profile/farm_help_section.dart';
 import 'package:flutter/material.dart';

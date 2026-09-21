@@ -1,4 +1,5 @@
 import 'package:farmdirect/Authentification/screens/splash_screen.dart';
+import 'package:farmdirect/core/provider/address_provider.dart';
 import 'package:farmdirect/core/provider/buyer_product_provider.dart';
 import 'package:farmdirect/core/provider/buyer_profile_provider.dart';
 import 'package:farmdirect/core/provider/card_provider.dart';
@@ -31,6 +32,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => BuyerProductProvider()),
         ChangeNotifierProvider(create: (_) => CartProvider()),
+        ChangeNotifierProvider(create: (_) => AddressProvider()),
       ],
       child: const MyApp(),
     ),

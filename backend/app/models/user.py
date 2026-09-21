@@ -1,8 +1,7 @@
 from sqlalchemy import Column, BigInteger, String, DateTime
 from sqlalchemy.sql import func
 
-from ..database import Base
-
+from app.core.database import Base
 
 class User(Base):
     __tablename__ = "users"

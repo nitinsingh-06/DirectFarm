@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:farmdirect/config/api_config.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
@@ -323,4 +324,203 @@ class ApiService {
       throw Exception('Image upload failed: ${response.statusCode}');
     }
   }
+
+
+
+
+  
+  // -------------------------------------------------------
+  //  BUYER ADDRESS
+  // -------------------------------------------------------
+ static Future<List<dynamic>> getMyAddresses() async {
+  final user =
+      FirebaseAuth.instance.currentUser;
+
+  if (user == null) {
+    throw Exception(
+      'User is not logged in',
+    );
+  }
+
+  final token =
+      await user.getIdToken();
+
+  final response = await http.get(
+    Uri.parse(
+      '${ApiConfig.baseUrl}/addresses/me'
+      '?id_token=$token',
+    ),
+  );
+
+  if (response.statusCode != 200) {
+    throw Exception(
+      'Failed to load addresses: '
+      '${response.body}',
+    );
+  }
+
+  final decoded =
+      jsonDecode(response.body);
+
+  if (decoded is List) {
+    return decoded;
+  }
+
+  return [];
+}
+
+
+
+  // -------------------------------------------------------
+  //  CREATE ADDRESS OF BUYER
+  // -------------------------------------------------------
+  static Future<void> createAddress({
+  required String fullName,
+  required String phone,
+  required String addressLine,
+  required String landmark,
+  required String city,
+  required String state,
+  required String pincode,
+  required String label,
+  required bool isDefault,
+}) async {
+  final user =
+      FirebaseAuth.instance.currentUser;
+
+  if (user == null) {
+    throw Exception(
+      'User is not logged in',
+    );
+  }
+
+  final token =
+      await user.getIdToken();
+
+  final response = await http.post(
+    Uri.parse(
+      '${ApiConfig.baseUrl}/addresses'
+      '?id_token=$token',
+    ),
+    headers: {
+      'Content-Type':
+          'application/json',
+    },
+    body: jsonEncode({
+      'full_name': fullName,
+      'phone': phone,
+      'address_line': addressLine,
+      'landmark': landmark,
+      'city': city,
+      'state': state,
+      'pincode': pincode,
+      'label': label,
+      'is_default': isDefault,
+    }),
+  );
+
+  if (response.statusCode != 200 &&
+      response.statusCode != 201) {
+    throw Exception(
+      response.body,
+    );
+  }
+}
+
+
+  // -------------------------------------------------------
+  //  UPDATE ADDRESS OF BUYER
+  // -------------------------------------------------------
+  static Future<void> updateAddress({
+  required int addressId,
+  required String fullName,
+  required String phone,
+  required String addressLine,
+  required String landmark,
+  required String city,
+  required String state,
+  required String pincode,
+  required String label,
+  required bool isDefault,
+}) async {
+  final user =
+      FirebaseAuth.instance.currentUser;
+
+  if (user == null) {
+    throw Exception(
+      'User is not logged in',
+    );
+  }
+
+  final token =
+      await user.getIdToken();
+
+  final response = await http.put(
+    Uri.parse(
+      '${ApiConfig.baseUrl}/addresses/'
+      '$addressId'
+      '?id_token=$token',
+    ),
+    headers: {
+      'Content-Type':
+          'application/json',
+    },
+    body: jsonEncode({
+      'full_name': fullName,
+      'phone': phone,
+      'address_line': addressLine,
+      'landmark': landmark,
+      'city': city,
+      'state': state,
+      'pincode': pincode,
+      'label': label,
+      'is_default': isDefault,
+    }),
+  );
+
+  if (response.statusCode != 200) {
+    throw Exception(
+      response.body,
+    );
+  }
+}
+
+
+
+  // -------------------------------------------------------
+  //  DELETE ADDRESS OF BUYER
+  // -------------------------------------------------------
+
+
+static Future<void> deleteAddress({
+  required int addressId,
+}) async {
+  final user =
+      FirebaseAuth.instance.currentUser;
+
+  if (user == null) {
+    throw Exception(
+      'User is not logged in',
+    );
+  }
+
+  final token =
+      await user.getIdToken();
+
+  final response = await http.delete(
+    Uri.parse(
+      '${ApiConfig.baseUrl}/addresses/'
+      '$addressId'
+      '?id_token=$token',
+    ),
+  );
+
+  if (response.statusCode != 200 &&
+      response.statusCode != 204) {
+    throw Exception(
+      response.body,
+    );
+  }
+}
+
 }
