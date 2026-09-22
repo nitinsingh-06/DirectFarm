@@ -1,3 +1,4 @@
+import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/order/order_success.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -45,60 +46,64 @@ class ConfirmOrderScreen extends StatelessWidget {
   // ============================================================
   // PLACE ORDER
   // ============================================================
+Future<void> _placeOrder(
+  BuildContext context,
+  CartProvider cart,
+  AddressProvider addressProvider,
+) async {
+  final address = addressProvider.selectedAddress;
 
-  void _placeOrder(
-    BuildContext context,
-    CartProvider cart,
-    AddressProvider addressProvider,
-  ) {
-    final address = addressProvider.selectedAddress;
-
-    if (address == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a delivery address')),
-      );
-      return;
-    }
-
-    if (cart.items.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Your cart is empty')));
-      return;
-    }
-
-    final itemsTotal = cart.totalAmount;
-
-    final total = itemsTotal + deliveryCharge + platformFee;
-
-    debugPrint('================================');
-    debugPrint('PLACE ORDER');
-    debugPrint('================================');
-
-    debugPrint('Payment: $paymentMethod');
-    debugPrint('Delivery date: $deliveryDate');
-    debugPrint('Delivery slot: $deliverySlot');
-    debugPrint('Instructions: $deliveryInstructions');
-
-    debugPrint('Items total: $itemsTotal');
-    debugPrint('Delivery charge: $deliveryCharge');
-    debugPrint('Platform fee: $platformFee');
-    debugPrint('Total: $total');
-
-    // ==========================================================
-    // NEXT STEP:
-    // Send this information to FastAPI.
-    // ==========================================================
-
-    /*
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => OrderSuccessScreen(...),
+  if (address == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Please select a delivery address'),
       ),
     );
-    */
+    return;
   }
+
+  if (cart.items.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Your cart is empty'),
+      ),
+    );
+    return;
+  }
+
+  try {
+    // TODO:
+    // 1. Send order to FastAPI
+    // 2. Get order ID
+    // 3. Clear cart
+    // 4. Navigate to Order Placed screen
+
+    // print('Address ID: ${address.addressId}');
+    // print('Payment Method: ${widget.paymentMethod}');
+    print('Items: ${cart.items.length}');
+    print('Total: ${cart.totalAmount}');
+
+    // Temporary navigation for testing
+    if (!context.mounted) return;
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const OrderSuccessScreen(),
+      ),
+    );
+  } catch (e) {
+    if (!context.mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Failed to place order: $e',
+        ),
+      ),
+    );
+  }
+}
 
   // ============================================================
   // BUILD
