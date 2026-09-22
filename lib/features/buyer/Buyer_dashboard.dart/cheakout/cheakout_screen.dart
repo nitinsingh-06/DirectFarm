@@ -1,4 +1,4 @@
-import 'package:farmdirect/features/buyer/models/buyer_address.dart';
+import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/cheakout/payment_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -15,15 +15,21 @@ class CheckoutScreen extends StatefulWidget {
 }
 
 class _CheckoutScreenState extends State<CheckoutScreen> {
+  final TextEditingController instructionController = TextEditingController();
+
   // ============================================================
   // COLORS
   // ============================================================
 
   static const Color primaryGreen = Color(0xFF087C59);
 
+  static const Color textGrey = Color(0xFF71807A);
+
   static const Color lightGreen = Color(0xFFEAF8F0);
 
   static const Color background = Color(0xFFF5F8F7);
+
+  static const Color textDark = Color(0xFF263238);
 
   static const Color darkText = Color(0xFF18332D);
 
@@ -34,6 +40,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   // ============================================================
 
   int selectedSlot = 0;
+
 
   final List<Map<String, String>> deliverySlots = [
     {'day': 'Tomorrow', 'time': '07 AM - 11 AM'},
@@ -88,134 +95,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   double _grandTotal(CartProvider cart) {
     return cart.totalAmount;
-  }
-
-  // ============================================================
-  // PLACE ORDER
-  // ============================================================
-
-  void _placeOrder(CartProvider cart, AddressProvider addressProvider) {
-    final address = addressProvider.selectedAddress;
-
-    if (cart.items.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Your cart is empty')));
-
-      return;
-    }
-
-    if (address == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a delivery address')),
-      );
-
-      return;
-    }
-
-    final slot = deliverySlots[selectedSlot];
-
-    final payment = paymentMethods[selectedPayment];
-
-    // COD selected
-    if (selectedPayment == 3) {
-      _showOrderConfirmation(
-        cart: cart,
-        address: address,
-        slot: slot,
-        payment: payment,
-      );
-
-      return;
-    }
-
-    // Other payment methods
-    _showOrderConfirmation(
-      cart: cart,
-      address: address,
-      slot: slot,
-      payment: payment,
-    );
-  }
-
-  // ============================================================
-  // CONFIRMATION
-  // ============================================================
-
-  void _showOrderConfirmation({
-    required CartProvider cart,
-    required BuyerAddress address,
-    required Map<String, String> slot,
-    required Map<String, dynamic> payment,
-  }) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text(
-            'Confirm Order',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-
-          content: Text(
-            'Delivery\n'
-            '${slot['day']} • ${slot['time']}\n\n'
-            'Payment\n'
-            '${payment['title']}\n\n'
-            'Address\n'
-            '${address.addressLine}, '
-            '${address.city}, '
-            '${address.state} - '
-            '${address.pincode}\n\n'
-            'Total\n'
-            '₹${_formatPrice(_grandTotal(cart))}',
-          ),
-
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(dialogContext);
-              },
-              child: const Text('Cancel'),
-            ),
-
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(dialogContext);
-
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Order placed successfully'),
-                    backgroundColor: primaryGreen,
-                  ),
-                );
-
-                // =================================================
-                // NEXT BACKEND STEP
-                // =================================================
-                //
-                // Send:
-                //
-                // address.id
-                // selectedSlot
-                // payment method
-                // cart.items
-                // cart.totalAmount
-                //
-                // to FastAPI /orders
-                //
-                // Then clear cart.
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: primaryGreen,
-                foregroundColor: Colors.white,
-              ),
-              child: const Text('Confirm Order'),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   // ============================================================
@@ -279,10 +158,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
                       const SizedBox(height: 10),
 
-                      _buildPayment(),
+                      // _buildPayment(),
 
-                      const SizedBox(height: 10),
-
+                      // const SizedBox(height: 10),
                       _buildSecureBox(),
                     ],
                   ),
@@ -308,10 +186,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       child: Row(
         children: [
           _step('1', 'Address', true),
-
-          _line(),
-
-          _step('2', 'Delivery', false),
 
           _line(),
 
@@ -916,134 +790,134 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   // PAYMENT
   // ============================================================
 
-  Widget _buildPayment() {
-    return _card(
-      child: Column(
-        children: [
-          Row(
-            children: [
-              _sectionIcon(Icons.payment_outlined),
+  // Widget _buildPayment() {
+  //   return _card(
+  //     child: Column(
+  //       children: [
+  //         Row(
+  //           children: [
+  //             _sectionIcon(Icons.payment_outlined),
 
-              const SizedBox(width: 10),
+  //             const SizedBox(width: 10),
 
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Select Payment Method',
-                      style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w800,
-                        color: darkText,
-                      ),
-                    ),
-                    SizedBox(height: 2),
-                    Text(
-                      'Choose how you want to pay',
-                      style: TextStyle(fontSize: 9, color: greyText),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+  //             const Expanded(
+  //               child: Column(
+  //                 crossAxisAlignment: CrossAxisAlignment.start,
+  //                 children: [
+  //                   Text(
+  //                     'Select Payment Method',
+  //                     style: TextStyle(
+  //                       fontSize: 17,
+  //                       fontWeight: FontWeight.w800,
+  //                       color: darkText,
+  //                     ),
+  //                   ),
+  //                   SizedBox(height: 2),
+  //                   Text(
+  //                     'Choose how you want to pay',
+  //                     style: TextStyle(fontSize: 9, color: greyText),
+  //                   ),
+  //                 ],
+  //               ),
+  //             ),
+  //           ],
+  //         ),
 
-          const SizedBox(height: 10),
+  //         const SizedBox(height: 10),
 
-          ...List.generate(paymentMethods.length, (index) {
-            final method = paymentMethods[index];
+  //         ...List.generate(paymentMethods.length, (index) {
+  //           final method = paymentMethods[index];
 
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 7),
-              child: _paymentMethod(
-                index: index,
-                title: method['title'],
-                subtitle: method['subtitle'],
-                icon: method['icon'],
-              ),
-            );
-          }),
-        ],
-      ),
-    );
-  }
+  //           return Padding(
+  //             padding: const EdgeInsets.only(bottom: 7),
+  //             child: _paymentMethod(
+  //               index: index,
+  //               title: method['title'],
+  //               subtitle: method['subtitle'],
+  //               icon: method['icon'],
+  //             ),
+  //           );
+  //         }),
+  //       ],
+  //     ),
+  //   );
+  // }
 
-  Widget _paymentMethod({
-    required int index,
-    required String title,
-    required String subtitle,
-    required IconData icon,
-  }) {
-    final selected = selectedPayment == index;
+  // Widget _paymentMethod({
+  //   required int index,
+  //   required String title,
+  //   required String subtitle,
+  //   required IconData icon,
+  // }) {
+  //   final selected = selectedPayment == index;
 
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          selectedPayment = index;
-        });
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        decoration: BoxDecoration(
-          color: selected ? const Color(0xFFF0FFF6) : Colors.white,
-          borderRadius: BorderRadius.circular(11),
-          border: Border.all(
-            color: selected ? primaryGreen : const Color(0xFFDDE4E1),
-            width: selected ? 1.4 : 1,
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 35,
-              height: 35,
-              decoration: BoxDecoration(
-                color: selected
-                    ? const Color(0xFFE0F7EA)
-                    : const Color(0xFFF3F5F4),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(
-                icon,
-                size: 19,
-                color: selected ? primaryGreen : darkText,
-              ),
-            ),
+  //   return GestureDetector(
+  //     onTap: () {
+  //       setState(() {
+  //         selectedPayment = index;
+  //       });
+  //     },
+  //     child: Container(
+  //       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+  //       decoration: BoxDecoration(
+  //         color: selected ? const Color(0xFFF0FFF6) : Colors.white,
+  //         borderRadius: BorderRadius.circular(11),
+  //         border: Border.all(
+  //           color: selected ? primaryGreen : const Color(0xFFDDE4E1),
+  //           width: selected ? 1.4 : 1,
+  //         ),
+  //       ),
+  //       child: Row(
+  //         children: [
+  //           Container(
+  //             width: 35,
+  //             height: 35,
+  //             decoration: BoxDecoration(
+  //               color: selected
+  //                   ? const Color(0xFFE0F7EA)
+  //                   : const Color(0xFFF3F5F4),
+  //               borderRadius: BorderRadius.circular(8),
+  //             ),
+  //             child: Icon(
+  //               icon,
+  //               size: 19,
+  //               color: selected ? primaryGreen : darkText,
+  //             ),
+  //           ),
 
-            const SizedBox(width: 9),
+  //           const SizedBox(width: 9),
 
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                      color: darkText,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(fontSize: 8, color: greyText),
-                  ),
-                ],
-              ),
-            ),
+  //           Expanded(
+  //             child: Column(
+  //               crossAxisAlignment: CrossAxisAlignment.start,
+  //               children: [
+  //                 Text(
+  //                   title,
+  //                   style: const TextStyle(
+  //                     fontSize: 10,
+  //                     fontWeight: FontWeight.bold,
+  //                     color: darkText,
+  //                   ),
+  //                 ),
+  //                 const SizedBox(height: 2),
+  //                 Text(
+  //                   subtitle,
+  //                   style: const TextStyle(fontSize: 8, color: greyText),
+  //                 ),
+  //               ],
+  //             ),
+  //           ),
 
-            Icon(
-              selected ? Icons.radio_button_checked : Icons.radio_button_off,
-              size: 20,
-              color: selected ? primaryGreen : greyText,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  //           Icon(
+  //             selected ? Icons.radio_button_checked : Icons.radio_button_off,
+  //             size: 20,
+  //             color: selected ? primaryGreen : greyText,
+  //           ),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
 
   // ============================================================
   // SECURE
@@ -1079,7 +953,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   // ============================================================
   // BOTTOM BAR
   // ============================================================
-
   Widget _buildBottomBar(
     CartProvider cart,
     AddressProvider addressProvider,
@@ -1098,7 +971,24 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             onPressed: cart.items.isEmpty || !hasAddress
                 ? null
                 : () {
-                    _placeOrder(cart, addressProvider);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => PaymentScreen(
+                          itemsTotal: cart.totalAmount,
+                          deliveryDate:  deliverySlots[selectedSlot]['day']!,
+
+                          deliverySlot: deliverySlots[selectedSlot]['time']!,
+
+                          deliveryInstructions: instructionController.text
+                              .trim(),
+
+                          deliveryCharge: 40,
+
+                          platformFee: 10,
+                        ),
+                      ),
+                    );
                   },
             style: ElevatedButton.styleFrom(
               backgroundColor: primaryGreen,
@@ -1109,34 +999,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            child: Row(
+            child: const Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                if (selectedPayment == 3)
-                  const Icon(Icons.local_shipping_outlined, size: 17)
-                else
-                  const Icon(Icons.lock_outline, size: 16),
-
-                const SizedBox(width: 7),
-
-                const Text(
-                  'Place Order',
+                Text(
+                  'Continue to Payment',
                   style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800),
                 ),
-
-                const SizedBox(width: 5),
-
-                Text(
-                  '• ₹${_formatPrice(total)}',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-
-                const SizedBox(width: 7),
-
-                const Icon(Icons.arrow_forward, size: 17),
+                SizedBox(width: 7),
+                Icon(Icons.arrow_forward, size: 17),
               ],
             ),
           ),
@@ -1144,7 +1015,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       ),
     );
   }
-
   // ============================================================
   // COMMON CARD
   // ============================================================
