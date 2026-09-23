@@ -523,4 +523,240 @@ static Future<void> deleteAddress({
   }
 }
 
+
+
+// ============================================================
+// BUYER CART - GET MY CART
+// ============================================================
+
+static Future<List<dynamic>> getMyCart() async {
+  final user = FirebaseAuth.instance.currentUser;
+
+  if (user == null) {
+    throw Exception('User is not logged in');
+  }
+
+  final token = await user.getIdToken();
+
+  final response = await http.get(
+    Uri.parse(
+      '${ApiConfig.baseUrl}/cart/me?id_token=$token',
+    ),
+    headers: {
+      'Accept': 'application/json',
+    },
+  );
+
+  debugPrint(
+    'GET CART STATUS: ${response.statusCode}',
+  );
+
+  debugPrint(
+    'GET CART RESPONSE: ${response.body}',
+  );
+
+  if (response.statusCode == 200) {
+    final decoded = jsonDecode(response.body);
+
+    if (decoded is List) {
+      return decoded;
+    }
+
+    return [];
+  }
+
+  throw Exception(
+    'Failed to load cart: ${response.body}',
+  );
+}
+
+
+
+// ============================================================
+// BUYER CART - ADD ITEM
+// ============================================================
+
+static Future<Map<String, dynamic>> addCartItem({
+  required int productId,
+  required int quantity,
+}) async {
+  final user = FirebaseAuth.instance.currentUser;
+
+  if (user == null) {
+    throw Exception('User is not logged in');
+  }
+
+  final token = await user.getIdToken();
+
+  final response = await http.post(
+    Uri.parse(
+      '${ApiConfig.baseUrl}/cart/items?id_token=$token',
+    ),
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
+    body: jsonEncode({
+      'product_id': productId,
+      'quantity': quantity,
+    }),
+  );
+
+  debugPrint(
+    'ADD CART STATUS: ${response.statusCode}',
+  );
+
+  debugPrint(
+    'ADD CART RESPONSE: ${response.body}',
+  );
+
+  if (response.statusCode == 200 ||
+      response.statusCode == 201) {
+    return jsonDecode(response.body)
+        as Map<String, dynamic>;
+  }
+
+  throw Exception(
+    'Failed to add item to cart: ${response.body}',
+  );
+}
+
+
+
+// ============================================================
+// BUYER CART - UPDATE ITEM
+// ============================================================
+
+static Future<Map<String, dynamic>> updateCartItem({
+  required int cartItemId,
+  required int quantity,
+}) async {
+  final user = FirebaseAuth.instance.currentUser;
+
+  if (user == null) {
+    throw Exception('User is not logged in');
+  }
+
+  final token = await user.getIdToken();
+
+  final response = await http.patch(
+    Uri.parse(
+      '${ApiConfig.baseUrl}/cart/items/$cartItemId?id_token=$token',
+    ),
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
+    body: jsonEncode({
+      'quantity': quantity,
+    }),
+  );
+
+  debugPrint(
+    'UPDATE CART STATUS: ${response.statusCode}',
+  );
+
+  debugPrint(
+    'UPDATE CART RESPONSE: ${response.body}',
+  );
+
+  if (response.statusCode == 200) {
+    return jsonDecode(response.body)
+        as Map<String, dynamic>;
+  }
+
+  throw Exception(
+    'Failed to update cart: ${response.body}',
+  );
+}
+
+// ============================================================
+// BUYER CART - REMOVE ITEM
+// ============================================================
+
+static Future<void> removeCartItem({
+  required int cartItemId,
+}) async {
+  final user = FirebaseAuth.instance.currentUser;
+
+  if (user == null) {
+    throw Exception('User is not logged in');
+  }
+
+  final token = await user.getIdToken();
+
+  final response = await http.delete(
+    Uri.parse(
+      '${ApiConfig.baseUrl}/cart/items/$cartItemId?id_token=$token',
+    ),
+    headers: {
+      'Accept': 'application/json',
+    },
+  );
+
+  debugPrint(
+    'REMOVE CART STATUS: ${response.statusCode}',
+  );
+
+  debugPrint(
+    'REMOVE CART RESPONSE: ${response.body}',
+  );
+
+  if (response.statusCode == 200 ||
+      response.statusCode == 204) {
+    return;
+  }
+
+  throw Exception(
+    'Failed to remove cart item: ${response.body}',
+  );
+}
+
+// ============================================================
+// BUYER CART - CLEAR CART
+// ============================================================
+
+static Future<void> clearCart() async {
+  final user = FirebaseAuth.instance.currentUser;
+
+  if (user == null) {
+    throw Exception('User is not logged in');
+  }
+
+  final token = await user.getIdToken();
+
+  final response = await http.delete(
+    Uri.parse(
+      '${ApiConfig.baseUrl}/cart/me?id_token=$token',
+    ),
+    headers: {
+      'Accept': 'application/json',
+    },
+  );
+
+  debugPrint(
+    'CLEAR CART STATUS: ${response.statusCode}',
+  );
+
+  debugPrint(
+    'CLEAR CART RESPONSE: ${response.body}',
+  );
+
+  if (response.statusCode == 200 ||
+      response.statusCode == 204) {
+    return;
+  }
+
+  throw Exception(
+    'Failed to clear cart: ${response.body}',
+  );
+}
+
+
+
+
+
+
+
+
 }

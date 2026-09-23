@@ -8,8 +8,7 @@ from sqlalchemy import (
 
 from sqlalchemy.sql import func
 
-from ..database import Base
-
+from app.core.database import Base
 
 class Category(Base):
     __tablename__ = "categories"

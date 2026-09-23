@@ -1745,210 +1745,153 @@ class _OrdersScreenState extends State<OrdersScreen> {
   // BOTTOM NAVIGATION
   // ============================================================
 
-  Widget _buildBottomNavigation() {
-    return Container(
-      height: 62,
-
-      decoration:
-          const BoxDecoration(
-        color: Colors.white,
-
-        border: Border(
-          top: BorderSide(
-            color:
-                Color(0xFFE2E8E5),
-            width: 0.8,
-          ),
-        ),
-      ),
-
-      child: Row(
-        mainAxisAlignment:
-            MainAxisAlignment.spaceAround,
-
-        children: [
-
-          _bottomItem(
-            icon:
-                Icons.home_outlined,
-            label: "Home",
-            selected: false,
-          ),
-
-          _bottomItem(
-            icon:
-                Icons.grid_view_rounded,
-            label: "Categories",
-            selected: false,
-          ),
-
-          _bottomItem(
-            icon:
-                Icons.receipt_long_rounded,
-            label: "Orders",
-            selected: true,
-          ),
-
-          _bottomItem(
-            icon:
-                Icons.person_outline_rounded,
-            label: "Account",
-            selected: false,
-          ),
-
-          _bottomCart(),
-        ],
-      ),
-    );
-  }
-
   // ============================================================
   // BOTTOM ITEM
   // ============================================================
 
-  Widget _bottomItem({
-    required IconData icon,
-    required String label,
-    required bool selected,
-  }) {
-    return GestureDetector(
-      onTap: () {
-        // Existing Buyer Dashboard
-        // navigation can be connected later.
-      },
+  // Widget _bottomItem({
+  //   required IconData icon,
+  //   required String label,
+  //   required bool selected,
+  // }) {
+  //   return GestureDetector(
+  //     onTap: () {
+  //       // Existing Buyer Dashboard
+  //       // navigation can be connected later.
+  //     },
 
-      child: SizedBox(
-        width: 60,
+  //     child: SizedBox(
+  //       width: 60,
 
-        child: Column(
-          mainAxisAlignment:
-              MainAxisAlignment.center,
+  //       child: Column(
+  //         mainAxisAlignment:
+  //             MainAxisAlignment.center,
 
-          children: [
+  //         children: [
 
-            Icon(
-              icon,
-              size: 21,
+  //           Icon(
+  //             icon,
+  //             size: 21,
 
-              color: selected
-                  ? const Color(
-                      0xFF087C59,
-                    )
-                  : const Color(
-                      0xFF6F7C76,
-                    ),
-            ),
+  //             color: selected
+  //                 ? const Color(
+  //                     0xFF087C59,
+  //                   )
+  //                 : const Color(
+  //                     0xFF6F7C76,
+  //                   ),
+  //           ),
 
-            const SizedBox(height: 2),
+  //           const SizedBox(height: 2),
 
-            Text(
-              label,
+  //           Text(
+  //             label,
 
-              style: TextStyle(
-                fontSize: 7,
+  //             style: TextStyle(
+  //               fontSize: 7,
 
-                fontWeight: selected
-                    ? FontWeight.w700
-                    : FontWeight.w500,
+  //               fontWeight: selected
+  //                   ? FontWeight.w700
+  //                   : FontWeight.w500,
 
-                color: selected
-                    ? const Color(
-                        0xFF087C59,
-                      )
-                    : const Color(
-                        0xFF6F7C76,
-                      ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  //               color: selected
+  //                   ? const Color(
+  //                       0xFF087C59,
+  //                     )
+  //                   : const Color(
+  //                       0xFF6F7C76,
+  //                     ),
+  //             ),
+  //           ),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
 
-  // ============================================================
-  // CART BOTTOM ITEM
-  // ============================================================
+  // // ============================================================
+  // // CART BOTTOM ITEM
+  // // ============================================================
 
-  Widget _bottomCart() {
-    return GestureDetector(
-      onTap: () {
-        _showCartMessage();
-      },
+  // Widget _bottomCart() {
+  //   return GestureDetector(
+  //     onTap: () {
+  //       _showCartMessage();
+  //     },
 
-      child: SizedBox(
-        width: 60,
+  //     child: SizedBox(
+  //       width: 60,
 
-        child: Column(
-          mainAxisAlignment:
-              MainAxisAlignment.center,
+  //       child: Column(
+  //         mainAxisAlignment:
+  //             MainAxisAlignment.center,
 
-          children: [
+  //         children: [
 
-            Stack(
-              clipBehavior:
-                  Clip.none,
+  //           Stack(
+  //             clipBehavior:
+  //                 Clip.none,
 
-              children: [
+  //             children: [
 
-                const Icon(
-                  Icons.shopping_cart_outlined,
-                  size: 22,
-                  color:
-                      Color(0xFF6F7C76),
-                ),
+  //               const Icon(
+  //                 Icons.shopping_cart_outlined,
+  //                 size: 22,
+  //                 color:
+  //                     Color(0xFF6F7C76),
+  //               ),
 
-                Positioned(
-                  right: -7,
-                  top: -7,
+  //               Positioned(
+  //                 right: -7,
+  //                 top: -7,
 
-                  child: Container(
-                    width: 15,
-                    height: 15,
+  //                 child: Container(
+  //                   width: 15,
+  //                   height: 15,
 
-                    decoration:
-                        const BoxDecoration(
-                      color:
-                          Color(0xFFFF4D55),
-                      shape:
-                          BoxShape.circle,
-                    ),
+  //                   decoration:
+  //                       const BoxDecoration(
+  //                     color:
+  //                         Color(0xFFFF4D55),
+  //                     shape:
+  //                         BoxShape.circle,
+  //                   ),
 
-                    child: const Center(
-                      child: Text(
-                        "3",
+  //                   child: const Center(
+  //                     child: Text(
+  //                       "3",
 
-                        style:
-                            TextStyle(
-                          color:
-                              Colors.white,
-                          fontSize: 7,
-                          fontWeight:
-                              FontWeight.w800,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+  //                       style:
+  //                           TextStyle(
+  //                         color:
+  //                             Colors.white,
+  //                         fontSize: 7,
+  //                         fontWeight:
+  //                             FontWeight.w800,
+  //                       ),
+  //                     ),
+  //                   ),
+  //                 ),
+  //               ),
+  //             ],
+  //           ),
 
-            const SizedBox(height: 2),
+  //           const SizedBox(height: 2),
 
-            const Text(
-              "Cart",
+  //           const Text(
+  //             "Cart",
 
-              style: TextStyle(
-                fontSize: 7,
-                color:
-                    Color(0xFF6F7C76),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  //             style: TextStyle(
+  //               fontSize: 7,
+  //               color:
+  //                   Color(0xFF6F7C76),
+  //             ),
+  //           ),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
 }
 
 // =================================================================
