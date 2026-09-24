@@ -17,6 +17,12 @@ from .models.category import Category
 from .models.address import Address
 from .models.cart import Cart, CartItem
 
+# ORDER MODELS
+from .models.order import Order
+from .models.order_item import OrderItem
+from .models.payment import Payment
+
+
 
 # ============================================================
 # IMPORT ROUTES
@@ -29,6 +35,7 @@ from .routes.product import router as products_router
 from .routes.product_images import router as product_images_router
 from .routes.address import router as address_router
 from .routes.cart import router as cart_router
+from .routes.orders import router as orders_router
 
 
 # ============================================================
@@ -107,6 +114,8 @@ app.include_router(
 app.include_router(
     cart_router
 )
+
+app.include_router(orders_router)
 
 
 # ============================================================

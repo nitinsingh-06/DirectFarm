@@ -9,8 +9,17 @@ class CartScreen extends StatefulWidget {
   @override
   State<CartScreen> createState() => _CartScreenState();
 }
-
 class _CartScreenState extends State<CartScreen> {
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+
+      context.read<CartProvider>().loadCart();
+    });
+  }   
   // ============================================================
   // PROMO
   // ============================================================

@@ -755,6 +755,73 @@ static Future<void> clearCart() async {
 
 
 
+// ============================================================
+// BUYER ORDERS - CREATE ORDER
+// ============================================================
+
+static Future<Map<String, dynamic>> createOrder({
+  required int addressId,
+  required String paymentMethod,
+  required String deliveryDate,
+  required String deliverySlot,
+  required String deliveryInstructions,
+}) async {
+  final user = FirebaseAuth.instance.currentUser;
+
+  if (user == null) {
+    throw Exception('User is not logged in');
+  }
+
+  final token = await user.getIdToken();
+
+  final uri = Uri.parse(
+    '${ApiConfig.baseUrl}/orders/',
+  ).replace(
+    queryParameters: {
+      'address_id': addressId.toString(),
+      'payment_method': paymentMethod,
+      'delivery_date': deliveryDate,
+      'delivery_slot': deliverySlot,
+      'delivery_instructions': deliveryInstructions,
+      'id_token': token ?? '',
+    },
+  );
+
+  final response = await http.post(
+    uri,
+    headers: {
+      'Accept': 'application/json',
+    },
+  );
+
+  debugPrint('CREATE ORDER STATUS: ${response.statusCode}');
+  debugPrint('CREATE ORDER RESPONSE: ${response.body}');
+
+  if (response.statusCode == 200 ||
+      response.statusCode == 201) {
+    return jsonDecode(response.body)
+        as Map<String, dynamic>;
+  }
+
+  try {
+    final body = jsonDecode(response.body);
+
+    throw Exception(
+      body['detail'] ?? 'Failed to place order',
+    );
+  } catch (e) {
+    if (e is Exception) {
+      rethrow;
+    }
+
+    throw Exception(
+      'Failed to place order: ${response.statusCode}',
+    );
+  }
+
+  
+}
+
 
 
 

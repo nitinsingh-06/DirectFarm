@@ -1,4 +1,5 @@
 import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/order/order_success.dart';
+import 'package:farmdirect/services/api_services.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -53,6 +54,10 @@ Future<void> _placeOrder(
 ) async {
   final address = addressProvider.selectedAddress;
 
+  // ----------------------------------------------------------
+  // VALIDATE ADDRESS
+  // ----------------------------------------------------------
+
   if (address == null) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -61,6 +66,10 @@ Future<void> _placeOrder(
     );
     return;
   }
+
+  // ----------------------------------------------------------
+  // VALIDATE CART
+  // ----------------------------------------------------------
 
   if (cart.items.isEmpty) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -71,19 +80,59 @@ Future<void> _placeOrder(
     return;
   }
 
+  // ----------------------------------------------------------
+  // SHOW LOADING
+  // ----------------------------------------------------------
+
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (_) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    },
+  );
+
   try {
-    // TODO:
-    // 1. Send order to FastAPI
-    // 2. Get order ID
-    // 3. Clear cart
-    // 4. Navigate to Order Placed screen
+    // --------------------------------------------------------
+    // CREATE ORDER IN BACKEND
+    // --------------------------------------------------------
 
-    // print('Address ID: ${address.addressId}');
-    // print('Payment Method: ${widget.paymentMethod}');
-    print('Items: ${cart.items.length}');
-    print('Total: ${cart.totalAmount}');
+    final result = await ApiService.createOrder(
+      addressId: address.id,
+      paymentMethod: paymentMethod,
+      deliveryDate: deliveryDate,
+      deliverySlot: deliverySlot,
+      deliveryInstructions: deliveryInstructions,
+    );
 
-    // Temporary navigation for testing
+    debugPrint('==============================');
+    debugPrint('ORDER CREATED');
+    debugPrint('==============================');
+    debugPrint('Order ID: ${result['order_id']}');
+    debugPrint('Order Number: ${result['order_number']}');
+    debugPrint('Status: ${result['status']}');
+    debugPrint('Total: ${result['total_amount']}');
+
+    // --------------------------------------------------------
+    // CLOSE LOADING
+    // --------------------------------------------------------
+
+    if (context.mounted) {
+      Navigator.pop(context);
+    }
+
+    // --------------------------------------------------------
+    // CLEAR LOCAL CART
+    // --------------------------------------------------------
+
+    await cart.loadCart();
+
+    // --------------------------------------------------------
+    // GO TO SUCCESS SCREEN
+    // --------------------------------------------------------
+
     if (!context.mounted) return;
 
     Navigator.pushReplacement(
@@ -93,6 +142,14 @@ Future<void> _placeOrder(
       ),
     );
   } catch (e) {
+    // --------------------------------------------------------
+    // CLOSE LOADING
+    // --------------------------------------------------------
+
+    if (context.mounted) {
+      Navigator.pop(context);
+    }
+
     if (!context.mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -100,11 +157,11 @@ Future<void> _placeOrder(
         content: Text(
           'Failed to place order: $e',
         ),
+        backgroundColor: Colors.red,
       ),
     );
   }
 }
-
   // ============================================================
   // BUILD
   // ============================================================

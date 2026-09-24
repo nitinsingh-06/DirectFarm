@@ -5,6 +5,7 @@ import 'package:farmdirect/core/provider/buyer_profile_provider.dart';
 import 'package:farmdirect/core/provider/card_provider.dart';
 import 'package:farmdirect/core/provider/farmer_profile_provider.dart';
 import 'package:farmdirect/core/provider/theme_provider.dart';
+import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/buyer_dashboard_screen.dart';
 import 'package:farmdirect/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 
@@ -31,7 +32,9 @@ void main() async {
         ChangeNotifierProvider(create: (_) => BuyerProfileProvider()..loadProfile()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => BuyerProductProvider()),
-        ChangeNotifierProvider(create: (_) => CartProvider()),
+        ChangeNotifierProvider(create: (_) => CartProvider(),child: MaterialApp(
+          home: const BuyerDashboard(),
+        ),),
         ChangeNotifierProvider(create: (_) => AddressProvider()),
       ],
       child: const MyApp(),
