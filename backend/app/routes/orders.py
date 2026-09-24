@@ -1,3 +1,7 @@
+from decimal import Decimal
+import traceback
+import uuid
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -172,7 +176,9 @@ def create_order(
                 detail=f"{product.name} is currently unavailable",
             )
 
-        if cart_item.quantity > float(product.quantity_available):
+        if cart_item.quantity > float(
+            product.quantity_available
+        ):
             raise HTTPException(
                 status_code=400,
                 detail=(
@@ -195,7 +201,9 @@ def create_order(
                 detail=f"Farmer not found for {product.name}",
             )
 
-        item_total = float(product.price) * cart_item.quantity
+        item_total = (
+            float(product.price) * cart_item.quantity
+        )
 
         subtotal += item_total
 
@@ -226,8 +234,6 @@ def create_order(
     # --------------------------------------------------------
     # GENERATE ORDER NUMBER
     # --------------------------------------------------------
-
-    import uuid
 
     order_number = (
         "FD-"
@@ -312,9 +318,6 @@ def create_order(
     # CREATE PAYMENT
     # --------------------------------------------------------
 
-    # Convert Flutter/UI payment method
-    # into the values allowed by PostgreSQL.
-
     payment_method_map = {
         "UPI": "upi",
         "Credit / Debit Card": "card",
@@ -359,8 +362,6 @@ def create_order(
     # SAVE EVERYTHING
     # ========================================================
 
-    import traceback
-
     try:
 
         db.commit()
@@ -403,10 +404,8 @@ def create_order(
         "delivery_date": delivery_date,
         "delivery_slot": delivery_slot,
     }
-    
-    
-    
-    
+
+
 # ============================================================
 # GET BUYER ORDERS
 # ============================================================
@@ -483,10 +482,11 @@ def get_my_orders(
 
     for order in orders:
 
-        # Get order items
         order_items = (
             db.query(OrderItem)
-            .filter(OrderItem.order_id == order.order_id)
+            .filter(
+                OrderItem.order_id == order.order_id
+            )
             .all()
         )
 
@@ -551,4 +551,241 @@ def get_my_orders(
         "message": "Orders fetched successfully",
         "count": len(result),
         "orders": result,
+    }
+
+
+# ============================================================
+# CANCEL MY ORDER
+# ============================================================
+
+@router.post("/{order_id}/cancel")
+def cancel_my_order(
+    order_id: int,
+    id_token: str = "",
+    db: Session = Depends(get_db),
+):
+
+    # --------------------------------------------------------
+    # VERIFY FIREBASE TOKEN
+    # --------------------------------------------------------
+
+    try:
+        decoded_token = verify_firebase_token(id_token)
+
+    except Exception:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid Firebase token",
+        )
+
+    firebase_uid = decoded_token.get("uid")
+
+    if not firebase_uid:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid Firebase token",
+        )
+
+    # --------------------------------------------------------
+    # FIND USER
+    # --------------------------------------------------------
+
+    user = (
+        db.query(User)
+        .filter(
+            User.firebase_uid == firebase_uid
+        )
+        .first()
+    )
+
+    if not user:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found",
+        )
+
+    # --------------------------------------------------------
+    # ONLY BUYERS
+    # --------------------------------------------------------
+
+    if user.role != "buyer":
+        raise HTTPException(
+            status_code=403,
+            detail="Only buyers can cancel orders",
+        )
+
+    # --------------------------------------------------------
+    # FIND ORDER
+    # --------------------------------------------------------
+
+    order = (
+        db.query(Order)
+        .filter(
+            Order.order_id == order_id,
+            Order.user_id == user.user_id,
+        )
+        .first()
+    )
+
+    if not order:
+        raise HTTPException(
+            status_code=404,
+            detail="Order not found",
+        )
+
+    # --------------------------------------------------------
+    # CHECK ORDER STATUS
+    # --------------------------------------------------------
+
+    current_status = (
+        order.status or ""
+    ).lower()
+
+    if current_status == "cancelled":
+        raise HTTPException(
+            status_code=400,
+            detail="Order is already cancelled",
+        )
+
+    if current_status != "processing":
+        raise HTTPException(
+            status_code=400,
+            detail="Only processing orders can be cancelled",
+        )
+
+    # --------------------------------------------------------
+    # GET ORDER ITEMS
+    # --------------------------------------------------------
+
+    order_items = (
+        db.query(OrderItem)
+        .filter(
+            OrderItem.order_id == order.order_id
+        )
+        .all()
+    )
+
+    # --------------------------------------------------------
+    # RESTORE PRODUCT STOCK
+    # --------------------------------------------------------
+
+    for item in order_items:
+
+        if item.product_id is None:
+            continue
+
+        product = (
+            db.query(Product)
+            .filter(
+                Product.product_id == item.product_id
+            )
+            .first()
+        )
+
+        if not product:
+            continue
+
+        # PostgreSQL NUMERIC values are Decimal.
+        # Keep the calculation as Decimal instead
+        # of mixing float + Decimal.
+
+        current_quantity = (
+            product.quantity_available
+            or Decimal("0")
+        )
+
+        item_quantity = (
+            item.quantity
+            or 0
+        )
+
+        product.quantity_available = (
+            current_quantity
+            + Decimal(str(item_quantity))
+        )
+
+        # Product becomes available again
+        # when stock is greater than zero.
+
+        product.is_available = (
+            product.quantity_available
+            > Decimal("0")
+        )
+
+    # --------------------------------------------------------
+    # UPDATE ORDER
+    # --------------------------------------------------------
+
+    order.status = "cancelled"
+
+    # --------------------------------------------------------
+    # UPDATE PAYMENT IF NECESSARY
+    # --------------------------------------------------------
+
+    payment = (
+        db.query(Payment)
+        .filter(
+            Payment.order_id == order.order_id
+        )
+        .first()
+    )
+
+    if payment:
+
+        payment_status = (
+            payment.status or ""
+        ).lower()
+
+        # If payment was already completed,
+        # mark payment as refunded.
+
+        if payment_status == "paid":
+
+            payment.status = "refunded"
+
+            # Keep order payment status synchronized.
+
+            order.payment_status = "Refunded"
+
+        # For pending payment / COD,
+        # no money has been paid yet.
+        #
+        # Therefore payment remains Pending.
+
+    # --------------------------------------------------------
+    # SAVE
+    # --------------------------------------------------------
+
+    try:
+
+        db.commit()
+
+        db.refresh(order)
+
+    except Exception as e:
+
+        db.rollback()
+
+        print("====================================")
+        print("CANCEL ORDER DATABASE ERROR")
+        print("====================================")
+        print(str(e))
+        traceback.print_exc()
+        print("====================================")
+
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to cancel order: {str(e)}",
+        )
+
+    # --------------------------------------------------------
+    # RESPONSE
+    # --------------------------------------------------------
+
+    return {
+        "message": "Order cancelled successfully",
+        "order_id": order.order_id,
+        "order_number": order.order_number,
+        "status": order.status,
+        "payment_status": order.payment_status,
     }

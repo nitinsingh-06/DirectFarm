@@ -892,4 +892,87 @@ static Future<List<dynamic>> getMyOrders() async {
 }
 
 
+// ============================================================
+// CANCEL MY ORDER
+// ============================================================
+
+static Future<Map<String, dynamic>> cancelOrder(
+  int orderId,
+) async {
+  final user =
+      FirebaseAuth.instance.currentUser;
+
+  if (user == null) {
+    throw Exception(
+      'User is not logged in',
+    );
+  }
+
+  final token =
+      await user.getIdToken();
+
+  final uri = Uri.parse(
+    '${ApiConfig.baseUrl}/orders/$orderId/cancel',
+  ).replace(
+    queryParameters: {
+      'id_token': token ?? '',
+    },
+  );
+
+  final response = await http.post(
+    uri,
+
+    headers: {
+      'Accept':
+          'application/json',
+    },
+  );
+
+  debugPrint(
+    'CANCEL ORDER STATUS: '
+    '${response.statusCode}',
+  );
+
+  debugPrint(
+    'CANCEL ORDER RESPONSE: '
+    '${response.body}',
+  );
+
+  if (response.statusCode == 200) {
+    final decoded =
+        jsonDecode(response.body);
+
+    if (decoded
+        is Map<String, dynamic>) {
+      return decoded;
+    }
+
+    throw Exception(
+      'Invalid cancel order response',
+    );
+  }
+
+  try {
+    final decoded =
+        jsonDecode(response.body);
+
+    if (decoded
+        is Map<String, dynamic>) {
+      throw Exception(
+        decoded['detail'] ??
+            'Failed to cancel order',
+      );
+    }
+  } catch (e) {
+    if (e is Exception) {
+      rethrow;
+    }
+  }
+
+  throw Exception(
+    'Failed to cancel order '
+    '(${response.statusCode})',
+  );
+}
+
 }
