@@ -2,6 +2,7 @@ from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
 from .core.database import engine, Base
@@ -21,7 +22,6 @@ from .models.cart import Cart, CartItem
 from .models.order import Order
 from .models.order_item import OrderItem
 from .models.payment import Payment
-
 
 
 # ============================================================
@@ -44,6 +44,19 @@ from .routes.orders import router as orders_router
 
 app = FastAPI(
     title="FarmDirect API"
+)
+
+
+# ============================================================
+# CORS
+# ============================================================
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
@@ -115,7 +128,9 @@ app.include_router(
     cart_router
 )
 
-app.include_router(orders_router)
+app.include_router(
+    orders_router
+)
 
 
 # ============================================================

@@ -824,6 +824,72 @@ static Future<Map<String, dynamic>> createOrder({
 
 
 
+// ============================================================
+// BUYER ORDERS - GET MY ORDERS
+// ============================================================
+
+static Future<List<dynamic>> getMyOrders() async {
+  final user = FirebaseAuth.instance.currentUser;
+
+  if (user == null) {
+    throw Exception('User is not logged in');
+  }
+
+  final token = await user.getIdToken();
+
+  final uri = Uri.parse(
+    '${ApiConfig.baseUrl}/orders/me',
+  ).replace(
+    queryParameters: {
+      'id_token': token ?? '',
+    },
+  );
+
+  final response = await http.get(
+    uri,
+    headers: {
+      'Accept': 'application/json',
+    },
+  );
+
+  debugPrint(
+    'GET MY ORDERS STATUS: ${response.statusCode}',
+  );
+
+  debugPrint(
+    'GET MY ORDERS RESPONSE: ${response.body}',
+  );
+
+  if (response.statusCode == 200) {
+    final decoded = jsonDecode(response.body);
+
+    if (decoded is Map<String, dynamic>) {
+      final orders = decoded['orders'];
+
+      if (orders is List) {
+        return orders;
+      }
+    }
+
+    return [];
+  }
+
+  try {
+    final body = jsonDecode(response.body);
+
+    throw Exception(
+      body['detail'] ?? 'Failed to load orders',
+    );
+  } catch (e) {
+    if (e is Exception) {
+      rethrow;
+    }
+
+    throw Exception(
+      'Failed to load orders: ${response.statusCode}',
+    );
+  }
+}
 
 
 }
