@@ -1,7 +1,11 @@
+import 'package:farmdirect/core/provider/buyer_profile_provider.dart';
+import 'package:farmdirect/core/provider/card_provider.dart';
+import 'package:farmdirect/features/buyer/Buyer_dashboard.dart/marketplace/add_to_cart.dart';
 import 'package:farmdirect/services/api_services.dart';
 import 'package:flutter/material.dart';
 
 import 'package:farmdirect/config/api_config.dart';
+import 'package:provider/provider.dart';
 
 class OrdersScreen extends StatefulWidget {
   const OrdersScreen({super.key});
@@ -553,44 +557,43 @@ class _OrdersScreenState extends State<OrdersScreen> {
           // ----------------------------------------------------
           // CART
           // ----------------------------------------------------
-          Stack(
-            clipBehavior: Clip.none,
+          // ----------------------------------------------------
+          // CART
+          // ----------------------------------------------------
+         Consumer<BuyerProfileProvider>(
+                  builder: (context, profile, child) {
+                    final name = profile.name.trim();
 
-            children: [
-              _headerButton(
-                icon: Icons.shopping_cart_outlined,
+                    final firstLetter = name.isNotEmpty
+                        ? name[0].toUpperCase()
+                        : "U";
 
-                onTap: _showCartMessage,
-              ),
+                    final imageUrl = profile.fullProfileImageUrl;
 
-              Positioned(
-                right: -3,
-                top: -4,
-
-                child: Container(
-                  width: 15,
-                  height: 15,
-
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFFF4D55),
-                    shape: BoxShape.circle,
-                  ),
-
-                  child: const Center(
-                    child: Text(
-                      "3",
-
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 7,
-                        fontWeight: FontWeight.w800,
+                    return Container(
+                      width: 34,
+                      height: 34,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: const Color(0xFF80D000),
+                          width: 1.8,
+                        ),
                       ),
-                    ),
-                  ),
+                      child: ClipOval(
+                        child: imageUrl.isNotEmpty
+                            ? Image.network(
+                                imageUrl,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return _profileFallback(firstLetter);
+                                },
+                              )
+                            : _profileFallback(firstLetter),
+                      ),
+                    );
+                  },
                 ),
-              ),
-            ],
-          ),
         ],
       ),
     );
@@ -1797,6 +1800,31 @@ class _OrdersScreenState extends State<OrdersScreen> {
     );
   }
 
+
+  
+  // ================================================================
+  // PROFILE FALLBACK
+  // ================================================================
+
+  Widget _profileFallback(String letter) {
+    return Container(
+      color: const Color(0xFFE8F5E9),
+
+      alignment: Alignment.center,
+
+      child: Text(
+        letter,
+
+        style: const TextStyle(
+          color: Color(0xFF075B4A),
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+
   // ============================================================
   // DETAIL ROW
   // ============================================================
@@ -1942,6 +1970,12 @@ class _OrdersScreenState extends State<OrdersScreen> {
     );
   }
 
+  void _openCart() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const CartScreen()),
+    );
+  }
   // ============================================================
   // TRACKING STEP
   // ============================================================
@@ -2163,15 +2197,156 @@ class _OrdersScreenState extends State<OrdersScreen> {
   // ============================================================
   // BUY AGAIN
   // ============================================================
+  Future<void> _buyAgain(Map<String, dynamic> order) async {
+    final dynamic rawOrderData = order["orderData"];
 
-  void _buyAgain(Map<String, dynamic> order) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text("${order["items"]} selected for Buy Again."),
+    if (rawOrderData is! Map<String, dynamic>) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Order information is unavailable.")),
+      );
+      return;
+    }
 
-        duration: const Duration(seconds: 2),
-      ),
+    final List<dynamic> items = rawOrderData["items"] is List
+        ? rawOrderData["items"]
+        : [];
+
+    if (items.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("No products found in this order.")),
+      );
+      return;
+    }
+
+    // ------------------------------------------------------------
+    // SHOW LOADING
+    // ------------------------------------------------------------
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) {
+        return const Center(
+          child: CircularProgressIndicator(color: Color(0xFF087C59)),
+        );
+      },
     );
+
+    try {
+      final cart = context.read<CartProvider>();
+
+      int addedProducts = 0;
+
+      // ----------------------------------------------------------
+      // ADD EVERY PRODUCT FROM THE OLD ORDER
+      // ----------------------------------------------------------
+
+      for (final rawItem in items) {
+        if (rawItem is! Map<String, dynamic>) {
+          continue;
+        }
+
+        final int? productId = int.tryParse(
+          rawItem["product_id"]?.toString() ?? "",
+        );
+
+        if (productId == null) {
+          continue;
+        }
+
+        final String name = rawItem["product_name"]?.toString() ?? "Product";
+
+        final double price = _toDouble(rawItem["price"]);
+
+        final String unit = rawItem["unit"]?.toString() ?? "";
+
+        String image = rawItem["image_url"]?.toString() ?? "";
+
+        if (image.isNotEmpty && !image.startsWith("http")) {
+          image = "${ApiConfig.baseUrl}$image";
+        }
+
+        final String farm = rawItem["farm"]?.toString() ?? "";
+
+        final String location = rawItem["location"]?.toString() ?? "";
+
+        final int quantity =
+            int.tryParse(rawItem["quantity"]?.toString() ?? "1") ?? 1;
+
+        // --------------------------------------------------------
+        // ADD PRODUCT
+        // --------------------------------------------------------
+
+        for (int i = 0; i < quantity; i++) {
+          await cart.addToCart(
+            productId: productId,
+            name: name,
+            price: price,
+            unit: unit,
+            image: image,
+            farm: farm,
+            location: location,
+          );
+        }
+
+        addedProducts++;
+      }
+
+      // ----------------------------------------------------------
+      // CLOSE LOADING
+      // ----------------------------------------------------------
+
+      if (mounted) {
+        Navigator.pop(context);
+      }
+
+      if (!mounted) return;
+
+      if (addedProducts == 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Unable to add products to cart.")),
+        );
+
+        return;
+      }
+
+      // ----------------------------------------------------------
+      // SUCCESS
+      // ----------------------------------------------------------
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "$addedProducts product${addedProducts == 1 ? "" : "s"} added to cart.",
+          ),
+          duration: const Duration(seconds: 2),
+          action: SnackBarAction(
+            label: "VIEW CART",
+            textColor: Colors.white,
+            onPressed: _openCart,
+          ),
+        ),
+      );
+    } catch (e) {
+      // ----------------------------------------------------------
+      // CLOSE LOADING
+      // ----------------------------------------------------------
+
+      if (mounted) {
+        Navigator.pop(context);
+      }
+
+      if (!mounted) return;
+
+      debugPrint("BUY AGAIN ERROR: $e");
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString().replaceFirst("Exception: ", "")),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
   }
 
   // ============================================================
@@ -2189,16 +2364,6 @@ class _OrdersScreenState extends State<OrdersScreen> {
   // ============================================================
   // CART
   // ============================================================
-
-  void _showCartMessage() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Cart screen will be connected later."),
-
-        duration: Duration(seconds: 2),
-      ),
-    );
-  }
 
   // ============================================================
   // SHEET HANDLE

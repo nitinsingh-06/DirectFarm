@@ -36,6 +36,7 @@ from .routes.product_images import router as product_images_router
 from .routes.address import router as address_router
 from .routes.cart import router as cart_router
 from .routes.orders import router as orders_router
+from .routes.categories import router as categories_router
 
 
 # ============================================================
@@ -131,6 +132,8 @@ app.include_router(
 app.include_router(
     orders_router
 )
+
+app.include_router(categories_router)
 
 
 # ============================================================

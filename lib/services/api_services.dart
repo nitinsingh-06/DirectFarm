@@ -975,4 +975,23 @@ static Future<Map<String, dynamic>> cancelOrder(
   );
 }
 
+
+
+static Future<List<dynamic>> getCategories() async {
+  final response = await http.get(
+    Uri.parse("${ApiConfig.baseUrl}/categories/"),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  );
+
+  if (response.statusCode == 200) {
+    return jsonDecode(response.body) as List<dynamic>;
+  }
+
+  throw Exception(
+    "Failed to load categories: ${response.statusCode}",
+  );
+}
+
 }
