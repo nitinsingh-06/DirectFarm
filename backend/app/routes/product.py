@@ -293,3 +293,75 @@ def get_all_products(
             status_code=500,
             detail=f"Failed to fetch products: {str(e)}"
         )
+        
+        
+        
+@router.delete("/{product_id}")
+def delete_product(
+    product_id: int,
+    id_token: str,
+    db: Session = Depends(get_db),
+):
+    # Verify Firebase token
+    decoded_token = verify_firebase_token(id_token)
+    firebase_uid = decoded_token["uid"]
+
+    # Find user
+    user = (
+        db.query(User)
+        .filter(User.firebase_uid == firebase_uid)
+        .first()
+    )
+
+    if user is None:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found",
+        )
+
+    # Only farmer can delete products
+    if user.role != "farmer":
+        raise HTTPException(
+            status_code=403,
+            detail="Only farmers can delete products",
+        )
+
+    # Find farmer profile
+    farmer_profile = (
+        db.query(FarmerProfile)
+        .filter(
+            FarmerProfile.user_id == user.user_id
+        )
+        .first()
+    )
+
+    if farmer_profile is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Farmer profile not found",
+        )
+
+    # Find product
+    product = (
+        db.query(Product)
+        .filter(
+            Product.product_id == product_id,
+            Product.farmer_id == farmer_profile.farmer_id,
+        )
+        .first()
+    )
+
+    if product is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Product not found",
+        )
+
+    # Delete product
+    db.delete(product)
+    db.commit()
+
+    return {
+        "message": "Product deleted successfully",
+        "product_id": product_id,
+    }

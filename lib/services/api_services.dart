@@ -993,5 +993,61 @@ static Future<List<dynamic>> getCategories() async {
     "Failed to load categories: ${response.statusCode}",
   );
 }
+// ----------------------------------
+// PRODUCT DELETE FROM FARMER
+// ----------------------------------
+
+
+
+static Future<void> deleteProduct({
+  required int productId,
+  required String idToken,
+}) async {
+  final uri = Uri.parse(
+    '${ApiConfig.baseUrl}/products/$productId',
+  ).replace(
+    queryParameters: {
+      'id_token': idToken,
+    },
+  );
+
+  debugPrint('DELETE PRODUCT URL: $uri');
+
+  final response = await http.delete(
+    uri,
+    headers: {
+      'Accept': 'application/json',
+    },
+  );
+
+  debugPrint(
+    'DELETE PRODUCT STATUS: ${response.statusCode}',
+  );
+
+  debugPrint(
+    'DELETE PRODUCT RESPONSE: ${response.body}',
+  );
+
+  if (response.statusCode >= 200 &&
+      response.statusCode < 300) {
+    return;
+  }
+
+  try {
+    final body = jsonDecode(response.body);
+
+    throw Exception(
+      body['detail'] ?? 'Failed to delete product',
+    );
+  } catch (e) {
+    if (e is Exception) {
+      rethrow;
+    }
+
+    throw Exception(
+      'Failed to delete product: ${response.statusCode}',
+    );
+  }
+}
 
 }
