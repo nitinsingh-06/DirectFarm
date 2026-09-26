@@ -405,13 +405,12 @@ def create_order(
         "delivery_slot": delivery_slot,
     }
 
-
 # ============================================================
-# GET BUYER ORDERS
+# GET FARMER ORDERS
 # ============================================================
 
-@router.get("/me")
-def get_my_orders(
+@router.get("/farmer/my-orders")
+def get_farmer_orders(
     id_token: str = "",
     db: Session = Depends(get_db),
 ):
@@ -422,7 +421,6 @@ def get_my_orders(
 
     try:
         decoded_token = verify_firebase_token(id_token)
-
     except Exception:
         raise HTTPException(
             status_code=401,
@@ -454,338 +452,134 @@ def get_my_orders(
         )
 
     # --------------------------------------------------------
-    # ONLY BUYERS
+    # ONLY FARMERS
     # --------------------------------------------------------
 
-    if user.role != "buyer":
+    if user.role != "farmer":
         raise HTTPException(
             status_code=403,
-            detail="Only buyers can view buyer orders",
+            detail="Only farmers can view farmer orders",
         )
 
     # --------------------------------------------------------
-    # FETCH ORDERS
+    # FIND FARMER PROFILE
     # --------------------------------------------------------
 
-    orders = (
-        db.query(Order)
-        .filter(Order.user_id == user.user_id)
-        .order_by(Order.created_at.desc())
-        .all()
-    )
-
-    # --------------------------------------------------------
-    # BUILD RESPONSE
-    # --------------------------------------------------------
-
-    result = []
-
-    for order in orders:
-
-        order_items = (
-            db.query(OrderItem)
-            .filter(
-                OrderItem.order_id == order.order_id
-            )
-            .all()
-        )
-
-        items = []
-
-        for item in order_items:
-
-            items.append(
-                {
-                    "order_item_id": item.order_item_id,
-                    "product_id": item.product_id,
-                    "farmer_id": item.farmer_id,
-                    "product_name": item.product_name,
-                    "price": float(item.price),
-                    "unit": item.unit,
-                    "image_url": item.image_url,
-                    "farm": item.farm,
-                    "location": item.location,
-                    "quantity": item.quantity,
-                    "total_price": float(item.total_price),
-                }
-            )
-
-        # ----------------------------------------------------
-        # ADD ORDER
-        # ----------------------------------------------------
-
-        result.append(
-            {
-                "order_id": order.order_id,
-                "order_number": order.order_number,
-                "status": order.status,
-                "subtotal": float(order.subtotal),
-                "delivery_fee": float(order.delivery_fee),
-                "discount": float(order.discount),
-                "total_amount": float(order.total_amount),
-                "payment_method": order.payment_method,
-                "payment_status": order.payment_status,
-                "note": order.note,
-                "address_id": order.address_id,
-                "created_at": (
-                    order.created_at.isoformat()
-                    if order.created_at
-                    else None
-                ),
-                "updated_at": (
-                    order.updated_at.isoformat()
-                    if order.updated_at
-                    else None
-                ),
-                "delivery_date": None,
-                "delivery_slot": None,
-                "items": items,
-            }
-        )
-
-    # --------------------------------------------------------
-    # RESPONSE
-    # --------------------------------------------------------
-
-    return {
-        "message": "Orders fetched successfully",
-        "count": len(result),
-        "orders": result,
-    }
-
-
-# ============================================================
-# CANCEL MY ORDER
-# ============================================================
-
-@router.post("/{order_id}/cancel")
-def cancel_my_order(
-    order_id: int,
-    id_token: str = "",
-    db: Session = Depends(get_db),
-):
-
-    # --------------------------------------------------------
-    # VERIFY FIREBASE TOKEN
-    # --------------------------------------------------------
-
-    try:
-        decoded_token = verify_firebase_token(id_token)
-
-    except Exception:
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid Firebase token",
-        )
-
-    firebase_uid = decoded_token.get("uid")
-
-    if not firebase_uid:
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid Firebase token",
-        )
-
-    # --------------------------------------------------------
-    # FIND USER
-    # --------------------------------------------------------
-
-    user = (
-        db.query(User)
+    farmer = (
+        db.query(FarmerProfile)
         .filter(
-            User.firebase_uid == firebase_uid
+            FarmerProfile.user_id == user.user_id
         )
         .first()
     )
 
-    if not user:
+    if not farmer:
         raise HTTPException(
             status_code=404,
-            detail="User not found",
+            detail="Farmer profile not found",
         )
 
     # --------------------------------------------------------
-    # ONLY BUYERS
-    # --------------------------------------------------------
-
-    if user.role != "buyer":
-        raise HTTPException(
-            status_code=403,
-            detail="Only buyers can cancel orders",
-        )
-
-    # --------------------------------------------------------
-    # FIND ORDER
-    # --------------------------------------------------------
-
-    order = (
-        db.query(Order)
-        .filter(
-            Order.order_id == order_id,
-            Order.user_id == user.user_id,
-        )
-        .first()
-    )
-
-    if not order:
-        raise HTTPException(
-            status_code=404,
-            detail="Order not found",
-        )
-
-    # --------------------------------------------------------
-    # CHECK ORDER STATUS
-    # --------------------------------------------------------
-
-    current_status = (
-        order.status or ""
-    ).lower()
-
-    if current_status == "cancelled":
-        raise HTTPException(
-            status_code=400,
-            detail="Order is already cancelled",
-        )
-
-    if current_status != "processing":
-        raise HTTPException(
-            status_code=400,
-            detail="Only processing orders can be cancelled",
-        )
-
-    # --------------------------------------------------------
-    # GET ORDER ITEMS
+    # GET THIS FARMER'S ORDER ITEMS
     # --------------------------------------------------------
 
     order_items = (
         db.query(OrderItem)
         .filter(
-            OrderItem.order_id == order.order_id
+            OrderItem.farmer_id == farmer.farmer_id
         )
+        .order_by(OrderItem.created_at.desc())
         .all()
     )
 
-    # --------------------------------------------------------
-    # RESTORE PRODUCT STOCK
-    # --------------------------------------------------------
+    result = []
 
     for item in order_items:
 
-        if item.product_id is None:
-            continue
-
-        product = (
-            db.query(Product)
+        order = (
+            db.query(Order)
             .filter(
-                Product.product_id == item.product_id
+                Order.order_id == item.order_id
             )
             .first()
         )
 
-        if not product:
+        if not order:
             continue
 
-        # PostgreSQL NUMERIC values are Decimal.
-        # Keep the calculation as Decimal instead
-        # of mixing float + Decimal.
-
-        current_quantity = (
-            product.quantity_available
-            or Decimal("0")
+        buyer = (
+            db.query(User)
+            .filter(
+                User.user_id == order.user_id
+            )
+            .first()
         )
 
-        item_quantity = (
-            item.quantity
-            or 0
-        )
+        result.append({
+            "order_id": order.order_id,
+            "order_number": order.order_number,
 
-        product.quantity_available = (
-            current_quantity
-            + Decimal(str(item_quantity))
-        )
+            "order_item_id": item.order_item_id,
+            "product_id": item.product_id,
 
-        # Product becomes available again
-        # when stock is greater than zero.
+            "product_name": item.product_name,
+            "price": float(item.price),
+            "unit": item.unit,
+            "quantity": item.quantity,
+            "total_price": float(item.total_price),
 
-        product.is_available = (
-            product.quantity_available
-            > Decimal("0")
-        )
+            "image_url": item.image_url,
 
-    # --------------------------------------------------------
-    # UPDATE ORDER
-    # --------------------------------------------------------
+            "farm": item.farm,
+            "location": item.location,
 
-    order.status = "cancelled"
+            "buyer_name": (
+                buyer.name
+                if buyer
+                else "Unknown Buyer"
+            ),
 
-    # --------------------------------------------------------
-    # UPDATE PAYMENT IF NECESSARY
-    # --------------------------------------------------------
+            "buyer_phone": (
+                buyer.phone
+                if buyer
+                else None
+            ),
 
-    payment = (
-        db.query(Payment)
-        .filter(
-            Payment.order_id == order.order_id
-        )
-        .first()
-    )
+            "address_id": order.address_id,
 
-    if payment:
+            # Farmer-specific status
+            "status": item.status,
 
-        payment_status = (
-            payment.status or ""
-        ).lower()
+            "payment_method": order.payment_method,
+            "payment_status": order.payment_status,
 
-        # If payment was already completed,
-        # mark payment as refunded.
+            "delivery_fee": float(
+                order.delivery_fee or 0
+            ),
 
-        if payment_status == "paid":
+            "discount": float(
+                order.discount or 0
+            ),
 
-            payment.status = "refunded"
+            "total_amount": float(
+                order.total_amount or 0
+            ),
 
-            # Keep order payment status synchronized.
+            "created_at": (
+                order.created_at.isoformat()
+                if order.created_at
+                else None
+            ),
 
-            order.payment_status = "Refunded"
-
-        # For pending payment / COD,
-        # no money has been paid yet.
-        #
-        # Therefore payment remains Pending.
-
-    # --------------------------------------------------------
-    # SAVE
-    # --------------------------------------------------------
-
-    try:
-
-        db.commit()
-
-        db.refresh(order)
-
-    except Exception as e:
-
-        db.rollback()
-
-        print("====================================")
-        print("CANCEL ORDER DATABASE ERROR")
-        print("====================================")
-        print(str(e))
-        traceback.print_exc()
-        print("====================================")
-
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to cancel order: {str(e)}",
-        )
-
-    # --------------------------------------------------------
-    # RESPONSE
-    # --------------------------------------------------------
+            "updated_at": (
+                order.updated_at.isoformat()
+                if order.updated_at
+                else None
+            ),
+        })
 
     return {
-        "message": "Order cancelled successfully",
-        "order_id": order.order_id,
-        "order_number": order.order_number,
-        "status": order.status,
-        "payment_status": order.payment_status,
+        "message": "Farmer orders fetched successfully",
+        "count": len(result),
+        "orders": result,
     }

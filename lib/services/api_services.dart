@@ -1050,4 +1050,39 @@ static Future<void> deleteProduct({
   }
 }
 
+
+static Future<List<dynamic>> getFarmerOrders() async {
+  final user = FirebaseAuth.instance.currentUser;
+
+  if (user == null) {
+    throw Exception('Farmer is not logged in');
+  }
+
+  final idToken = await user.getIdToken(true);
+
+  final response = await http.get(
+    Uri.parse(
+      '${ApiConfig.baseUrl}/orders/farmer/my-orders?id_token=$idToken',
+    ),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  );
+
+  print('FARMER ORDERS STATUS: ${response.statusCode}');
+  print('FARMER ORDERS RESPONSE: ${response.body}');
+
+  if (response.statusCode == 200) {
+    final data = jsonDecode(response.body);
+
+    return List<dynamic>.from(
+      data['orders'] ?? [],
+    );
+  }
+
+  throw Exception(
+    'Failed to fetch farmer orders: ${response.body}',
+  );
+}
+
 }

@@ -112,22 +112,32 @@ class OrderItem(Base):
         nullable=False,
         default=1,
     )
+# ============================================================
+# ITEM TOTAL
+# ============================================================
 
-    # ============================================================
-    # ITEM TOTAL
-    # ============================================================
+total_price = Column(
+    Numeric(10, 2),
+    nullable=False,
+)
 
-    total_price = Column(
-        Numeric(10, 2),
-        nullable=False,
-    )
+# ============================================================
+# FARMER ORDER STATUS
+# ============================================================
 
-    # ============================================================
-    # TIMESTAMP
-    # ============================================================
+status = Column(
+    String(30),
+    nullable=False,
+    default="pending",
+    index=True,
+)
 
-    created_at = Column(
-        DateTime,
-        server_default=func.current_timestamp(),
-        nullable=False,
-    )
+# ============================================================
+# TIMESTAMP
+# ============================================================
+
+created_at = Column(
+    DateTime,
+    server_default=func.current_timestamp(),
+    nullable=False,
+)
