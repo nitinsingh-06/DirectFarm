@@ -39,6 +39,7 @@ class _ProductScreenState extends State<ProductScreen> {
     ];
 
     return Scaffold(
+
       body: SafeArea(bottom: false, child: screens[selectedIndex]),
     );
   }

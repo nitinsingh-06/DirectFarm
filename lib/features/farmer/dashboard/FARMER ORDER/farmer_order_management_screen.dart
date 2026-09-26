@@ -169,7 +169,100 @@ class FarmerOrderManagementScreen extends StatefulWidget {
 
 class _FarmerOrderManagementScreenState
     extends State<FarmerOrderManagementScreen> {
+  Future<void> _updateOrderStatus(FarmerOrder order, String action) async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+
+      if (user == null) {
+        throw Exception('Farmer is not logged in.');
+      }
+
+      final idToken = await user.getIdToken(true);
+
+      if (idToken == null || idToken.isEmpty) {
+        throw Exception('Unable to get Firebase ID token.');
+      }
+
+      final uri = Uri.parse(
+        '${ApiConfig.baseUrl}/orders/farmer/${order.orderItemId}/$action',
+      ).replace(queryParameters: {'id_token': idToken});
+
+      debugPrint('========================================');
+      debugPrint('FARMER ORDER ACTION: $action');
+      debugPrint('ORDER ITEM ID: ${order.orderItemId}');
+      debugPrint('URL: $uri');
+
+      final response = await http.post(
+        uri,
+        headers: {'Accept': 'application/json'},
+      );
+
+      debugPrint('STATUS CODE: ${response.statusCode}');
+      debugPrint('RESPONSE: ${response.body}');
+      debugPrint('========================================');
+
+      if (response.statusCode != 200) {
+        String message = 'Failed to update order.';
+
+        try {
+          final body = jsonDecode(response.body);
+
+          if (body is Map && body['detail'] != null) {
+            message = body['detail'].toString();
+          }
+        } catch (_) {}
+
+        throw Exception(message);
+      }
+
+      // Reload from PostgreSQL.
+      await _loadFarmerOrders();
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            action == 'accept'
+                ? 'Order accepted successfully'
+                : 'Order rejected successfully',
+          ),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (e) {
+      debugPrint('ORDER UPDATE ERROR: $e');
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString().replaceFirst('Exception: ', '')),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
+  Future<void> _acceptOrder(FarmerOrder order) async {
+    await _updateOrderStatus(order, 'accept');
+  }
+
+  Future<void> _rejectOrderFromBackend(FarmerOrder order) async {
+    await _updateOrderStatus(order, 'reject');
+  }
+
   int selectedTab = 0;
+  bool _showSearch = false;
+
+  final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   final List<FarmerOrder> orders = [];
   bool isLoading = true;
@@ -260,18 +353,42 @@ class _FarmerOrderManagementScreenState
   }
 
   List<FarmerOrder> get filteredOrders {
+    List<FarmerOrder> result;
+
     switch (selectedTab) {
       case 0:
-        return orders.where((o) => o.status == 'Pending').toList();
+        result = orders.where((o) => o.status == 'Pending').toList();
+        break;
+
       case 1:
-        return orders.where((o) => o.status == 'Confirmed').toList();
+        result = orders.where((o) => o.status == 'Confirmed').toList();
+        break;
+
       case 2:
-        return orders.where((o) => o.status == 'Shipped').toList();
+        result = orders.where((o) => o.status == 'Shipped').toList();
+        break;
+
       case 3:
-        return orders.where((o) => o.status == 'Delivered').toList();
+        result = orders.where((o) => o.status == 'Delivered').toList();
+        break;
+
       default:
-        return orders;
+        result = List.from(orders);
     }
+
+    final query = _searchController.text.trim().toLowerCase();
+
+    if (query.isEmpty) {
+      return result;
+    }
+
+    return result.where((order) {
+      return order.id.toLowerCase().contains(query) ||
+          order.productName.toLowerCase().contains(query) ||
+          order.buyerName.toLowerCase().contains(query) ||
+          order.phone.toLowerCase().contains(query) ||
+          order.address.toLowerCase().contains(query);
+    }).toList();
   }
 
   Widget _actionButton({
@@ -346,37 +463,192 @@ class _FarmerOrderManagementScreenState
   // ------------------------------------------------------------
   Widget _buildHeader() {
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 14, 14, 12),
+      padding: const EdgeInsets.fromLTRB(16, 12, 14, 12),
       color: Colors.white,
       child: Row(
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'My Orders',
-                  style: TextStyle(
-                    fontSize: 25,
-                    fontWeight: FontWeight.w800,
-                    color: Color(0xFF096B57),
+          if (_showSearch)
+            Expanded(
+              child: Container(
+                height: 45,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF3F5F7),
+                  borderRadius: BorderRadius.circular(13),
+                ),
+                child: TextField(
+                  controller: _searchController,
+                  autofocus: true,
+                  onChanged: (_) {
+                    setState(() {});
+                  },
+                  decoration: InputDecoration(
+                    hintText: 'Search orders...',
+                    hintStyle: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey.shade500,
+                    ),
+                    prefixIcon: const Icon(
+                      Icons.search_rounded,
+                      color: Color(0xFF68737D),
+                      size: 21,
+                    ),
+                    suffixIcon: IconButton(
+                      onPressed: () {
+                        _searchController.clear();
+
+                        setState(() {
+                          _showSearch = false;
+                        });
+                      },
+                      icon: const Icon(
+                        Icons.close_rounded,
+                        size: 20,
+                        color: Color(0xFF68737D),
+                      ),
+                    ),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 13),
                   ),
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  'Manage and track your orders',
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+              ),
+            )
+          else
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'My Orders',
+                    style: TextStyle(
+                      fontSize: 25,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF096B57),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Manage and track your orders',
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                  ),
+                ],
+              ),
+            ),
+
+          const SizedBox(width: 8),
+
+          _headerIcon(
+            _showSearch ? Icons.close_rounded : Icons.search_rounded,
+            () {
+              setState(() {
+                if (_showSearch) {
+                  _searchController.clear();
+                }
+
+                _showSearch = !_showSearch;
+              });
+            },
+          ),
+
+          const SizedBox(width: 8),
+
+          _headerIcon(Icons.tune_rounded, () {
+            _showFilterSheet();
+          }),
+        ],
+      ),
+    );
+  }
+
+  void _showFilterSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Expanded(
+                      child: Text(
+                        'Filter Orders',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF18232D),
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.close_rounded),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 12),
+
+                const Text(
+                  'Order Status',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF68737D),
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _filterChip('Pending', 0),
+                    _filterChip('Confirmed', 1),
+                    _filterChip('Shipped', 2),
+                    _filterChip('Delivered', 3),
+                  ],
                 ),
               ],
             ),
           ),
+        );
+      },
+    );
+  }
 
-          _headerIcon(Icons.search_rounded, () {}),
+  Widget _filterChip(String title, int index) {
+    final selected = selectedTab == index;
 
-          const SizedBox(width: 8),
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          selectedTab = index;
+        });
 
-          _headerIcon(Icons.tune_rounded, () {}),
-        ],
+        Navigator.pop(context);
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+        decoration: BoxDecoration(
+          color: selected ? const Color(0xFF096B57) : const Color(0xFFF3F4F6),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          title,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            color: selected ? Colors.white : const Color(0xFF75808A),
+          ),
+        ),
       ),
     );
   }
@@ -630,6 +902,20 @@ class _FarmerOrderManagementScreenState
                   ),
 
                   const SizedBox(width: 9),
+
+                  Expanded(
+                    child: _actionButton(
+                      text: 'Accept',
+                      icon: Icons.check_rounded,
+                      background: const Color(0xFFE1F5EC),
+                      foreground: const Color(0xFF08745E),
+                      onTap: () async {
+                        await _acceptOrder(order);
+                      },
+                    ),
+                  ),
+
+                  const SizedBox(width: 9),
                 ],
 
                 Expanded(
@@ -720,8 +1006,8 @@ class _FarmerOrderManagementScreenState
 
     Widget fallbackImage() {
       return Container(
-        width: 72,
-        height: 72,
+        width: 88,
+        height: 88,
         decoration: BoxDecoration(
           color: const Color(0xFFF4EFE5),
           borderRadius: BorderRadius.circular(13),
@@ -751,8 +1037,8 @@ class _FarmerOrderManagementScreenState
       borderRadius: BorderRadius.circular(13),
       child: Image.network(
         finalImageUrl,
-        width: 72,
-        height: 72,
+        width: 70,
+        height: 70,
         fit: BoxFit.cover,
 
         loadingBuilder: (context, child, loadingProgress) {
@@ -784,8 +1070,8 @@ class _FarmerOrderManagementScreenState
   // ORDER DETAILS
   // ------------------------------------------------------------
 
-  void _openOrderDetails(FarmerOrder order) {
-    Navigator.push(
+  Future<void> _openOrderDetails(FarmerOrder order) async {
+    final result = await Navigator.push<bool>(
       context,
       MaterialPageRoute(
         builder: (_) => FarmerOrderDetailsScreen(
@@ -796,16 +1082,20 @@ class _FarmerOrderManagementScreenState
         ),
       ),
     );
+
+    if (!mounted || result != true) return;
+
+    await _loadFarmerOrders();
   }
 
   // ------------------------------------------------------------
   // REJECT
   // ------------------------------------------------------------
 
-  void _rejectOrder(FarmerOrder order) {
-    showDialog(
+  Future<void> _rejectOrder(FarmerOrder order) async {
+    final shouldReject = await showDialog<bool>(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
         return AlertDialog(
           title: const Text(
             'Reject Order?',
@@ -814,17 +1104,11 @@ class _FarmerOrderManagementScreenState
           content: Text('Are you sure you want to reject ${order.id}?'),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(dialogContext, false),
               child: const Text('Cancel'),
             ),
             ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  order.status = 'Rejected';
-                });
-
-                Navigator.pop(context);
-              },
+              onPressed: () => Navigator.pop(dialogContext, true),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFE13B3B),
                 foregroundColor: Colors.white,
@@ -835,6 +1119,9 @@ class _FarmerOrderManagementScreenState
         );
       },
     );
+
+    if (shouldReject != true || !mounted) return;
+    await _rejectOrderFromBackend(order);
   }
 
   // ------------------------------------------------------------
@@ -967,6 +1254,94 @@ class FarmerOrderDetailsScreen extends StatefulWidget {
 
 class _FarmerOrderDetailsScreenState extends State<FarmerOrderDetailsScreen> {
   FarmerOrder get order => widget.order;
+
+  bool _isUpdatingOrder = false;
+
+  Future<void> _updateOrderStatus(String action) async {
+    if (_isUpdatingOrder) return;
+
+    setState(() {
+      _isUpdatingOrder = true;
+    });
+
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        throw Exception('Farmer is not logged in.');
+      }
+
+      final idToken = await user.getIdToken(true);
+      if (idToken == null || idToken.isEmpty) {
+        throw Exception('Unable to get Firebase ID token.');
+      }
+
+      final uri = Uri.parse(
+        '${ApiConfig.baseUrl}/orders/farmer/${order.orderItemId}/$action',
+      ).replace(queryParameters: {'id_token': idToken});
+
+      debugPrint('FARMER ORDER DETAILS ACTION: $action');
+      debugPrint('ORDER ITEM ID: ${order.orderItemId}');
+      debugPrint('URL: $uri');
+
+      final response = await http.post(
+        uri,
+        headers: {'Accept': 'application/json'},
+      );
+
+      debugPrint('STATUS CODE: ${response.statusCode}');
+      debugPrint('RESPONSE: ${response.body}');
+
+      if (response.statusCode != 200) {
+        String message = 'Failed to update order.';
+        try {
+          final body = jsonDecode(response.body);
+          if (body is Map && body['detail'] != null) {
+            message = body['detail'].toString();
+          }
+        } catch (_) {}
+        throw Exception(message);
+      }
+
+      final body = jsonDecode(response.body);
+      final backendStatus =
+          body is Map ? body['status']?.toString().toLowerCase() : null;
+
+      if (backendStatus == 'confirmed') {
+        order.status = 'Confirmed';
+      } else if (backendStatus == 'rejected') {
+        order.status = 'Rejected';
+      } else if (backendStatus == 'shipped') {
+        order.status = 'Shipped';
+      } else {
+        order.status = switch (action) {
+          'accept' => 'Confirmed',
+          'reject' => 'Rejected',
+          'ship' => 'Shipped',
+          _ => order.status,
+        };
+      }
+
+      widget.onStatusChanged();
+
+      if (!mounted) return;
+      Navigator.pop(context, true);
+    } catch (e) {
+      debugPrint('ORDER DETAILS UPDATE ERROR: $e');
+
+      if (!mounted) return;
+      setState(() {
+        _isUpdatingOrder = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString().replaceFirst('Exception: ', '')),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1632,8 +2007,8 @@ class _FarmerOrderDetailsScreenState extends State<FarmerOrderDetailsScreen> {
       rightIcon: Icons.check_rounded,
       rightColor: const Color(0xFF096B57),
       rightTextColor: Colors.white,
-      leftTap: _reject,
-      rightTap: _accept,
+      leftTap: _isUpdatingOrder ? () {} : _reject,
+      rightTap: _isUpdatingOrder ? () {} : _accept,
     );
   }
 
@@ -1738,9 +2113,18 @@ class _FarmerOrderDetailsScreenState extends State<FarmerOrderDetailsScreen> {
       height: 38,
       child: ElevatedButton.icon(
         onPressed: onTap,
-        icon: Icon(icon, size: 18),
+        icon: _isUpdatingOrder
+            ? const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white,
+                ),
+              )
+            : Icon(icon, size: 18),
         label: Text(
-          text,
+          _isUpdatingOrder ? 'Updating...' : text,
           style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
         ),
         style: ElevatedButton.styleFrom(
@@ -1759,29 +2143,18 @@ class _FarmerOrderDetailsScreenState extends State<FarmerOrderDetailsScreen> {
   // ACCEPT
   // --------------------------------------------------------------------------
 
-  void _accept() {
-    setState(() {
-      order.status = 'Confirmed';
-    });
-
-    widget.onStatusChanged();
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Order accepted successfully'),
-        backgroundColor: Color(0xFF08745E),
-      ),
-    );
+  Future<void> _accept() async {
+    await _updateOrderStatus('accept');
   }
 
   // --------------------------------------------------------------------------
   // REJECT
   // --------------------------------------------------------------------------
 
-  void _reject() {
-    showDialog(
+  Future<void> _reject() async {
+    final shouldReject = await showDialog<bool>(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
         return AlertDialog(
           title: const Text(
             'Reject Order?',
@@ -1792,18 +2165,11 @@ class _FarmerOrderDetailsScreenState extends State<FarmerOrderDetailsScreen> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(dialogContext, false),
               child: const Text('Cancel'),
             ),
             ElevatedButton(
-              onPressed: () {
-                order.status = 'Rejected';
-
-                widget.onStatusChanged();
-
-                Navigator.pop(context);
-                Navigator.pop(this.context);
-              },
+              onPressed: () => Navigator.pop(dialogContext, true),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFE13B3B),
                 foregroundColor: Colors.white,
@@ -1814,6 +2180,9 @@ class _FarmerOrderDetailsScreenState extends State<FarmerOrderDetailsScreen> {
         );
       },
     );
+
+    if (shouldReject != true || !mounted) return;
+    await _updateOrderStatus('reject');
   }
 
   // --------------------------------------------------------------------------
@@ -1859,10 +2228,10 @@ class _FarmerOrderDetailsScreenState extends State<FarmerOrderDetailsScreen> {
   // SHIP
   // --------------------------------------------------------------------------
 
-  void _markShipped() {
-    showDialog(
+  Future<void> _markShipped() async {
+    final shouldShip = await showDialog<bool>(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
         return AlertDialog(
           title: const Text(
             'Mark as Shipped?',
@@ -1873,26 +2242,11 @@ class _FarmerOrderDetailsScreenState extends State<FarmerOrderDetailsScreen> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(dialogContext, false),
               child: const Text('Cancel'),
             ),
             ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  order.status = 'Shipped';
-                });
-
-                widget.onStatusChanged();
-
-                Navigator.pop(context);
-
-                ScaffoldMessenger.of(this.context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Order marked as shipped'),
-                    backgroundColor: Color(0xFF08745E),
-                  ),
-                );
-              },
+              onPressed: () => Navigator.pop(dialogContext, true),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF096B57),
                 foregroundColor: Colors.white,
@@ -1902,6 +2256,20 @@ class _FarmerOrderDetailsScreenState extends State<FarmerOrderDetailsScreen> {
           ],
         );
       },
+    );
+
+    if (shouldShip != true || !mounted) return;
+
+    await _updateOrderStatus('ship');
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Order marked as shipped'),
+        backgroundColor: Color(0xFF08745E),
+        behavior: SnackBarBehavior.floating,
+      ),
     );
   }
 

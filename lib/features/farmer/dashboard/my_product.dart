@@ -162,18 +162,8 @@ class _MyProductsScreenState extends State<MyProductsScreen> {
       ),
       child: Row(
         children: [
-          GestureDetector(
-            onTap: () {
-              Navigator.pop(context);
-            },
-            child: const Icon(
-              Icons.arrow_back_ios_new_rounded,
-              color: Colors.white,
-              size: 18,
-            ),
-          ),
+          
 
-          const SizedBox(width: 10),
 
           Expanded(
             child: Column(

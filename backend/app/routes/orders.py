@@ -588,4 +588,355 @@ def get_farmer_orders(
         "message": "Farmer orders fetched successfully",
         "count": len(result),
         "orders": result,
+        
+    }
+    
+    
+        
+# ============================================================
+# FARMER ACCEPT ORDER
+# ============================================================
+
+@router.post("/farmer/{order_item_id}/accept")
+def accept_farmer_order(
+    order_item_id: int,
+    id_token: str = "",
+    db: Session = Depends(get_db),
+):
+    # --------------------------------------------------------
+    # VERIFY FIREBASE TOKEN
+    # --------------------------------------------------------
+    try:
+        decoded_token = verify_firebase_token(id_token)
+    except Exception:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid Firebase token",
+        )
+
+    firebase_uid = decoded_token.get("uid")
+
+    if not firebase_uid:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid Firebase token",
+        )
+
+    # --------------------------------------------------------
+    # FIND USER
+    # --------------------------------------------------------
+    user = (
+        db.query(User)
+        .filter(User.firebase_uid == firebase_uid)
+        .first()
+    )
+
+    if not user:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found",
+        )
+
+    # --------------------------------------------------------
+    # ONLY FARMERS
+    # --------------------------------------------------------
+    if user.role != "farmer":
+        raise HTTPException(
+            status_code=403,
+            detail="Only farmers can accept orders",
+        )
+
+    # --------------------------------------------------------
+    # FIND FARMER PROFILE
+    # --------------------------------------------------------
+    farmer = (
+        db.query(FarmerProfile)
+        .filter(FarmerProfile.user_id == user.user_id)
+        .first()
+    )
+
+    if not farmer:
+        raise HTTPException(
+            status_code=404,
+            detail="Farmer profile not found",
+        )
+
+    # --------------------------------------------------------
+    # FIND ORDER ITEM
+    # --------------------------------------------------------
+    order_item = (
+        db.query(OrderItem)
+        .filter(
+            OrderItem.order_item_id == order_item_id,
+            OrderItem.farmer_id == farmer.farmer_id,
+        )
+        .first()
+    )
+
+    if not order_item:
+        raise HTTPException(
+            status_code=404,
+            detail="Order item not found",
+        )
+
+    # --------------------------------------------------------
+    # CHECK STATUS
+    # --------------------------------------------------------
+    current_status = (
+        order_item.status or "pending"
+    ).lower()
+
+    if current_status != "pending":
+        raise HTTPException(
+            status_code=400,
+            detail=f"Order cannot be accepted because it is already {current_status}",
+        )
+
+    # --------------------------------------------------------
+    # ACCEPT
+    # --------------------------------------------------------
+    order_item.status = "confirmed"
+
+    try:
+        db.commit()
+        db.refresh(order_item)
+
+    except Exception as e:
+        db.rollback()
+
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to accept order: {str(e)}",
+        )
+
+    return {
+        "message": "Order accepted successfully",
+        "order_item_id": order_item.order_item_id,
+        "status": order_item.status,
+    }
+
+
+# ============================================================
+# FARMER REJECT ORDER
+# ============================================================
+
+@router.post("/farmer/{order_item_id}/reject")
+def reject_farmer_order(
+    order_item_id: int,
+    id_token: str = "",
+    db: Session = Depends(get_db),
+):
+    # --------------------------------------------------------
+    # VERIFY FIREBASE TOKEN
+    # --------------------------------------------------------
+    try:
+        decoded_token = verify_firebase_token(id_token)
+    except Exception:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid Firebase token",
+        )
+
+    firebase_uid = decoded_token.get("uid")
+
+    if not firebase_uid:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid Firebase token",
+        )
+
+    # --------------------------------------------------------
+    # FIND USER
+    # --------------------------------------------------------
+    user = (
+        db.query(User)
+        .filter(User.firebase_uid == firebase_uid)
+        .first()
+    )
+
+    if not user:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found",
+        )
+
+    # --------------------------------------------------------
+    # ONLY FARMERS
+    # --------------------------------------------------------
+    if user.role != "farmer":
+        raise HTTPException(
+            status_code=403,
+            detail="Only farmers can reject orders",
+        )
+
+    # --------------------------------------------------------
+    # FIND FARMER PROFILE
+    # --------------------------------------------------------
+    farmer = (
+        db.query(FarmerProfile)
+        .filter(FarmerProfile.user_id == user.user_id)
+        .first()
+    )
+
+    if not farmer:
+        raise HTTPException(
+            status_code=404,
+            detail="Farmer profile not found",
+        )
+
+    # --------------------------------------------------------
+    # FIND ORDER ITEM
+    # --------------------------------------------------------
+    order_item = (
+        db.query(OrderItem)
+        .filter(
+            OrderItem.order_item_id == order_item_id,
+            OrderItem.farmer_id == farmer.farmer_id,
+        )
+        .first()
+    )
+
+    if not order_item:
+        raise HTTPException(
+            status_code=404,
+            detail="Order item not found",
+        )
+
+    # --------------------------------------------------------
+    # CHECK STATUS
+    # --------------------------------------------------------
+    current_status = (
+        order_item.status or "pending"
+    ).lower()
+
+    if current_status != "pending":
+        raise HTTPException(
+            status_code=400,
+            detail=f"Order cannot be rejected because it is already {current_status}",
+        )
+
+    # --------------------------------------------------------
+    # REJECT
+    # --------------------------------------------------------
+    order_item.status = "rejected"
+
+    try:
+        db.commit()
+        db.refresh(order_item)
+
+    except Exception as e:
+        db.rollback()
+
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to reject order: {str(e)}",
+        )
+
+    return {
+        "message": "Order rejected successfully",
+        "order_item_id": order_item.order_item_id,
+        "status": order_item.status,
+    }
+    
+    
+    # ============================================================
+# FARMER MARK ORDER AS SHIPPED
+# ============================================================
+
+@router.post("/farmer/{order_item_id}/ship")
+def ship_farmer_order(
+    order_item_id: int,
+    id_token: str = "",
+    db: Session = Depends(get_db),
+):
+    try:
+        decoded_token = verify_firebase_token(id_token)
+    except Exception:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid Firebase token",
+        )
+
+    firebase_uid = decoded_token.get("uid")
+
+    if not firebase_uid:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid Firebase token",
+        )
+
+    user = (
+        db.query(User)
+        .filter(User.firebase_uid == firebase_uid)
+        .first()
+    )
+
+    if not user:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found",
+        )
+
+    if user.role != "farmer":
+        raise HTTPException(
+            status_code=403,
+            detail="Only farmers can ship orders",
+        )
+
+    farmer = (
+        db.query(FarmerProfile)
+        .filter(FarmerProfile.user_id == user.user_id)
+        .first()
+    )
+
+    if not farmer:
+        raise HTTPException(
+            status_code=404,
+            detail="Farmer profile not found",
+        )
+
+    order_item = (
+        db.query(OrderItem)
+        .filter(
+            OrderItem.order_item_id == order_item_id,
+            OrderItem.farmer_id == farmer.farmer_id,
+        )
+        .first()
+    )
+
+    if not order_item:
+        raise HTTPException(
+            status_code=404,
+            detail="Order item not found",
+        )
+
+    current_status = (
+        order_item.status or "pending"
+    ).lower()
+
+    if current_status != "confirmed":
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Order can only be marked as shipped "
+                f"when it is confirmed. Current status: {current_status}"
+            ),
+        )
+
+    order_item.status = "shipped"
+
+    try:
+        db.commit()
+        db.refresh(order_item)
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to mark order as shipped: {str(e)}",
+        )
+
+    return {
+        "message": "Order marked as shipped successfully",
+        "order_item_id": order_item.order_item_id,
+        "status": order_item.status,
     }
