@@ -408,17 +408,14 @@ def create_order(
 # ============================================================
 # GET FARMER ORDERS
 # ============================================================
-
 @router.get("/farmer/my-orders")
 def get_farmer_orders(
     id_token: str = "",
     db: Session = Depends(get_db),
 ):
-
-    # --------------------------------------------------------
-    # VERIFY FIREBASE TOKEN
-    # --------------------------------------------------------
-
+    # --------------------------------------------------
+    # 1. Verify Firebase token
+    # --------------------------------------------------
     try:
         decoded_token = verify_firebase_token(id_token)
     except Exception:
@@ -435,10 +432,9 @@ def get_farmer_orders(
             detail="Invalid Firebase token",
         )
 
-    # --------------------------------------------------------
-    # FIND USER
-    # --------------------------------------------------------
-
+    # --------------------------------------------------
+    # 2. Find user
+    # --------------------------------------------------
     user = (
         db.query(User)
         .filter(User.firebase_uid == firebase_uid)
@@ -451,20 +447,18 @@ def get_farmer_orders(
             detail="User not found",
         )
 
-    # --------------------------------------------------------
-    # ONLY FARMERS
-    # --------------------------------------------------------
-
+    # --------------------------------------------------
+    # 3. Check farmer role
+    # --------------------------------------------------
     if user.role != "farmer":
         raise HTTPException(
             status_code=403,
             detail="Only farmers can view farmer orders",
         )
 
-    # --------------------------------------------------------
-    # FIND FARMER PROFILE
-    # --------------------------------------------------------
-
+    # --------------------------------------------------
+    # 4. Find farmer profile
+    # --------------------------------------------------
     farmer = (
         db.query(FarmerProfile)
         .filter(
@@ -479,23 +473,32 @@ def get_farmer_orders(
             detail="Farmer profile not found",
         )
 
-    # --------------------------------------------------------
-    # GET THIS FARMER'S ORDER ITEMS
-    # --------------------------------------------------------
-
+    # --------------------------------------------------
+    # 5. Get this farmer's order items
+    #
+    # IMPORTANT:
+    # OrderItem does not have created_at.
+    # So we order by order_item_id instead.
+    # --------------------------------------------------
     order_items = (
         db.query(OrderItem)
         .filter(
             OrderItem.farmer_id == farmer.farmer_id
         )
-        .order_by(OrderItem.created_at.desc())
+        .order_by(
+            OrderItem.order_item_id.desc()
+        )
         .all()
     )
 
+    # --------------------------------------------------
+    # 6. Prepare response
+    # --------------------------------------------------
     result = []
 
     for item in order_items:
 
+        # Find parent order
         order = (
             db.query(Order)
             .filter(
@@ -507,6 +510,7 @@ def get_farmer_orders(
         if not order:
             continue
 
+        # Find buyer
         buyer = (
             db.query(User)
             .filter(
@@ -516,68 +520,70 @@ def get_farmer_orders(
         )
 
         result.append({
-            "order_id": order.order_id,
-            "order_number": order.order_number,
+    "order_id": order.order_id,
+    "order_number": order.order_number,
 
-            "order_item_id": item.order_item_id,
-            "product_id": item.product_id,
+    "order_item_id": item.order_item_id,
+    "product_id": item.product_id,
 
-            "product_name": item.product_name,
-            "price": float(item.price),
-            "unit": item.unit,
-            "quantity": item.quantity,
-            "total_price": float(item.total_price),
+    "product_name": item.product_name,
+    "price": float(item.price),
+    "unit": item.unit,
+    "quantity": item.quantity,
 
-            "image_url": item.image_url,
+    "total_price": float(item.price) * int(item.quantity),
 
-            "farm": item.farm,
-            "location": item.location,
+    "image_url": item.image_url,
+    "farm": item.farm,
+    "location": item.location,
 
-            "buyer_name": (
-                buyer.name
-                if buyer
-                else "Unknown Buyer"
-            ),
+    "buyer_name": (
+        buyer.name
+        if buyer
+        else "Unknown Buyer"
+    ),
 
-            "buyer_phone": (
-                buyer.phone
-                if buyer
-                else None
-            ),
+    "buyer_phone": (
+        buyer.phone
+        if buyer
+        else None
+    ),
 
-            "address_id": order.address_id,
+    "address_id": order.address_id,
 
-            # Farmer-specific status
-            "status": item.status,
+    "status": item.status,
 
-            "payment_method": order.payment_method,
-            "payment_status": order.payment_status,
+    "payment_method": order.payment_method,
+    "payment_status": order.payment_status,
 
-            "delivery_fee": float(
-                order.delivery_fee or 0
-            ),
+    "delivery_fee": float(
+        order.delivery_fee or 0
+    ),
 
-            "discount": float(
-                order.discount or 0
-            ),
+    "discount": float(
+        order.discount or 0
+    ),
 
-            "total_amount": float(
-                order.total_amount or 0
-            ),
+    "total_amount": float(
+        order.total_amount or 0
+    ),
 
-            "created_at": (
-                order.created_at.isoformat()
-                if order.created_at
-                else None
-            ),
+    "created_at": (
+        order.created_at.isoformat()
+        if order.created_at
+        else None
+    ),
 
-            "updated_at": (
-                order.updated_at.isoformat()
-                if order.updated_at
-                else None
-            ),
-        })
+    "updated_at": (
+        order.updated_at.isoformat()
+        if order.updated_at
+        else None
+    ),
+})
 
+    # --------------------------------------------------
+    # 7. Return response
+    # --------------------------------------------------
     return {
         "message": "Farmer orders fetched successfully",
         "count": len(result),
