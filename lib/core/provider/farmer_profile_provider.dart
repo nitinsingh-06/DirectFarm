@@ -118,6 +118,19 @@ class ProfileProvider extends ChangeNotifier {
 
       final List<dynamic> users = jsonDecode(usersResponse.body);
 
+      debugPrint('🔥 TOTAL USERS = ${users.length}');
+
+      for (final item in users) {
+        if (item is Map<String, dynamic>) {
+          debugPrint(
+            '🔥 DB USER => '
+            'id=${item['user_id']}, '
+            'name=${item['name']}, '
+            'firebase_uid=${item['firebase_uid']}',
+          );
+        }
+      }
+
       // ============================================================
       // FIND CURRENT USER
       // ============================================================
@@ -155,6 +168,7 @@ class ProfileProvider extends ChangeNotifier {
       debugPrint('Farmer name: $_name');
 
       debugPrint('Farmer email: $_email');
+      debugPrint('Farmer name: $_name');
 
       debugPrint('Farmer phone: $_phone');
 

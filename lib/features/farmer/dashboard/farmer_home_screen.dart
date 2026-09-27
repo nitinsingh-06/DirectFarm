@@ -3,6 +3,10 @@
 // ============================================================
 
 import 'package:farmdirect/core/provider/farmer_profile_provider.dart';
+import 'package:farmdirect/features/farmer/dashboard/FARMER%20ORDER/farmer_order_management_screen.dart';
+import 'package:farmdirect/features/farmer/dashboard/farmer_earning_screen.dart';
+import 'package:farmdirect/features/farmer/dashboard/farmer_ratings_screen.dart';
+import 'package:farmdirect/features/farmer/dashboard/product_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -44,11 +48,11 @@ class HomeScreen extends StatelessWidget {
 
                     const SizedBox(height: 7),
 
-                    _statistics(),
+                    _statistics(context),
 
                     const SizedBox(height: 9),
 
-                    _quickActions(),
+                    // _quickActions(),
 
                     const SizedBox(height: 9),
 
@@ -73,9 +77,13 @@ class HomeScreen extends StatelessWidget {
         final name = profile.name.trim().isEmpty
             ? 'Farmer'
             : profile.name.trim();
+            
 
         final letter = name[0].toUpperCase();
-
+        
+         debugPrint(
+        '🔥 DASHBOARD PROFILE NAME = "${profile.name}"',
+      );
         return Container(
           height: 76,
 
@@ -287,7 +295,8 @@ class HomeScreen extends StatelessWidget {
   // ============================================================
   // STATISTICS
   // ============================================================
-  Widget _statistics() {
+
+  Widget _statistics(BuildContext context) {
     return GridView.count(
       crossAxisCount: 2,
       crossAxisSpacing: 6,
@@ -307,6 +316,12 @@ class HomeScreen extends StatelessWidget {
           backgroundImage: 'assets/images/total_products_bg.png',
 
           imageAsset: 'assets/images/vegetable_crate.png',
+           onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ProductScreen()),
+            );
+          },
         ),
 
         _stat(
@@ -320,6 +335,12 @@ class HomeScreen extends StatelessWidget {
           backgroundImage: 'assets/images/active_orders_bg.png',
 
           imageAsset: 'assets/images/delivery_box.png',
+           onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const FarmerOrderManagementScreen()),
+            );
+          },
         ),
 
         _stat(
@@ -333,6 +354,12 @@ class HomeScreen extends StatelessWidget {
           backgroundImage: 'assets/images/month_earnings_bg.png',
 
           imageAsset: 'assets/images/earnings_chart.png',
+           onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const EarningsScreen()),
+            );
+          },
         ),
 
         _stat(
@@ -346,6 +373,13 @@ class HomeScreen extends StatelessWidget {
           backgroundImage: 'assets/images/rating_bg.png',
 
           imageAsset: 'assets/images/buyer_rating.png',
+
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const RatingsScreen()),
+            );
+          },
         ),
       ],
     );
@@ -359,263 +393,256 @@ class HomeScreen extends StatelessWidget {
     required Color color,
     required Color bg,
     required String backgroundImage,
+    VoidCallback? onTap,
     String? imageAsset,
   }) {
-    return Container(
-      clipBehavior: Clip.hardEdge,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFFE5E8EA), width: 0.7),
-      ),
-      child: Stack(
-        children: [
-          // =====================================================
-          // BACKGROUND IMAGE
-          // =====================================================
-          Positioned.fill(
-            child: Image.asset(backgroundImage, fit: BoxFit.cover),
-          ),
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
 
-          // =====================================================
-          // CONTENT
-          // =====================================================
-          Padding(
-            padding: const EdgeInsets.fromLTRB(8, 7, 7, 6),
-            child: Stack(
-              children: [
-                // =================================================
-                // RIGHT SIDE IMAGE
-                // =================================================
-                if (imageAsset != null)
-                  Positioned(
-                    right: 0,
-                    bottom: 0,
-                    width: 62,
-                    height: 50,
-                    child: Image.asset(imageAsset, fit: BoxFit.contain),
-                  ),
+      child: Container(
+        clipBehavior: Clip.hardEdge,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: const Color(0xFFE5E8EA), width: 0.7),
+        ),
 
-                // =================================================
-                // TEXT + ICON
-                // =================================================
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // ---------------------------------------------
-                    // TOP ROW
-                    // ---------------------------------------------
-                    Row(
-                      children: [
-                        Container(
-                          width: 22,
-                          height: 22,
-                          decoration: BoxDecoration(
-                            color: bg,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(icon, size: 12, color: color),
-                        ),
+        child: Stack(
+          children: [
+            // =====================================================
+            // BACKGROUND IMAGE
+            // =====================================================
+            Positioned.fill(
+              child: Image.asset(backgroundImage, fit: BoxFit.cover),
+            ),
 
-                        const SizedBox(width: 5),
+            // =====================================================
+            // CONTENT
+            // =====================================================
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8, 7, 7, 6),
 
-                        Expanded(
-                          child: Text(
-                            title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 9,
-                              color: Color(0xFF263238),
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-
-                        const Icon(
-                          Icons.chevron_right,
-                          size: 13,
-                          color: Color(0xFF607078),
-                        ),
-                      ],
-                    ),
-
-                    const Spacer(),
-
-                    // ---------------------------------------------
-                    // VALUE
-                    // ---------------------------------------------
-                    Text(
-                      value,
-                      style: TextStyle(
-                        color: color,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
+              child: Stack(
+                children: [
+                  // =================================================
+                  // RIGHT SIDE IMAGE
+                  // =================================================
+                  if (imageAsset != null)
+                    Positioned(
+                      right: 0,
+                      bottom: 0,
+                      width: 62,
+                      height: 50,
+                      child: IgnorePointer(
+                        child: Image.asset(imageAsset, fit: BoxFit.contain),
                       ),
                     ),
 
-                    const SizedBox(height: 1),
+                  // =================================================
+                  // TEXT + ICON
+                  // =================================================
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
 
-                    // ---------------------------------------------
-                    // BOTTOM
-                    // ---------------------------------------------
-                    Row(
-                      children: [
-                        Icon(Icons.trending_up, color: color, size: 10),
+                    children: [
+                      // ---------------------------------------------
+                      // TOP ROW
+                      // ---------------------------------------------
+                      Row(
+                        children: [
+                          Container(
+                            width: 22,
+                            height: 22,
+                            decoration: BoxDecoration(
+                              color: bg,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(icon, size: 12, color: color),
+                          ),
 
-                        const SizedBox(width: 2),
+                          const SizedBox(width: 5),
 
-                        Flexible(
-                          child: Text(
-                            bottom,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: color,
-                              fontSize: 7.5,
-                              fontWeight: FontWeight.w600,
+                          Expanded(
+                            child: Text(
+                              title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 9,
+                                color: Color(0xFF263238),
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
                           ),
+
+                          const Icon(
+                            Icons.chevron_right,
+                            size: 13,
+                            color: Color(0xFF607078),
+                          ),
+                        ],
+                      ),
+
+                      const Spacer(),
+
+                      // ---------------------------------------------
+                      // VALUE
+                      // ---------------------------------------------
+                      Text(
+                        value,
+                        style: TextStyle(
+                          color: color,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
                         ),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
+                      ),
+
+                      const SizedBox(height: 1),
+
+                      // ---------------------------------------------
+                      // BOTTOM
+                      // ---------------------------------------------
+                      Row(
+                        children: [
+                          Icon(Icons.trending_up, color: color, size: 10),
+
+                          const SizedBox(width: 2),
+
+                          Flexible(
+                            child: Text(
+                              bottom,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: color,
+                                fontSize: 7.5,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
-
   // ============================================================
   // QUICK ACTIONS
   // ============================================================
 
-  Widget _quickActions() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            const Icon(Icons.bolt, size: 14, color: darkGreen),
-            const SizedBox(width: 3),
-            const Text(
-              'Quick Actions',
-              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800),
-            ),
-            const Spacer(),
-            GestureDetector(
-              onTap: onManageProducts,
-              child: const Text(
-                'See All ›',
-                style: TextStyle(
-                  fontSize: 6.5,
-                  color: green,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ],
-        ),
+  // Widget _quickActions() {
+  //   return Column(
+  //     crossAxisAlignment: CrossAxisAlignment.start,
+  //     children: [
+  //       Row(
+  //         children: [
+  //           const Icon(Icons.bolt, size: 14, color: darkGreen),
+  //           const SizedBox(width: 3),
+  //           const Text(
+  //             'Quick Actions',
+  //             style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800),
+  //           ),
+  //           const Spacer(),
+  //           GestureDetector(
+  //             onTap: onManageProducts,
+  //             child: const Text(
+  //               'See All ›',
+  //               style: TextStyle(
+  //                 fontSize: 6.5,
+  //                 color: green,
+  //                 fontWeight: FontWeight.w700,
+  //               ),
+  //             ),
+  //           ),
+  //         ],
+  //       ),
 
-        const SizedBox(height: 5),
+  //       const SizedBox(height: 5),
 
-        Row(
-          children: [
-            Expanded(
-              child: _action(
-                icon: Icons.add_circle_outline,
-                title: 'Add Product',
-                subtitle: 'List new product',
-                dark: true,
-                onTap: onAddProduct,
-              ),
-            ),
+  //       Row(
+  //         children: [
+  //           Expanded(
+  //             child: _action(
+  //               icon: Icons.add_circle_outline,
+  //               title: 'Add Product',
+  //               subtitle: 'List new product',
+  //               dark: true,
+  //               onTap: onAddProduct,
+  //             ),
+  //           ),
 
-            const SizedBox(width: 5),
-            Expanded(
-              child: _action(
-                icon: Icons.shopping_bag_outlined,
-                title: 'View Orders',
-                subtitle: 'Check order status',
-                onTap: onViewOrders,
-              ),
-            ),
-            const SizedBox(width: 5),
-            Expanded(
-              child: _action(
-                icon: Icons.bar_chart,
-                title: 'View Earnings',
-                subtitle: 'See detailed report',
-                onTap: onViewEarnings,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
+            
+  //         ],
+  //       ),
+  //     ],
+  //   );
+  // }
 
-  Widget _action({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required VoidCallback? onTap,
-    bool dark = false,
-  }) {
-    return Material(
-      color: dark ? darkGreen : Colors.white,
-      borderRadius: BorderRadius.circular(7),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(7),
-        child: Container(
-          height: 58,
-          padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 5),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(7),
-            border: Border.all(
-              color: dark ? darkGreen : const Color(0xFFE4E8E9),
-            ),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                icon,
-                size: 16,
-                color: dark ? const Color(0xFFB7D95A) : green,
-              ),
-              const SizedBox(height: 3),
-              Text(
-                title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: dark ? Colors.white : const Color(0xFF384248),
-                  fontSize: 6.5,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 1),
-              Text(
-                subtitle,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: dark ? Colors.white70 : const Color(0xFF90999E),
-                  fontSize: 5,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  // Widget _action({
+  //   required IconData icon,
+  //   required String title,
+  //   required String subtitle,
+  //   required VoidCallback? onTap,
+  //   bool dark = false,
+  // }) {
+  //   return Material(
+  //     color: dark ? darkGreen : Colors.white,
+  //     borderRadius: BorderRadius.circular(7),
+  //     child: InkWell(
+  //       onTap: onTap,
+  //       borderRadius: BorderRadius.circular(7),
+  //       child: Container(
+  //         height: 58,
+  //         padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 5),
+  //         decoration: BoxDecoration(
+  //           borderRadius: BorderRadius.circular(7),
+  //           border: Border.all(
+  //             color: dark ? darkGreen : const Color(0xFFE4E8E9),
+  //           ),
+  //         ),
+  //         child: Column(
+  //           mainAxisAlignment: MainAxisAlignment.center,
+  //           children: [
+  //             Icon(
+  //               icon,
+  //               size: 16,
+  //               color: dark ? const Color(0xFFB7D95A) : green,
+  //             ),
+  //             const SizedBox(height: 3),
+  //             Text(
+  //               title,
+  //               maxLines: 1,
+  //               overflow: TextOverflow.ellipsis,
+  //               textAlign: TextAlign.center,
+  //               style: TextStyle(
+  //                 color: dark ? Colors.white : const Color(0xFF384248),
+  //                 fontSize: 6.5,
+  //                 fontWeight: FontWeight.w700,
+  //               ),
+  //             ),
+  //             const SizedBox(height: 1),
+  //             Text(
+  //               subtitle,
+  //               maxLines: 1,
+  //               overflow: TextOverflow.ellipsis,
+  //               textAlign: TextAlign.center,
+  //               style: TextStyle(
+  //                 color: dark ? Colors.white70 : const Color(0xFF90999E),
+  //                 fontSize: 5,
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 
   // ============================================================
   // RECENT ORDERS

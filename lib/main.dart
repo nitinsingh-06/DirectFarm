@@ -27,7 +27,7 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => ProfileProvider()),
+        ChangeNotifierProvider(create: (_) => ProfileProvider()..loadProfile()),
         ChangeNotifierProvider(create: (_) => CartProvider()),
         ChangeNotifierProvider(create: (_) => BuyerProfileProvider()..loadProfile()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
