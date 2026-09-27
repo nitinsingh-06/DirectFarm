@@ -78,9 +78,13 @@ class HomeScreen extends StatelessWidget {
 
         return Container(
           height: 76,
+
           padding: const EdgeInsets.fromLTRB(9, 7, 9, 8),
           decoration: const BoxDecoration(
-            color: darkGreen,
+            image: DecorationImage(
+              image: AssetImage('assets/images/farmer_header_background.png'),
+              fit: BoxFit.cover,
+            ),
             borderRadius: BorderRadius.only(
               bottomLeft: Radius.circular(17),
               bottomRight: Radius.circular(17),
@@ -95,10 +99,7 @@ class HomeScreen extends StatelessWidget {
                   children: [
                     const Text(
                       'Namaste,',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 8,
-                      ),
+                      style: TextStyle(color: Colors.white, fontSize: 8),
                     ),
 
                     const SizedBox(height: 1),
@@ -140,8 +141,8 @@ class HomeScreen extends StatelessWidget {
 
               // Notification
               Container(
-                width: 28,
-                height: 28,
+                width: 32,
+                height: 32,
                 margin: const EdgeInsets.only(right: 6),
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(.12),
@@ -153,7 +154,7 @@ class HomeScreen extends StatelessWidget {
                       child: Icon(
                         Icons.notifications_none,
                         color: Colors.white,
-                        size: 16,
+                        size: 23,
                       ),
                     ),
                     Positioned(
@@ -172,12 +173,12 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
 
-              // Profile
+              // Profile======================================
               GestureDetector(
                 onTap: onProfile,
                 child: Container(
-                  width: 36,
-                  height: 36,
+                  width: 38,
+                  height: 38,
                   padding: const EdgeInsets.all(2),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
@@ -230,11 +231,13 @@ class HomeScreen extends StatelessWidget {
       height: 69,
       width: double.infinity,
       decoration: BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage('assets/images/promo_banner.png'),
+          fit: BoxFit.cover,
+        ),
         color: const Color(0xFFF0FAF4),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: const Color(0xFFDCEDE3),
-        ),
+        border: Border.all(color: const Color(0xFFDCEDE3)),
       ),
       child: Stack(
         children: [
@@ -271,49 +274,9 @@ class HomeScreen extends StatelessWidget {
                 const SizedBox(height: 1),
                 Text(
                   'Connect with buyers across India',
-                  style: TextStyle(
-                    color: Colors.grey.shade600,
-                    fontSize: 5.5,
-                  ),
+                  style: TextStyle(color: Colors.grey.shade600, fontSize: 5.5),
                 ),
               ],
-            ),
-          ),
-
-          // Decorative farming area
-          Positioned(
-            right: 31,
-            top: 8,
-            child: Container(
-              width: 65,
-              height: 53,
-              decoration: BoxDecoration(
-                color: const Color(0xFFDCEFE1),
-                borderRadius: BorderRadius.circular(30),
-              ),
-              child: const Icon(
-                Icons.agriculture,
-                size: 32,
-                color: Color(0xFF087C59),
-              ),
-            ),
-          ),
-
-          Positioned(
-            right: 7,
-            top: 25,
-            child: Container(
-              width: 20,
-              height: 20,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.chevron_right,
-                size: 14,
-                color: darkGreen,
-              ),
             ),
           ),
         ],
@@ -324,7 +287,6 @@ class HomeScreen extends StatelessWidget {
   // ============================================================
   // STATISTICS
   // ============================================================
-
   Widget _statistics() {
     return GridView.count(
       crossAxisCount: 2,
@@ -341,7 +303,12 @@ class HomeScreen extends StatelessWidget {
           bottom: '+4 this month',
           color: const Color(0xFF087C59),
           bg: const Color(0xFFE5F7EC),
+
+          backgroundImage: 'assets/images/total_products_bg.png',
+
+          imageAsset: 'assets/images/vegetable_crate.png',
         ),
+
         _stat(
           icon: Icons.shopping_cart_outlined,
           title: 'Active Orders',
@@ -349,7 +316,12 @@ class HomeScreen extends StatelessWidget {
           bottom: '+2 this week',
           color: const Color(0xFFB46A24),
           bg: const Color(0xFFFFEEDD),
+
+          backgroundImage: 'assets/images/active_orders_bg.png',
+
+          imageAsset: 'assets/images/delivery_box.png',
         ),
+
         _stat(
           icon: Icons.currency_rupee,
           title: 'Month Earnings',
@@ -357,7 +329,12 @@ class HomeScreen extends StatelessWidget {
           bottom: '+18% last month',
           color: const Color(0xFF079A75),
           bg: const Color(0xFFE3F8EF),
+
+          backgroundImage: 'assets/images/month_earnings_bg.png',
+
+          imageAsset: 'assets/images/earnings_chart.png',
         ),
+
         _stat(
           icon: Icons.star,
           title: 'Rating',
@@ -365,6 +342,10 @@ class HomeScreen extends StatelessWidget {
           bottom: 'From 120+ buyers',
           color: const Color(0xFF6044B4),
           bg: const Color(0xFFECE5FF),
+
+          backgroundImage: 'assets/images/rating_bg.png',
+
+          imageAsset: 'assets/images/buyer_rating.png',
         ),
       ],
     );
@@ -377,86 +358,130 @@ class HomeScreen extends StatelessWidget {
     required String bottom,
     required Color color,
     required Color bg,
+    required String backgroundImage,
+    String? imageAsset,
   }) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(8, 7, 7, 6),
+      clipBehavior: Clip.hardEdge,
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: const Color(0xFFE5E8EA),
-        ),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFE5E8EA), width: 0.7),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Stack(
         children: [
-          Row(
-            children: [
-              Container(
-                width: 22,
-                height: 22,
-                decoration: BoxDecoration(
-                  color: bg,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  icon,
-                  size: 12,
-                  color: color,
-                ),
-              ),
+          // =====================================================
+          // BACKGROUND IMAGE
+          // =====================================================
+          Positioned.fill(
+            child: Image.asset(backgroundImage, fit: BoxFit.cover),
+          ),
 
-              const SizedBox(width: 5),
-
-              Expanded(
-                child: Text(
-                  title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 7,
-                    color: Color(0xFF69737A),
-                    fontWeight: FontWeight.w600,
+          // =====================================================
+          // CONTENT
+          // =====================================================
+          Padding(
+            padding: const EdgeInsets.fromLTRB(8, 7, 7, 6),
+            child: Stack(
+              children: [
+                // =================================================
+                // RIGHT SIDE IMAGE
+                // =================================================
+                if (imageAsset != null)
+                  Positioned(
+                    right: 0,
+                    bottom: 0,
+                    width: 62,
+                    height: 50,
+                    child: Image.asset(imageAsset, fit: BoxFit.contain),
                   ),
+
+                // =================================================
+                // TEXT + ICON
+                // =================================================
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // ---------------------------------------------
+                    // TOP ROW
+                    // ---------------------------------------------
+                    Row(
+                      children: [
+                        Container(
+                          width: 22,
+                          height: 22,
+                          decoration: BoxDecoration(
+                            color: bg,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(icon, size: 12, color: color),
+                        ),
+
+                        const SizedBox(width: 5),
+
+                        Expanded(
+                          child: Text(
+                            title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 9,
+                              color: Color(0xFF263238),
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+
+                        const Icon(
+                          Icons.chevron_right,
+                          size: 13,
+                          color: Color(0xFF607078),
+                        ),
+                      ],
+                    ),
+
+                    const Spacer(),
+
+                    // ---------------------------------------------
+                    // VALUE
+                    // ---------------------------------------------
+                    Text(
+                      value,
+                      style: TextStyle(
+                        color: color,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+
+                    const SizedBox(height: 1),
+
+                    // ---------------------------------------------
+                    // BOTTOM
+                    // ---------------------------------------------
+                    Row(
+                      children: [
+                        Icon(Icons.trending_up, color: color, size: 10),
+
+                        const SizedBox(width: 2),
+
+                        Flexible(
+                          child: Text(
+                            bottom,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: color,
+                              fontSize: 7.5,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-              ),
-
-              const Icon(
-                Icons.chevron_right,
-                size: 12,
-                color: Color(0xFF9AA3A8),
-              ),
-            ],
-          ),
-
-          const Spacer(),
-
-          Text(
-            value,
-            style: TextStyle(
-              color: color,
-              fontSize: 15,
-              fontWeight: FontWeight.w800,
+              ],
             ),
-          ),
-
-          Row(
-            children: [
-              Icon(
-                Icons.trending_up,
-                color: color,
-                size: 7,
-              ),
-              const SizedBox(width: 2),
-              Text(
-                bottom,
-                style: TextStyle(
-                  color: color,
-                  fontSize: 5.5,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
           ),
         ],
       ),
@@ -473,18 +498,11 @@ class HomeScreen extends StatelessWidget {
       children: [
         Row(
           children: [
-            const Icon(
-              Icons.bolt,
-              size: 14,
-              color: darkGreen,
-            ),
+            const Icon(Icons.bolt, size: 14, color: darkGreen),
             const SizedBox(width: 3),
             const Text(
               'Quick Actions',
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w800,
-              ),
+              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800),
             ),
             const Spacer(),
             GestureDetector(
@@ -514,7 +532,7 @@ class HomeScreen extends StatelessWidget {
                 onTap: onAddProduct,
               ),
             ),
-           
+
             const SizedBox(width: 5),
             Expanded(
               child: _action(
@@ -554,16 +572,11 @@ class HomeScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(7),
         child: Container(
           height: 58,
-          padding: const EdgeInsets.symmetric(
-            horizontal: 3,
-            vertical: 5,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 5),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(7),
             border: Border.all(
-              color: dark
-                  ? darkGreen
-                  : const Color(0xFFE4E8E9),
+              color: dark ? darkGreen : const Color(0xFFE4E8E9),
             ),
           ),
           child: Column(
@@ -572,9 +585,7 @@ class HomeScreen extends StatelessWidget {
               Icon(
                 icon,
                 size: 16,
-                color: dark
-                    ? const Color(0xFFB7D95A)
-                    : green,
+                color: dark ? const Color(0xFFB7D95A) : green,
               ),
               const SizedBox(height: 3),
               Text(
@@ -583,9 +594,7 @@ class HomeScreen extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: dark
-                      ? Colors.white
-                      : const Color(0xFF384248),
+                  color: dark ? Colors.white : const Color(0xFF384248),
                   fontSize: 6.5,
                   fontWeight: FontWeight.w700,
                 ),
@@ -597,9 +606,7 @@ class HomeScreen extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: dark
-                      ? Colors.white70
-                      : const Color(0xFF90999E),
+                  color: dark ? Colors.white70 : const Color(0xFF90999E),
                   fontSize: 5,
                 ),
               ),
@@ -711,9 +718,7 @@ class HomeScreen extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: const Color(0xFFE4E8EA),
-            ),
+            border: Border.all(color: const Color(0xFFE4E8EA)),
           ),
           child: Row(
             children: [
@@ -724,11 +729,7 @@ class HomeScreen extends StatelessWidget {
                   color: const Color(0xFFF2F3F1),
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: Icon(
-                  icon,
-                  color: iconColor,
-                  size: 22,
-                ),
+                child: Icon(icon, color: iconColor, size: 22),
               ),
 
               const SizedBox(width: 7),
