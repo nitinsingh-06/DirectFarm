@@ -2,20 +2,26 @@
 // FARMER HOME SCREEN
 // ============================================================
 
+import 'dart:convert';
+
+import 'package:farmdirect/config/api_config.dart';
 import 'package:farmdirect/core/provider/farmer_profile_provider.dart';
 import 'package:farmdirect/features/farmer/dashboard/FARMER%20ORDER/farmer_order_management_screen.dart';
-import 'package:farmdirect/features/farmer/dashboard/farmer_earning_screen.dart';
-import 'package:farmdirect/features/farmer/dashboard/farmer_ratings_screen.dart';
-import 'package:farmdirect/features/farmer/dashboard/product_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   final VoidCallback onAddProduct;
   final VoidCallback? onManageProducts;
   final VoidCallback? onViewOrders;
   final VoidCallback? onViewEarnings;
+  final VoidCallback? onViewRatings;
   final VoidCallback? onProfile;
+
+  /// Used by Recent Orders to open one exact order.
+  final void Function(FarmerOrder order)? onViewOrder;
 
   const HomeScreen({
     super.key,
@@ -23,12 +29,130 @@ class HomeScreen extends StatelessWidget {
     this.onManageProducts,
     this.onViewOrders,
     this.onViewEarnings,
+    this.onViewRatings,
     this.onProfile,
+    this.onViewOrder,
   });
 
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
   static const green = Color(0xFF087C59);
   static const darkGreen = Color(0xFF075B46);
   static const lightGreen = Color(0xFFEAF8F0);
+
+  // ============================================================
+  // RECENT ORDERS
+  // ============================================================
+
+  List<FarmerOrder> _recentOrdersList = [];
+
+  bool _recentOrdersLoading = true;
+
+  String? _recentOrdersError;
+
+  // ============================================================
+  // INIT
+  // ============================================================
+
+  @override
+  void initState() {
+    super.initState();
+
+    _loadRecentOrders();
+  }
+
+  // ============================================================
+  // LOAD REAL FARMER ORDERS
+  // ============================================================
+
+  Future<void> _loadRecentOrders() async {
+    try {
+      if (!mounted) return;
+
+      setState(() {
+        _recentOrdersLoading = true;
+        _recentOrdersError = null;
+      });
+
+      final user = FirebaseAuth.instance.currentUser;
+
+      if (user == null) {
+        throw Exception('Farmer is not logged in.');
+      }
+
+      final idToken = await user.getIdToken(true);
+
+      if (idToken == null || idToken.isEmpty) {
+        throw Exception('Unable to get Firebase ID token.');
+      }
+
+      final uri = Uri.parse(
+        '${ApiConfig.baseUrl}/orders/farmer/my-orders',
+      ).replace(queryParameters: {'id_token': idToken});
+
+      debugPrint('========================================');
+      debugPrint('FARMER DASHBOARD RECENT ORDERS');
+      debugPrint('URL: $uri');
+
+      final response = await http.get(
+        uri,
+        headers: {'Accept': 'application/json'},
+      );
+
+      debugPrint('STATUS: ${response.statusCode}');
+      debugPrint('RESPONSE: ${response.body}');
+      debugPrint('========================================');
+
+      if (response.statusCode != 200) {
+        String message = 'Failed to load recent orders.';
+
+        try {
+          final body = jsonDecode(response.body);
+
+          if (body is Map && body['detail'] != null) {
+            message = body['detail'].toString();
+          }
+        } catch (_) {}
+
+        throw Exception(message);
+      }
+
+      final decoded = jsonDecode(response.body);
+
+      if (decoded is! Map || decoded['orders'] is! List) {
+        throw Exception('Invalid farmer orders response.');
+      }
+
+      final loadedOrders = (decoded['orders'] as List)
+          .whereType<Map>()
+          .map((item) => FarmerOrder.fromJson(Map<String, dynamic>.from(item)))
+          .toList();
+
+      if (!mounted) return;
+
+      setState(() {
+        _recentOrdersList = loadedOrders.take(3).toList();
+        _recentOrdersLoading = false;
+        _recentOrdersError = null;
+      });
+    } catch (e) {
+      debugPrint('FARMER DASHBOARD ORDER ERROR: $e');
+
+      if (!mounted) return;
+
+      setState(() {
+        _recentOrdersLoading = false;
+        _recentOrdersError = e.toString().replaceFirst('Exception: ', '');
+      });
+    }
+  }
+
+  // ============================================================
+  // BUILD
+  // ============================================================
 
   @override
   Widget build(BuildContext context) {
@@ -38,26 +162,31 @@ class HomeScreen extends StatelessWidget {
           _header(),
 
           Expanded(
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(7, 8, 7, 15),
-                child: Column(
-                  children: [
-                    _promoBanner(),
+            child: RefreshIndicator(
+              color: green,
+              onRefresh: _loadRecentOrders,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(
+                  parent: BouncingScrollPhysics(),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(7, 8, 7, 15),
+                  child: Column(
+                    children: [
+                      _promoBanner(),
 
-                    const SizedBox(height: 7),
+                      const SizedBox(height: 7),
 
-                    _statistics(context),
+                      _statistics(context),
 
-                    const SizedBox(height: 9),
+                      const SizedBox(height: 9),
 
-                    // _quickActions(),
+                      // _quickActions(),
+                      const SizedBox(height: 9),
 
-                    const SizedBox(height: 9),
-
-                    _recentOrders(),
-                  ],
+                      _recentOrders(),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -77,16 +206,13 @@ class HomeScreen extends StatelessWidget {
         final name = profile.name.trim().isEmpty
             ? 'Farmer'
             : profile.name.trim();
-            
 
         final letter = name[0].toUpperCase();
-        
-         debugPrint(
-        '🔥 DASHBOARD PROFILE NAME = "${profile.name}"',
-      );
+
+        debugPrint('🔥 DASHBOARD PROFILE NAME = "${profile.name}"');
+
         return Container(
           height: 76,
-
           padding: const EdgeInsets.fromLTRB(9, 7, 9, 8),
           decoration: const BoxDecoration(
             image: DecorationImage(
@@ -147,7 +273,9 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
 
-              // Notification
+              // ==================================================
+              // NOTIFICATION
+              // ==================================================
               Container(
                 width: 32,
                 height: 32,
@@ -165,6 +293,7 @@ class HomeScreen extends StatelessWidget {
                         size: 23,
                       ),
                     ),
+
                     Positioned(
                       top: 5,
                       right: 6,
@@ -181,9 +310,11 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
 
-              // Profile======================================
+              // ==================================================
+              // PROFILE
+              // ==================================================
               GestureDetector(
-                onTap: onProfile,
+                onTap: widget.onProfile,
                 child: Container(
                   width: 38,
                   height: 38,
@@ -239,7 +370,7 @@ class HomeScreen extends StatelessWidget {
       height: 69,
       width: double.infinity,
       decoration: BoxDecoration(
-        image: DecorationImage(
+        image: const DecorationImage(
           image: AssetImage('assets/images/promo_banner.png'),
           fit: BoxFit.cover,
         ),
@@ -263,6 +394,7 @@ class HomeScreen extends StatelessWidget {
                     fontWeight: FontWeight.w800,
                   ),
                 ),
+
                 const Text(
                   'Sell Directly',
                   style: TextStyle(
@@ -271,6 +403,7 @@ class HomeScreen extends StatelessWidget {
                     fontWeight: FontWeight.w800,
                   ),
                 ),
+
                 const Text(
                   'Earn Better',
                   style: TextStyle(
@@ -279,7 +412,9 @@ class HomeScreen extends StatelessWidget {
                     fontWeight: FontWeight.w800,
                   ),
                 ),
+
                 const SizedBox(height: 1),
+
                 Text(
                   'Connect with buyers across India',
                   style: TextStyle(color: Colors.grey.shade600, fontSize: 5.5),
@@ -312,16 +447,9 @@ class HomeScreen extends StatelessWidget {
           bottom: '+4 this month',
           color: const Color(0xFF087C59),
           bg: const Color(0xFFE5F7EC),
-
           backgroundImage: 'assets/images/total_products_bg.png',
-
           imageAsset: 'assets/images/vegetable_crate.png',
-           onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const ProductScreen()),
-            );
-          },
+          onTap: widget.onManageProducts,
         ),
 
         _stat(
@@ -331,15 +459,23 @@ class HomeScreen extends StatelessWidget {
           bottom: '+2 this week',
           color: const Color(0xFFB46A24),
           bg: const Color(0xFFFFEEDD),
-
           backgroundImage: 'assets/images/active_orders_bg.png',
-
           imageAsset: 'assets/images/delivery_box.png',
-           onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const FarmerOrderManagementScreen()),
-            );
+          onTap: () async {
+            if (widget.onViewOrders != null) {
+              widget.onViewOrders!();
+            } else {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      const FarmerOrderManagementScreen(),
+                ),
+              );
+              if (mounted) {
+                _loadRecentOrders();
+              }
+            }
           },
         ),
 
@@ -350,16 +486,9 @@ class HomeScreen extends StatelessWidget {
           bottom: '+18% last month',
           color: const Color(0xFF079A75),
           bg: const Color(0xFFE3F8EF),
-
           backgroundImage: 'assets/images/month_earnings_bg.png',
-
           imageAsset: 'assets/images/earnings_chart.png',
-           onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const EarningsScreen()),
-            );
-          },
+          onTap: widget.onViewEarnings,
         ),
 
         _stat(
@@ -369,17 +498,9 @@ class HomeScreen extends StatelessWidget {
           bottom: 'From 120+ buyers',
           color: const Color(0xFF6044B4),
           bg: const Color(0xFFECE5FF),
-
           backgroundImage: 'assets/images/rating_bg.png',
-
           imageAsset: 'assets/images/buyer_rating.png',
-
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const RatingsScreen()),
-            );
-          },
+          onTap: widget.onViewRatings,
         ),
       ],
     );
@@ -399,14 +520,12 @@ class HomeScreen extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
-
       child: Container(
         clipBehavior: Clip.hardEdge,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
           border: Border.all(color: const Color(0xFFE5E8EA), width: 0.7),
         ),
-
         child: Stack(
           children: [
             // =====================================================
@@ -421,7 +540,6 @@ class HomeScreen extends StatelessWidget {
             // =====================================================
             Padding(
               padding: const EdgeInsets.fromLTRB(8, 7, 7, 6),
-
               child: Stack(
                 children: [
                   // =================================================
@@ -443,11 +561,7 @@ class HomeScreen extends StatelessWidget {
                   // =================================================
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-
                     children: [
-                      // ---------------------------------------------
-                      // TOP ROW
-                      // ---------------------------------------------
                       Row(
                         children: [
                           Container(
@@ -485,9 +599,6 @@ class HomeScreen extends StatelessWidget {
 
                       const Spacer(),
 
-                      // ---------------------------------------------
-                      // VALUE
-                      // ---------------------------------------------
                       Text(
                         value,
                         style: TextStyle(
@@ -499,9 +610,6 @@ class HomeScreen extends StatelessWidget {
 
                       const SizedBox(height: 1),
 
-                      // ---------------------------------------------
-                      // BOTTOM
-                      // ---------------------------------------------
                       Row(
                         children: [
                           Icon(Icons.trending_up, color: color, size: 10),
@@ -532,6 +640,7 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   }
+
   // ============================================================
   // QUICK ACTIONS
   // ============================================================
@@ -542,15 +651,22 @@ class HomeScreen extends StatelessWidget {
   //     children: [
   //       Row(
   //         children: [
-  //           const Icon(Icons.bolt, size: 14, color: darkGreen),
+  //           const Icon(
+  //             Icons.bolt,
+  //             size: 14,
+  //             color: darkGreen,
+  //           ),
   //           const SizedBox(width: 3),
   //           const Text(
   //             'Quick Actions',
-  //             style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800),
+  //             style: TextStyle(
+  //               fontSize: 11,
+  //               fontWeight: FontWeight.w800,
+  //             ),
   //           ),
   //           const Spacer(),
   //           GestureDetector(
-  //             onTap: onManageProducts,
+  //             onTap: widget.onManageProducts,
   //             child: const Text(
   //               'See All ›',
   //               style: TextStyle(
@@ -562,9 +678,9 @@ class HomeScreen extends StatelessWidget {
   //           ),
   //         ],
   //       ),
-
+  //
   //       const SizedBox(height: 5),
-
+  //
   //       Row(
   //         children: [
   //           Expanded(
@@ -573,11 +689,9 @@ class HomeScreen extends StatelessWidget {
   //               title: 'Add Product',
   //               subtitle: 'List new product',
   //               dark: true,
-  //               onTap: onAddProduct,
+  //               onTap: widget.onAddProduct,
   //             ),
   //           ),
-
-            
   //         ],
   //       ),
   //     ],
@@ -599,41 +713,57 @@ class HomeScreen extends StatelessWidget {
   //       borderRadius: BorderRadius.circular(7),
   //       child: Container(
   //         height: 58,
-  //         padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 5),
+  //         padding: const EdgeInsets.symmetric(
+  //           horizontal: 3,
+  //           vertical: 5,
+  //         ),
   //         decoration: BoxDecoration(
   //           borderRadius: BorderRadius.circular(7),
   //           border: Border.all(
-  //             color: dark ? darkGreen : const Color(0xFFE4E8E9),
+  //             color: dark
+  //                 ? darkGreen
+  //                 : const Color(0xFFE4E8E9),
   //           ),
   //         ),
   //         child: Column(
-  //           mainAxisAlignment: MainAxisAlignment.center,
+  //           mainAxisAlignment:
+  //               MainAxisAlignment.center,
   //           children: [
   //             Icon(
   //               icon,
   //               size: 16,
-  //               color: dark ? const Color(0xFFB7D95A) : green,
+  //               color: dark
+  //                   ? const Color(0xFFB7D95A)
+  //                   : green,
   //             ),
+  //
   //             const SizedBox(height: 3),
+  //
   //             Text(
   //               title,
   //               maxLines: 1,
   //               overflow: TextOverflow.ellipsis,
   //               textAlign: TextAlign.center,
   //               style: TextStyle(
-  //                 color: dark ? Colors.white : const Color(0xFF384248),
+  //                 color: dark
+  //                     ? Colors.white
+  //                     : const Color(0xFF384248),
   //                 fontSize: 6.5,
   //                 fontWeight: FontWeight.w700,
   //               ),
   //             ),
+  //
   //             const SizedBox(height: 1),
+  //
   //             Text(
   //               subtitle,
   //               maxLines: 1,
   //               overflow: TextOverflow.ellipsis,
   //               textAlign: TextAlign.center,
   //               style: TextStyle(
-  //                 color: dark ? Colors.white70 : const Color(0xFF90999E),
+  //                 color: dark
+  //                     ? Colors.white70
+  //                     : const Color(0xFF90999E),
   //                 fontSize: 5,
   //               ),
   //             ),
@@ -662,9 +792,11 @@ class HomeScreen extends StatelessWidget {
                 color: darkGreen,
               ),
             ),
+
             const Spacer(),
+
             GestureDetector(
-              onTap: onViewOrders,
+              onTap: widget.onViewOrders,
               child: const Text(
                 'See All Orders ›',
                 style: TextStyle(
@@ -679,50 +811,262 @@ class HomeScreen extends StatelessWidget {
 
         const SizedBox(height: 5),
 
-        _order(
-          buyer: 'Suresh Kumar (Bulk Buyer)',
-          product: '200 kg • Basmati Rice',
-          location: 'Saharanpur, Uttar Pradesh',
-          status: 'New',
-          statusColor: const Color(0xFFE0F7EA),
-          statusText: const Color(0xFF168653),
-          icon: Icons.rice_bowl_outlined,
-          iconColor: const Color(0xFF8B7045),
-          time: 'Today, 10:30 AM',
-        ),
+        // ========================================================
+        // LOADING
+        // ========================================================
+        if (_recentOrdersLoading)
+          _recentOrdersLoadingWidget()
+        // ========================================================
+        // ERROR
+        // ========================================================
+        else if (_recentOrdersError != null)
+          _recentOrdersErrorWidget()
+        // ========================================================
+        // EMPTY
+        // ========================================================
+        else if (_recentOrdersList.isEmpty)
+          _noRecentOrdersWidget()
+        // ========================================================
+        // REAL ORDERS
+        // ========================================================
+        else
+          ..._recentOrdersList.map(
+            (order) => Padding(
+              padding: const EdgeInsets.only(bottom: 5),
+              child: _order(
+                order: order,
+                buyer: order.buyerName,
+                imageUrl: order.imageUrl,
 
-        const SizedBox(height: 5),
+                product: '${order.quantity} • ${order.productName}',
 
-        _order(
-          buyer: 'FreshMart Agra',
-          product: '500 kg • Red Potatoes',
-          location: 'Agra, Uttar Pradesh',
-          status: 'Shipped',
-          statusColor: const Color(0xFFE0EDFF),
-          statusText: const Color(0xFF3978D0),
-          icon: Icons.circle,
-          iconColor: const Color(0xFFE57373),
-          time: 'Yesterday, 4:15 PM',
-        ),
+                location: order.address,
 
-        const SizedBox(height: 5),
+                status: order.status,
 
-        _order(
-          buyer: 'Organic Hub Delhi',
-          product: '50 kg • Fresh Tomatoes',
-          location: 'New Delhi, Delhi',
-          status: 'Pending',
-          statusColor: const Color(0xFFFFEEC8),
-          statusText: const Color(0xFFE09A00),
-          icon: Icons.circle,
-          iconColor: const Color(0xFFE05252),
-          time: 'Yesterday, 2:30 PM',
-        ),
+                statusColor: _statusBackground(order.status),
+
+                statusText: _statusForeground(order.status),
+
+                icon: _productIcon(order.productName),
+
+                iconColor: _productIconColor(order.productName),
+
+                time: '${order.date}, ${order.time}',
+              ),
+            ),
+          ),
       ],
     );
   }
 
+  // ============================================================
+  // RECENT ORDERS LOADING
+  // ============================================================
+
+  Widget _recentOrdersLoadingWidget() {
+    return Container(
+      height: 54,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFE4E8EA)),
+      ),
+      child: const Center(
+        child: SizedBox(
+          width: 15,
+          height: 15,
+          child: CircularProgressIndicator(strokeWidth: 2, color: green),
+        ),
+      ),
+    );
+  }
+
+  // ============================================================
+  // NO ORDERS
+  // ============================================================
+
+  Widget _noRecentOrdersWidget() {
+    return Container(
+      height: 54,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFE4E8EA)),
+      ),
+      child: const Center(
+        child: Text(
+          'No recent orders',
+          style: TextStyle(
+            fontSize: 7,
+            color: Color(0xFF9AA1A5),
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ============================================================
+  // ORDER ERROR
+  // ============================================================
+
+  Widget _recentOrdersErrorWidget() {
+    return Container(
+      height: 54,
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFE4E8EA)),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.cloud_off_rounded,
+            size: 15,
+            color: Colors.redAccent,
+          ),
+
+          const SizedBox(width: 7),
+
+          Expanded(
+            child: Text(
+              _recentOrdersError ?? 'Unable to load orders',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontSize: 6.5, color: Color(0xFF737D82)),
+            ),
+          ),
+
+          GestureDetector(
+            onTap: _loadRecentOrders,
+            child: const Icon(Icons.refresh_rounded, size: 15, color: green),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ============================================================
+  // STATUS BACKGROUND
+  // ============================================================
+
+  Color _statusBackground(String status) {
+    switch (status) {
+      case 'Confirmed':
+        return const Color(0xFFDDF7E9);
+
+      case 'Shipped':
+        return const Color(0xFFE0EDFF);
+
+      case 'Delivered':
+        return const Color(0xFFE0F7EA);
+
+      case 'Rejected':
+      case 'Cancelled':
+        return const Color(0xFFFFE1E1);
+
+      case 'Pending':
+      default:
+        return const Color(0xFFFFEEC8);
+    }
+  }
+
+  // ============================================================
+  // STATUS TEXT
+  // ============================================================
+
+  Color _statusForeground(String status) {
+    switch (status) {
+      case 'Confirmed':
+        return const Color(0xFF08745E);
+
+      case 'Shipped':
+        return const Color(0xFF3978D0);
+
+      case 'Delivered':
+        return const Color(0xFF168653);
+
+      case 'Rejected':
+      case 'Cancelled':
+        return const Color(0xFFD93C3C);
+
+      case 'Pending':
+      default:
+        return const Color(0xFFE09A00);
+    }
+  }
+
+  // ============================================================
+  // PRODUCT ICON
+  // ============================================================
+
+  IconData _productIcon(String productName) {
+    final name = productName.toLowerCase();
+
+    if (name.contains('rice')) {
+      return Icons.rice_bowl_outlined;
+    }
+
+    if (name.contains('potato')) {
+      return Icons.circle;
+    }
+
+    if (name.contains('tomato')) {
+      return Icons.circle;
+    }
+
+    if (name.contains('wheat')) {
+      return Icons.grass_rounded;
+    }
+
+    if (name.contains('ghee')) {
+      return Icons.local_drink_outlined;
+    }
+
+    return Icons.agriculture_outlined;
+  }
+
+  // ============================================================
+  // PRODUCT ICON COLOR
+  // ============================================================
+
+  Color _productIconColor(String productName) {
+    final name = productName.toLowerCase();
+
+    if (name.contains('rice')) {
+      return const Color(0xFF8B7045);
+    }
+
+    if (name.contains('potato')) {
+      return const Color(0xFFE57373);
+    }
+
+    if (name.contains('tomato')) {
+      return const Color(0xFFE05252);
+    }
+
+    if (name.contains('wheat')) {
+      return const Color(0xFFC49A50);
+    }
+
+    if (name.contains('ghee')) {
+      return const Color(0xFFE1A72F);
+    }
+
+    return const Color(0xFF7A8B55);
+  }
+
+  // ============================================================
+  // ORDER CARD
+  // ============================================================
+
   Widget _order({
+    required FarmerOrder order,
     required String buyer,
     required String product,
     required String location,
@@ -732,12 +1076,19 @@ class HomeScreen extends StatelessWidget {
     required IconData icon,
     required Color iconColor,
     required String time,
+    required String? imageUrl,
   }) {
     return Material(
       color: Colors.white,
       borderRadius: BorderRadius.circular(8),
       child: InkWell(
-        onTap: onViewOrders,
+        onTap: () {
+          if (widget.onViewOrder != null) {
+            widget.onViewOrder!(order);
+          } else {
+            widget.onViewOrders?.call();
+          }
+        },
         borderRadius: BorderRadius.circular(8),
         child: Container(
           height: 54,
@@ -756,7 +1107,39 @@ class HomeScreen extends StatelessWidget {
                   color: const Color(0xFFF2F3F1),
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: Icon(icon, color: iconColor, size: 22),
+                clipBehavior: Clip.antiAlias,
+                child: imageUrl != null && imageUrl!.isNotEmpty
+                    ? Image.network(
+                        imageUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          debugPrint(
+                            'DASHBOARD RECENT ORDER IMAGE ERROR: $imageUrl',
+                          );
+
+                          return Icon(icon, color: iconColor, size: 22);
+                        },
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) {
+                            debugPrint(
+                              'DASHBOARD RECENT ORDER IMAGE LOADED: $imageUrl',
+                            );
+                            return child;
+                          }
+
+                          return Center(
+                            child: SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 1.5,
+                                color: darkGreen,
+                              ),
+                            ),
+                          );
+                        },
+                      )
+                    : Icon(icon, color: iconColor, size: 22),
               ),
 
               const SizedBox(width: 7),
@@ -781,6 +1164,8 @@ class HomeScreen extends StatelessWidget {
 
                     Text(
                       product,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontSize: 6,
                         color: Color(0xFF737D82),
@@ -829,6 +1214,8 @@ class HomeScreen extends StatelessWidget {
 
                   Text(
                     time,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontSize: 4.8,
                       color: Color(0xFF9AA1A5),

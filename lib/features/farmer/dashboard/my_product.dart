@@ -162,9 +162,6 @@ class _MyProductsScreenState extends State<MyProductsScreen> {
       ),
       child: Row(
         children: [
-          
-
-
           Expanded(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -883,56 +880,184 @@ class _MyProductsScreenState extends State<MyProductsScreen> {
   // ============================================================
   // THREE DOT MENU
   // ============================================================
-
   void _showProductMenu(Product product) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      useSafeArea: true,
       builder: (context) {
-        return Container(
-          padding: const EdgeInsets.fromLTRB(20, 10, 20, 25),
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFD8DDDF),
-                  borderRadius: BorderRadius.circular(10),
-                ),
+        return DraggableScrollableSheet(
+          initialChildSize: 0.70,
+          minChildSize: 0.45,
+          maxChildSize: 0.92,
+          expand: false,
+          builder: (context, scrollController) {
+            return Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
               ),
-
-              const SizedBox(height: 18),
-
-              Row(
+              child: Column(
                 children: [
-                  _buildMenuProductImage(product),
+                  // ==================================================
+                  // DRAG HANDLE
+                  // ==================================================
+                  Padding(
+                    padding: const EdgeInsets.only(top: 10),
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFD8DDDF),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
 
-                  const SizedBox(width: 12),
-
+                  // ==================================================
+                  // SCROLLABLE CONTENT
+                  // ==================================================
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: ListView(
+                      controller: scrollController,
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 25),
                       children: [
-                        Text(
-                          product.name,
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w800,
-                          ),
+                        // =================================================
+                        // PRODUCT HEADER
+                        // =================================================
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            _buildMenuProductImage(product),
+
+                            const SizedBox(width: 12),
+
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    product.name,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w800,
+                                      color: Color(0xFF203039),
+                                    ),
+                                  ),
+
+                                  const SizedBox(height: 4),
+
+                                  Text(
+                                    '₹${product.price}/${product.unit}',
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      color: Color(0xFF006B54),
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 3),
-                        Text(
-                          '₹${product.price}/${product.unit}',
-                          style: const TextStyle(
-                            fontSize: 11,
-                            color: Color(0xFF006B54),
-                            fontWeight: FontWeight.w700,
+
+                        const SizedBox(height: 18),
+
+                        // =================================================
+                        // EDIT PRODUCT
+                        // =================================================
+                        _menuItem(
+                          icon: Icons.edit_outlined,
+                          title: 'Edit Product',
+                          subtitle: 'Update product details',
+                          onTap: () {
+                            Navigator.pop(context);
+                            _editProduct(product);
+                          },
+                        ),
+
+                        // =================================================
+                        // VIEW PRODUCT
+                        // =================================================
+                        _menuItem(
+                          icon: Icons.visibility_outlined,
+                          title: 'View Product',
+                          subtitle: 'See product information',
+                          onTap: () {
+                            Navigator.pop(context);
+                            _viewProduct(product);
+                          },
+                        ),
+
+                        // =================================================
+                        // MANAGE STOCK
+                        // =================================================
+                        _menuItem(
+                          icon: Icons.inventory_2_outlined,
+                          title: 'Manage Stock',
+                          subtitle: 'Update available quantity',
+                          onTap: () {
+                            Navigator.pop(context);
+                            _manageStock(product);
+                          },
+                        ),
+
+                        // =================================================
+                        // DUPLICATE
+                        // =================================================
+                        _menuItem(
+                          icon: Icons.copy_outlined,
+                          title: 'Duplicate Product',
+                          subtitle: 'Create a copy of this product',
+                          onTap: () {
+                            Navigator.pop(context);
+                            _duplicateProduct(product);
+                          },
+                        ),
+
+                        // =================================================
+                        // DELETE
+                        // =================================================
+                        _menuItem(
+                          icon: Icons.delete_outline_rounded,
+                          title: 'Delete Product',
+                          subtitle: 'Remove from your store',
+                          color: Colors.red,
+                          onTap: () {
+                            Navigator.pop(context);
+                            _confirmDelete(product);
+                          },
+                        ),
+
+                        const SizedBox(height: 10),
+
+                        // =================================================
+                        // CANCEL
+                        // =================================================
+                        SizedBox(
+                          width: double.infinity,
+                          height: 45,
+                          child: OutlinedButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            style: OutlinedButton.styleFrom(
+                              side: const BorderSide(color: Color(0xFFDDE3E7)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            child: const Text(
+                              'Cancel',
+                              style: TextStyle(
+                                color: Color(0xFF5E6A70),
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
                           ),
                         ),
                       ],
@@ -940,103 +1065,98 @@ class _MyProductsScreenState extends State<MyProductsScreen> {
                   ),
                 ],
               ),
-
-              const SizedBox(height: 15),
-
-              _menuItem(
-                icon: Icons.edit_outlined,
-                title: 'Edit Product',
-                subtitle: 'Update product details',
-                onTap: () {
-                  Navigator.pop(context);
-                  _editProduct(product);
-                },
-              ),
-
-              _menuItem(
-                icon: Icons.visibility_outlined,
-                title: 'View Product',
-                subtitle: 'See product information',
-                onTap: () {
-                  Navigator.pop(context);
-                  _viewProduct(product);
-                },
-              ),
-
-              _menuItem(
-                icon: Icons.inventory_2_outlined,
-                title: 'Manage Stock',
-                subtitle: 'Update available quantity',
-                onTap: () {
-                  Navigator.pop(context);
-                  _manageStock(product);
-                },
-              ),
-
-              _menuItem(
-                icon: Icons.copy_outlined,
-                title: 'Duplicate Product',
-                subtitle: 'Create a copy of this product',
-                onTap: () {
-                  Navigator.pop(context);
-                  _duplicateProduct(product);
-                },
-              ),
-
-              _menuItem(
-                icon: Icons.delete_outline_rounded,
-                title: 'Delete Product',
-                subtitle: 'Remove from your store',
-                color: Colors.red,
-                onTap: () {
-                  Navigator.pop(context);
-                  _confirmDelete(product);
-                },
-              ),
-
-              const SizedBox(height: 8),
-
-              SizedBox(
-                width: double.infinity,
-                height: 45,
-                child: OutlinedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Color(0xFFDDE3E7)),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  child: const Text(
-                    'Cancel',
-                    style: TextStyle(
-                      color: Color(0xFF5E6A70),
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
+            );
+          },
         );
       },
     );
   }
 
   Widget _buildMenuProductImage(Product product) {
+    String? imageUrl = product.imageUrl?.trim();
+
+    // ------------------------------------------------------------
+    // NO IMAGE
+    // ------------------------------------------------------------
+
+    if (imageUrl == null || imageUrl.isEmpty) {
+      return _menuImagePlaceholder();
+    }
+
+    // ------------------------------------------------------------
+    // CONVERT RELATIVE URL TO FULL URL
+    // ------------------------------------------------------------
+
+    if (imageUrl.startsWith('/')) {
+      imageUrl = '${ApiConfig.baseUrl}$imageUrl';
+    }
+
+    debugPrint('MENU PRODUCT IMAGE: $imageUrl');
+
     return Container(
-      width: 48,
-      height: 48,
+      width: 58,
+      height: 58,
       decoration: BoxDecoration(
         color: const Color(0xFFF0F3F2),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFDDE5E2)),
       ),
       clipBehavior: Clip.antiAlias,
-      child: product.imageUrl != null && product.imageUrl!.isNotEmpty
-          ? Image.network(product.imageUrl!, fit: BoxFit.cover)
-          : const Icon(Icons.image_outlined, color: Color(0xFF8B969D)),
+      child: Image.network(
+        imageUrl,
+        fit: BoxFit.cover,
+
+        // =========================================================
+        // LOADING
+        // =========================================================
+        loadingBuilder:
+            (
+              BuildContext context,
+              Widget child,
+              ImageChunkEvent? loadingProgress,
+            ) {
+              if (loadingProgress == null) {
+                return child;
+              }
+
+              return const Center(
+                child: SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Color(0xFF006B54),
+                  ),
+                ),
+              );
+            },
+
+        // =========================================================
+        // ERROR
+        // =========================================================
+        errorBuilder:
+            (BuildContext context, Object error, StackTrace? stackTrace) {
+              debugPrint('MENU IMAGE LOAD FAILED: $imageUrl');
+
+              debugPrint('MENU IMAGE ERROR: $error');
+
+              return _menuImagePlaceholder();
+            },
+      ),
+    );
+  }
+
+  Widget _menuImagePlaceholder() {
+    return Container(
+      width: 58,
+      height: 58,
+      decoration: BoxDecoration(
+        color: const Color(0xFFF0F3F2),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: const Center(
+        child: Icon(Icons.image_outlined, size: 27, color: Color(0xFF8B969D)),
+      ),
     );
   }
 
