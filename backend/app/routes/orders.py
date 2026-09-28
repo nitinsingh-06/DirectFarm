@@ -418,12 +418,25 @@ def get_farmer_orders(
     # --------------------------------------------------
     try:
         decoded_token = verify_firebase_token(id_token)
-    except Exception:
+
+        print("========================================")
+        print("FIREBASE TOKEN VERIFIED")
+        print("UID:", decoded_token.get("uid"))
+        print("EMAIL:", decoded_token.get("email"))
+        print("========================================")
+
+    except Exception as e:
+        print("========================================")
+        print("FIREBASE TOKEN VERIFICATION FAILED")
+        print("ERROR TYPE:", type(e).__name__)
+        print("ERROR:", repr(e))
+        print("========================================")
+
         raise HTTPException(
             status_code=401,
             detail="Invalid Firebase token",
         )
-
+        
     firebase_uid = decoded_token.get("uid")
 
     if not firebase_uid:

@@ -1049,8 +1049,6 @@ static Future<void> deleteProduct({
     );
   }
 }
-
-
 static Future<List<dynamic>> getFarmerOrders() async {
   final user = FirebaseAuth.instance.currentUser;
 
@@ -1060,17 +1058,25 @@ static Future<List<dynamic>> getFarmerOrders() async {
 
   final idToken = await user.getIdToken(true);
 
+  final uri = Uri.parse(
+    '${ApiConfig.baseUrl}/orders/farmer/my-orders',
+  ).replace(
+    queryParameters: {
+      'id_token': idToken,
+    },
+  );
+
   final response = await http.get(
-    Uri.parse(
-      '${ApiConfig.baseUrl}/orders/farmer/my-orders?id_token=$idToken',
-    ),
+    uri,
     headers: {
       'Content-Type': 'application/json',
     },
   );
 
+  print('========================================');
   print('FARMER ORDERS STATUS: ${response.statusCode}');
   print('FARMER ORDERS RESPONSE: ${response.body}');
+  print('========================================');
 
   if (response.statusCode == 200) {
     final data = jsonDecode(response.body);
@@ -1084,5 +1090,267 @@ static Future<List<dynamic>> getFarmerOrders() async {
     'Failed to fetch farmer orders: ${response.body}',
   );
 }
+
+
+// ============================================================
+// GET SINGLE PRODUCT
+// ============================================================
+
+static Future<Map<String, dynamic>> getProduct({
+  required int productId,
+  required String idToken,
+}) async {
+  final uri = Uri.parse(
+    '${ApiConfig.baseUrl}/products/$productId',
+  ).replace(
+    queryParameters: {
+      'id_token': idToken,
+    },
+  );
+
+  final response = await http.get(
+    uri,
+    headers: {
+      'Accept': 'application/json',
+    },
+  );
+
+  debugPrint('GET PRODUCT STATUS: ${response.statusCode}');
+  debugPrint('GET PRODUCT RESPONSE: ${response.body}');
+
+  if (response.statusCode == 200) {
+    return jsonDecode(response.body) as Map<String, dynamic>;
+  }
+
+  try {
+    final body = jsonDecode(response.body);
+
+    throw Exception(
+      body['detail'] ?? 'Failed to load product',
+    );
+  } on FormatException {
+    throw Exception(
+      'Failed to load product: ${response.statusCode}',
+    );
+  }
+}
+
+
+
+// ============================================================
+// UPDATE PRODUCT
+// ============================================================
+
+static Future<Map<String, dynamic>> updateProduct({
+  required int productId,
+  required String idToken,
+  required String name,
+  String? description,
+  required int categoryId,
+  required double price,
+  required String unit,
+  required double quantityAvailable,
+  String? imageUrl,
+}) async {
+  final uri = Uri.parse(
+    '${ApiConfig.baseUrl}/products/$productId',
+  ).replace(
+    queryParameters: {
+      'id_token': idToken,
+    },
+  );
+
+  final response = await http.put(
+    uri,
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
+    body: jsonEncode({
+      'name': name,
+      'description': description,
+      'category_id': categoryId,
+      'price': price,
+      'unit': unit,
+      'quantity_available': quantityAvailable,
+      'image_url': imageUrl,
+    }),
+  );
+
+  debugPrint('UPDATE PRODUCT STATUS: ${response.statusCode}');
+  debugPrint('UPDATE PRODUCT RESPONSE: ${response.body}');
+
+  if (response.statusCode >= 200 && response.statusCode < 300) {
+    return jsonDecode(response.body) as Map<String, dynamic>;
+  }
+
+  try {
+    final body = jsonDecode(response.body);
+
+    throw Exception(
+      body['detail'] ?? 'Failed to update product',
+    );
+  } on FormatException {
+    throw Exception(
+      'Failed to update product: ${response.statusCode}',
+    );
+  }
+}
+// ============================================================
+// UPDATE PRODUCT STOCK
+// ============================================================
+
+static Future<Map<String, dynamic>> updateProductStock({
+  required int productId,
+  required String idToken,
+  required double quantityAvailable,
+}) async {
+  final uri = Uri.parse(
+    '${ApiConfig.baseUrl}/products/$productId/stock',
+  ).replace(
+    queryParameters: {
+      'id_token': idToken,
+    },
+  );
+
+  final response = await http.patch(
+    uri,
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
+    body: jsonEncode({
+      'quantity_available': quantityAvailable,
+    }),
+  );
+
+  debugPrint(
+    'UPDATE STOCK STATUS: ${response.statusCode}',
+  );
+
+  debugPrint(
+    'UPDATE STOCK RESPONSE: ${response.body}',
+  );
+
+  if (response.statusCode >= 200 && response.statusCode < 300) {
+    return jsonDecode(response.body) as Map<String, dynamic>;
+  }
+
+  try {
+    final body = jsonDecode(response.body);
+
+    throw Exception(
+      body['detail'] ?? 'Failed to update stock',
+    );
+  } on FormatException {
+    throw Exception(
+      'Failed to update stock: ${response.statusCode}',
+    );
+  }
+}
+
+// ============================================================
+// UPDATE PRODUCT AVAILABILITY
+// ============================================================
+
+static Future<Map<String, dynamic>> updateProductAvailability({
+  required int productId,
+  required String idToken,
+  required bool isAvailable,
+}) async {
+  final uri = Uri.parse(
+    '${ApiConfig.baseUrl}/products/$productId/availability',
+  ).replace(
+    queryParameters: {
+      'id_token': idToken,
+    },
+  );
+
+  final response = await http.patch(
+    uri,
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
+    body: jsonEncode({
+      'is_available': isAvailable,
+    }),
+  );
+
+  debugPrint(
+    'UPDATE AVAILABILITY STATUS: ${response.statusCode}',
+  );
+
+  debugPrint(
+    'UPDATE AVAILABILITY RESPONSE: ${response.body}',
+  );
+
+  if (response.statusCode >= 200 && response.statusCode < 300) {
+    return jsonDecode(response.body) as Map<String, dynamic>;
+  }
+
+  try {
+    final body = jsonDecode(response.body);
+
+    throw Exception(
+      body['detail'] ?? 'Failed to update product availability',
+    );
+  } on FormatException {
+    throw Exception(
+      'Failed to update product availability: ${response.statusCode}',
+    );
+  }
+}
+
+// ============================================================
+// DUPLICATE PRODUCT
+// ============================================================
+
+static Future<Map<String, dynamic>> duplicateProduct({
+  required int productId,
+  required String idToken,
+}) async {
+  final uri = Uri.parse(
+    '${ApiConfig.baseUrl}/products/$productId/duplicate',
+  ).replace(
+    queryParameters: {
+      'id_token': idToken,
+    },
+  );
+
+  final response = await http.post(
+    uri,
+    headers: {
+      'Accept': 'application/json',
+    },
+  );
+
+  debugPrint(
+    'DUPLICATE PRODUCT STATUS: ${response.statusCode}',
+  );
+
+  debugPrint(
+    'DUPLICATE PRODUCT RESPONSE: ${response.body}',
+  );
+
+  if (response.statusCode >= 200 && response.statusCode < 300) {
+    return jsonDecode(response.body) as Map<String, dynamic>;
+  }
+
+  try {
+    final body = jsonDecode(response.body);
+
+    throw Exception(
+      body['detail'] ?? 'Failed to duplicate product',
+    );
+  } on FormatException {
+    throw Exception(
+      'Failed to duplicate product: ${response.statusCode}',
+    );
+  }
+}
+
+
+
 
 }

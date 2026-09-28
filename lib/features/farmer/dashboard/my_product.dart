@@ -409,7 +409,7 @@ class _MyProductsScreenState extends State<MyProductsScreen> {
   // ============================================================
 
   Widget _buildProductCard(Product product) {
-    final productKey = product.name;
+    final productKey = product.productId?.toString() ?? product.name;
 
     final isAvailable = availabilityMap[productKey] ?? product.stock > 0;
 
@@ -601,10 +601,8 @@ class _MyProductsScreenState extends State<MyProductsScreen> {
                             child: Switch(
                               value: isAvailable,
                               onChanged: (value) {
-                                setState(() {
-                                  availabilityMap[productKey] = value;
-                                });
-                              },
+                                 _changeAvailability(product, value);
+                               },
                               activeColor: Colors.white,
                               activeTrackColor: const Color(0xFF006B54),
                               inactiveThumbColor: Colors.white,
@@ -1202,49 +1200,123 @@ class _MyProductsScreenState extends State<MyProductsScreen> {
   }
 
   // ============================================================
-  // EDIT
+  // EDIT PRODUCT
   // ============================================================
 
-  void _editProduct(Product product) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Edit ${product.name}'),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+  Future<void> _editProduct(Product product) async {
+    if (product.productId == null) {
+      _showError('Product ID is missing');
+      return;
+    }
 
-    // TODO:
-    // Navigate to your EditProductScreen here.
+    try {
+      final firebaseUser = FirebaseAuth.instance.currentUser;
+
+      if (firebaseUser == null) {
+        throw Exception('User is not logged in');
+      }
+
+      final idToken = await firebaseUser.getIdToken();
+
+      if (idToken == null || idToken.isEmpty) {
+        throw Exception('Invalid Firebase token');
+      }
+
+      final data = await ApiService.getProduct(
+        productId: product.productId!,
+        idToken: idToken,
+      );
+
+      if (!mounted) return;
+
+      final result = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => _EditProductDialog(
+          product: product,
+          data: data,
+          idToken: idToken,
+        ),
+      );
+
+      if (result == true && mounted) {
+        await _loadProducts();
+
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Product updated successfully'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('EDIT PRODUCT ERROR: $e');
+      _showError('Failed to open product: $e');
+    }
   }
 
   // ============================================================
   // VIEW PRODUCT
   // ============================================================
 
-  void _viewProduct(Product product) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('View ${product.name}'),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+  Future<void> _viewProduct(Product product) async {
+    if (product.productId == null) {
+      _showError('Product ID is missing');
+      return;
+    }
 
-    // TODO:
-    // Navigate to FarmerProductDetailsScreen.
+    try {
+      final firebaseUser = FirebaseAuth.instance.currentUser;
+
+      if (firebaseUser == null) {
+        throw Exception('User is not logged in');
+      }
+
+      final idToken = await firebaseUser.getIdToken();
+
+      if (idToken == null || idToken.isEmpty) {
+        throw Exception('Invalid Firebase token');
+      }
+
+      final data = await ApiService.getProduct(
+        productId: product.productId!,
+        idToken: idToken,
+      );
+
+      if (!mounted) return;
+
+      await showDialog<void>(
+        context: context,
+        builder: (_) => _ProductDetailsDialog(
+          product: product,
+          data: data,
+        ),
+      );
+    } catch (e) {
+      debugPrint('VIEW PRODUCT ERROR: $e');
+      _showError('Failed to load product: $e');
+    }
   }
 
   // ============================================================
   // MANAGE STOCK
   // ============================================================
 
-  void _manageStock(Product product) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        final controller = TextEditingController(
-          text: product.stock.toString(),
-        );
+  Future<void> _manageStock(Product product) async {
+    if (product.productId == null) {
+      _showError('Product ID is missing');
+      return;
+    }
 
+    final controller = TextEditingController(
+      text: _formatStock(product.stock),
+    );
+
+    final quantity = await showDialog<double>(
+      context: context,
+      builder: (dialogContext) {
         return AlertDialog(
           title: const Text(
             'Manage Stock',
@@ -1252,7 +1324,10 @@ class _MyProductsScreenState extends State<MyProductsScreen> {
           ),
           content: TextField(
             controller: controller,
-            keyboardType: TextInputType.number,
+            autofocus: true,
+            keyboardType: const TextInputType.numberWithOptions(
+              decimal: true,
+            ),
             decoration: InputDecoration(
               labelText: 'Available Quantity',
               suffixText: product.unit,
@@ -1263,110 +1338,180 @@ class _MyProductsScreenState extends State<MyProductsScreen> {
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
+              onPressed: () => Navigator.pop(dialogContext),
               child: const Text('Cancel'),
             ),
             ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Stock update will be connected to backend.'),
-                  ),
-                );
-              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF006B54),
+                foregroundColor: Colors.white,
               ),
-              child: const Text(
-                'Update',
-                style: TextStyle(color: Colors.white),
-              ),
+              onPressed: () {
+                final value = double.tryParse(
+                  controller.text.trim(),
+                );
+
+                if (value == null || value < 0) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Enter a valid quantity'),
+                    ),
+                  );
+                  return;
+                }
+
+                Navigator.pop(dialogContext, value);
+              },
+              child: const Text('Update'),
             ),
           ],
         );
       },
     );
+
+    controller.dispose();
+
+    if (quantity == null || !mounted) {
+      return;
+    }
+
+    try {
+      final firebaseUser = FirebaseAuth.instance.currentUser;
+
+      if (firebaseUser == null) {
+        throw Exception('User is not logged in');
+      }
+
+      final idToken = await firebaseUser.getIdToken();
+
+      if (idToken == null || idToken.isEmpty) {
+        throw Exception('Invalid Firebase token');
+      }
+
+      await ApiService.updateProductStock(
+        productId: product.productId!,
+        idToken: idToken,
+        quantityAvailable: quantity,
+      );
+
+      if (!mounted) return;
+
+      await _loadProducts();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Stock updated successfully'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (e) {
+      debugPrint('UPDATE STOCK ERROR: $e');
+      _showError('Failed to update stock: $e');
+    }
   }
 
   // ============================================================
-  // DUPLICATE
+  // DUPLICATE PRODUCT
   // ============================================================
 
-  void _duplicateProduct(Product product) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Duplicate ${product.name}'),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-
-    // TODO:
-    // Add duplicate product API call.
-  }
-
-  // ============================================================
-  // DELETE CONFIRMATION
-  // ============================================================
-
-  void _confirmDelete(Product product) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Delete Product?'),
-          content: Text('Are you sure you want to delete "${product.name}"?'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text('Cancel'),
-            ),
-
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                _deleteProduct(product);
-              },
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child: const Text(
-                'Delete',
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  // ============================================================
-  // DELETE
-  // ============================================================
-  Future<void> _deleteProduct(Product product) async {
+  Future<void> _duplicateProduct(Product product) async {
     if (product.productId == null) {
-      debugPrint('DELETE FAILED: productId is null');
+      _showError('Product ID is missing');
       return;
     }
 
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text(
+            'Duplicate Product?',
+            style: TextStyle(fontWeight: FontWeight.w800),
+          ),
+          content: Text(
+            'Create a new copy of "${product.name}"?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF006B54),
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('Duplicate'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true || !mounted) {
+      return;
+    }
+
+    try {
+      final firebaseUser = FirebaseAuth.instance.currentUser;
+
+      if (firebaseUser == null) {
+        throw Exception('User is not logged in');
+      }
+
+      final idToken = await firebaseUser.getIdToken();
+
+      if (idToken == null || idToken.isEmpty) {
+        throw Exception('Invalid Firebase token');
+      }
+
+      await ApiService.duplicateProduct(
+        productId: product.productId!,
+        idToken: idToken,
+      );
+
+      if (!mounted) return;
+
+      await _loadProducts();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Product duplicated successfully'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (e) {
+      debugPrint('DUPLICATE PRODUCT ERROR: $e');
+      _showError('Failed to duplicate product: $e');
+    }
+  }
+
+  // ============================================================
+  // DELETE PRODUCT
+  // ============================================================
+
+  Future<void> _deleteProduct(Product product) async {
+    if (product.productId == null) {
+      _showError('Product ID is missing');
+      return;
+    }
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
         return AlertDialog(
           title: const Text(
             'Delete Product?',
-            style: TextStyle(fontWeight: FontWeight.w700),
+            style: TextStyle(fontWeight: FontWeight.w800),
           ),
-          content: Text('Are you sure you want to delete "${product.name}"?'),
+          content: Text(
+            'Are you sure you want to permanently delete '
+            '"${product.name}"?',
+          ),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.pop(context, false);
-              },
+              onPressed: () => Navigator.pop(dialogContext, false),
               child: const Text('Cancel'),
             ),
             ElevatedButton(
@@ -1374,9 +1519,7 @@ class _MyProductsScreenState extends State<MyProductsScreen> {
                 backgroundColor: Colors.red,
                 foregroundColor: Colors.white,
               ),
-              onPressed: () {
-                Navigator.pop(context, true);
-              },
+              onPressed: () => Navigator.pop(dialogContext, true),
               child: const Text('Delete'),
             ),
           ],
@@ -1384,7 +1527,7 @@ class _MyProductsScreenState extends State<MyProductsScreen> {
       },
     );
 
-    if (confirmed != true) {
+    if (confirmed != true || !mounted) {
       return;
     }
 
@@ -1408,24 +1551,98 @@ class _MyProductsScreenState extends State<MyProductsScreen> {
 
       if (!mounted) return;
 
+      setState(() {
+        backendProducts.removeWhere(
+          (item) => item.productId == product.productId,
+        );
+        availabilityMap.remove(product.productId.toString());
+      });
+
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Product deleted successfully')),
+        const SnackBar(
+          content: Text('Product deleted successfully'),
+          behavior: SnackBarBehavior.floating,
+        ),
       );
 
       await _loadProducts();
     } catch (e) {
       debugPrint('DELETE PRODUCT ERROR: $e');
-
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to delete product: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      _showError('Failed to delete product: $e');
     }
   }
+
+  void _confirmDelete(Product product) {
+    _deleteProduct(product);
+  }
+
+  // ============================================================
+  // AVAILABILITY
+  // ============================================================
+
+  Future<void> _changeAvailability(
+    Product product,
+    bool value,
+  ) async {
+    if (product.productId == null) {
+      return;
+    }
+
+    final key = product.productId.toString();
+    final previousValue =
+        availabilityMap[key] ?? product.stock > 0;
+
+    setState(() {
+      availabilityMap[key] = value;
+    });
+
+    try {
+      final firebaseUser = FirebaseAuth.instance.currentUser;
+
+      if (firebaseUser == null) {
+        throw Exception('User is not logged in');
+      }
+
+      final idToken = await firebaseUser.getIdToken();
+
+      if (idToken == null || idToken.isEmpty) {
+        throw Exception('Invalid Firebase token');
+      }
+
+      await ApiService.updateProductAvailability(
+        productId: product.productId!,
+        idToken: idToken,
+        isAvailable: value,
+      );
+    } catch (e) {
+      debugPrint('UPDATE AVAILABILITY ERROR: $e');
+
+      if (mounted) {
+        setState(() {
+          availabilityMap[key] = previousValue;
+        });
+      }
+
+      _showError('Failed to update availability: $e');
+    }
+  }
+
+  // ============================================================
+  // ERROR MESSAGE
+  // ============================================================
+
+  void _showError(String message) {
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red.shade700,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
   // ============================================================
   // HELPERS
   // ============================================================
@@ -1493,6 +1710,546 @@ class _MyProductsScreenState extends State<MyProductsScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ============================================================================
+// EDIT PRODUCT DIALOG
+// ============================================================================
+
+class _EditProductDialog extends StatefulWidget {
+  final Product product;
+  final Map<String, dynamic> data;
+  final String idToken;
+
+  const _EditProductDialog({
+    required this.product,
+    required this.data,
+    required this.idToken,
+  });
+
+  @override
+  State<_EditProductDialog> createState() => _EditProductDialogState();
+}
+
+class _EditProductDialogState extends State<_EditProductDialog> {
+  late final TextEditingController nameController;
+  late final TextEditingController descriptionController;
+  late final TextEditingController priceController;
+  late final TextEditingController unitController;
+  late final TextEditingController quantityController;
+
+  late int selectedCategoryId;
+
+  bool isSaving = false;
+
+  final List<Map<String, dynamic>> categoryOptions = const [
+    {'id': 1, 'name': 'Vegetables'},
+    {'id': 2, 'name': 'Fruits'},
+    {'id': 3, 'name': 'Grains'},
+    {'id': 5, 'name': 'Dairy'},
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+
+    nameController = TextEditingController(
+      text: widget.data['name']?.toString() ?? widget.product.name,
+    );
+
+    descriptionController = TextEditingController(
+      text: widget.data['description']?.toString() ?? '',
+    );
+
+    priceController = TextEditingController(
+      text: widget.data['price']?.toString() ?? widget.product.price,
+    );
+
+    unitController = TextEditingController(
+      text: widget.data['unit']?.toString() ?? widget.product.unit,
+    );
+
+    quantityController = TextEditingController(
+      text: widget.data['quantity_available']?.toString() ??
+          widget.product.stock.toString(),
+    );
+
+    selectedCategoryId =
+        int.tryParse(
+          widget.data['category_id']?.toString() ?? '',
+        ) ??
+        _categoryIdFromName(widget.product.category);
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    descriptionController.dispose();
+    priceController.dispose();
+    unitController.dispose();
+    quantityController.dispose();
+    super.dispose();
+  }
+
+  int _categoryIdFromName(String category) {
+    switch (category.toLowerCase()) {
+      case 'vegetables':
+        return 1;
+      case 'fruits':
+        return 2;
+      case 'grains':
+        return 3;
+      case 'dairy':
+        return 5;
+      default:
+        return 1;
+    }
+  }
+
+  Future<void> _save() async {
+    final name = nameController.text.trim();
+    final description = descriptionController.text.trim();
+    final price = double.tryParse(priceController.text.trim());
+    final quantity =
+        double.tryParse(quantityController.text.trim());
+    final unit = unitController.text.trim();
+
+    if (name.isEmpty) {
+      _showError('Product name is required');
+      return;
+    }
+
+    if (price == null || price < 0) {
+      _showError('Enter a valid price');
+      return;
+    }
+
+    if (quantity == null || quantity < 0) {
+      _showError('Enter a valid stock quantity');
+      return;
+    }
+
+    if (unit.isEmpty) {
+      _showError('Unit is required');
+      return;
+    }
+
+    setState(() {
+      isSaving = true;
+    });
+
+    try {
+      await ApiService.updateProduct(
+        productId: widget.product.productId!,
+        idToken: widget.idToken,
+        name: name,
+        description: description.isEmpty ? null : description,
+        categoryId: selectedCategoryId,
+        price: price,
+        unit: unit,
+        quantityAvailable: quantity,
+        imageUrl: widget.data['image_url']?.toString(),
+      );
+
+      if (!mounted) return;
+
+      Navigator.pop(context, true);
+    } catch (e) {
+      debugPrint('SAVE EDIT PRODUCT ERROR: $e');
+
+      if (!mounted) return;
+
+      setState(() {
+        isSaving = false;
+      });
+
+      _showError('Failed to update product: $e');
+    }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red.shade700,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  InputDecoration _decoration(
+    String label, {
+    String? hint,
+  }) {
+    return InputDecoration(
+      labelText: label,
+      hintText: hint,
+      isDense: true,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(
+          color: Color(0xFF006B54),
+          width: 1.5,
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Row(
+        children: [
+          Icon(
+            Icons.edit_outlined,
+            color: Color(0xFF006B54),
+          ),
+          SizedBox(width: 8),
+          Text(
+            'Edit Product',
+            style: TextStyle(
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+      content: SizedBox(
+        width: 430,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                enabled: !isSaving,
+                decoration: _decoration('Product Name'),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: descriptionController,
+                enabled: !isSaving,
+                minLines: 3,
+                maxLines: 5,
+                decoration: _decoration(
+                  'Description',
+                  hint: 'Describe your product',
+                ),
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<int>(
+                value: categoryOptions.any(
+                  (item) => item['id'] == selectedCategoryId,
+                )
+                    ? selectedCategoryId
+                    : null,
+                decoration: _decoration('Category'),
+                items: categoryOptions.map((category) {
+                  return DropdownMenuItem<int>(
+                    value: category['id'] as int,
+                    child: Text(category['name'] as String),
+                  );
+                }).toList(),
+                onChanged: isSaving
+                    ? null
+                    : (value) {
+                        if (value != null) {
+                          setState(() {
+                            selectedCategoryId = value;
+                          });
+                        }
+                      },
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: priceController,
+                      enabled: !isSaving,
+                      keyboardType:
+                          const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      decoration: _decoration('Price'),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: TextField(
+                      controller: unitController,
+                      enabled: !isSaving,
+                      decoration: _decoration('Unit'),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: quantityController,
+                enabled: !isSaving,
+                keyboardType:
+                    const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                decoration: _decoration(
+                  'Available Quantity',
+                  hint: 'Current stock',
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: isSaving
+              ? null
+              : () => Navigator.pop(context, false),
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(
+          onPressed: isSaving ? null : _save,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF006B54),
+            foregroundColor: Colors.white,
+          ),
+          child: isSaving
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+              : const Text('Save Changes'),
+        ),
+      ],
+    );
+  }
+}
+
+// ============================================================================
+// VIEW PRODUCT DIALOG
+// ============================================================================
+
+class _ProductDetailsDialog extends StatelessWidget {
+  final Product product;
+  final Map<String, dynamic> data;
+
+  const _ProductDetailsDialog({
+    required this.product,
+    required this.data,
+  });
+
+  String _value(String key, String fallback) {
+    final value = data[key]?.toString().trim();
+
+    if (value == null || value.isEmpty || value == 'null') {
+      return fallback;
+    }
+
+    return value;
+  }
+
+  String _stock() {
+    final value = double.tryParse(
+      data['quantity_available']?.toString() ?? '',
+    );
+
+    if (value == null) {
+      return product.stock.toString();
+    }
+
+    if (value == value.roundToDouble()) {
+      return value.toInt().toString();
+    }
+
+    return value.toStringAsFixed(1);
+  }
+
+  String _price() {
+    final raw = data['price']?.toString();
+
+    if (raw == null || raw.isEmpty) {
+      return product.price;
+    }
+
+    final value = double.tryParse(raw);
+
+    if (value == null) {
+      return raw;
+    }
+
+    if (value == value.roundToDouble()) {
+      return value.toInt().toString();
+    }
+
+    return value.toStringAsFixed(2);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    String? imageUrl = data['image_url']?.toString();
+
+    if (imageUrl != null &&
+        imageUrl.isNotEmpty &&
+        imageUrl.startsWith('/')) {
+      imageUrl = '${ApiConfig.baseUrl}$imageUrl';
+    }
+
+    return AlertDialog(
+      title: const Text(
+        'Product Details',
+        style: TextStyle(
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+      content: SizedBox(
+        width: 420,
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (imageUrl != null && imageUrl.isNotEmpty)
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.network(
+                    imageUrl,
+                    width: double.infinity,
+                    height: 180,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) {
+                      return _imagePlaceholder();
+                    },
+                  ),
+                )
+              else
+                _imagePlaceholder(),
+              const SizedBox(height: 15),
+              Text(
+                _value('name', product.name),
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF203039),
+                ),
+              ),
+              const SizedBox(height: 5),
+              Text(
+                '₹${_price()}/${_value('unit', product.unit)}',
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF006B54),
+                ),
+              ),
+              const SizedBox(height: 15),
+              _infoRow(
+                'Category',
+                _value('category_name', product.category),
+              ),
+              _infoRow(
+                'Available Stock',
+                '${_stock()} ${_value('unit', product.unit)}',
+              ),
+              _infoRow(
+                'Product ID',
+                _value(
+                  'product_id',
+                  product.productId?.toString() ?? '-',
+                ),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'Description',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF203039),
+                ),
+              ),
+              const SizedBox(height: 5),
+              Text(
+                _value(
+                  'description',
+                  'No description available.',
+                ),
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: Color(0xFF68757C),
+                  height: 1.4,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        ElevatedButton(
+          onPressed: () => Navigator.pop(context),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF006B54),
+            foregroundColor: Colors.white,
+          ),
+          child: const Text('Close'),
+        ),
+      ],
+    );
+  }
+
+  Widget _infoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 105,
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF7A858B),
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF203039),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _imagePlaceholder() {
+    return Container(
+      width: double.infinity,
+      height: 180,
+      decoration: BoxDecoration(
+        color: const Color(0xFFF0F3F2),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: const Center(
+        child: Icon(
+          Icons.image_outlined,
+          size: 45,
+          color: Color(0xFF8B969D),
+        ),
       ),
     );
   }

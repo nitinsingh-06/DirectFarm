@@ -2,6 +2,7 @@ import 'package:farmdirect/features/farmer/dashboard/FARMER%20ORDER/farmer_order
 import 'package:farmdirect/features/farmer/dashboard/farmer_earning_screen.dart';
 import 'package:farmdirect/features/farmer/dashboard/farmer_home_screen.dart';
 import 'package:farmdirect/features/farmer/dashboard/farmer_profile_screen.dart';
+import 'package:farmdirect/features/farmer/dashboard/farmer_ratings_screen.dart';
 import 'package:farmdirect/features/farmer/dashboard/product_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -66,7 +67,7 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
         // Rating is part of the Profile area in the current
         // 5-tab dashboard structure.
         onViewRatings: () {
-          _changeTab(4);
+          Navigator.push(context, MaterialPageRoute(builder: (context)=>RatingsScreen()));
         },
 
         // Profile

@@ -1064,175 +1064,199 @@ class _HomeScreenState extends State<HomeScreen> {
   // ============================================================
   // ORDER CARD
   // ============================================================
-
-  Widget _order({
-    required FarmerOrder order,
-    required String buyer,
-    required String product,
-    required String location,
-    required String status,
-    required Color statusColor,
-    required Color statusText,
-    required IconData icon,
-    required Color iconColor,
-    required String time,
-    required String? imageUrl,
-  }) {
-    return Material(
-      color: Colors.white,
+Widget _order({
+  required FarmerOrder order,
+  required String buyer,
+  required String product,
+  required String location,
+  required String status,
+  required Color statusColor,
+  required Color statusText,
+  required IconData icon,
+  required Color iconColor,
+  required String time,
+  required String? imageUrl,
+}) {
+  return Material(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(8),
+    child: InkWell(
+      onTap: () {
+        if (widget.onViewOrder != null) {
+          widget.onViewOrder!(order);
+        } else {
+          widget.onViewOrders?.call();
+        }
+      },
       borderRadius: BorderRadius.circular(8),
-      child: InkWell(
-        onTap: () {
-          if (widget.onViewOrder != null) {
-            widget.onViewOrder!(order);
-          } else {
-            widget.onViewOrders?.call();
-          }
-        },
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          height: 54,
-          padding: const EdgeInsets.all(5),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: const Color(0xFFE4E8EA)),
+      child: Container(
+        height: 54,
+        padding: const EdgeInsets.all(5),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: const Color(0xFFE4E8EA),
           ),
-          child: Row(
-            children: [
-              Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF2F3F1),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                clipBehavior: Clip.antiAlias,
-                child: imageUrl != null && imageUrl!.isNotEmpty
-                    ? Image.network(
-                        imageUrl!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          debugPrint(
-                            'DASHBOARD RECENT ORDER IMAGE ERROR: $imageUrl',
-                          );
-
-                          return Icon(icon, color: iconColor, size: 22);
-                        },
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) {
-                            debugPrint(
-                              'DASHBOARD RECENT ORDER IMAGE LOADED: $imageUrl',
-                            );
-                            return child;
-                          }
-
-                          return Center(
-                            child: SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 1.5,
-                                color: darkGreen,
-                              ),
-                            ),
-                          );
-                        },
-                      )
-                    : Icon(icon, color: iconColor, size: 22),
+        ),
+        child: Row(
+          children: [
+            // PRODUCT IMAGE
+            Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF2F3F1),
+                borderRadius: BorderRadius.circular(6),
               ),
-
-              const SizedBox(width: 7),
-
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      buyer,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 7,
-                        fontWeight: FontWeight.w800,
-                        color: Color(0xFF30383D),
-                      ),
-                    ),
-
-                    const SizedBox(height: 2),
-
-                    Text(
-                      product,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 6,
-                        color: Color(0xFF737D82),
-                      ),
-                    ),
-
-                    const SizedBox(height: 1),
-
-                    Text(
-                      location,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 5,
-                        color: Color(0xFF9AA1A5),
-                      ),
-                    ),
-                  ],
-                ),
+              clipBehavior: Clip.antiAlias,
+              child: _buildOrderImage(
+                imageUrl: imageUrl,
+                icon: icon,
+                iconColor: iconColor,
               ),
+            ),
 
-              Column(
+            const SizedBox(width: 7),
+
+            // ORDER INFORMATION
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 3,
-                    ),
-                    decoration: BoxDecoration(
-                      color: statusColor,
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    child: Text(
-                      status,
-                      style: TextStyle(
-                        fontSize: 5.5,
-                        color: statusText,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 3),
-
                   Text(
-                    time,
+                    buyer,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      fontSize: 4.8,
+                      fontSize: 7,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF30383D),
+                    ),
+                  ),
+
+                  const SizedBox(height: 2),
+
+                  Text(
+                    product,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 6,
+                      color: Color(0xFF737D82),
+                    ),
+                  ),
+
+                  const SizedBox(height: 1),
+
+                  Text(
+                    location,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 5,
                       color: Color(0xFF9AA1A5),
                     ),
                   ),
                 ],
               ),
+            ),
 
-              const Icon(
-                Icons.chevron_right,
-                size: 13,
-                color: Color(0xFF9BA3A7),
-              ),
-            ],
-          ),
+            // STATUS + TIME
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: statusColor,
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  child: Text(
+                    status,
+                    style: TextStyle(
+                      fontSize: 5.5,
+                      color: statusText,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 3),
+
+                Text(
+                  time,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 4.8,
+                    color: Color(0xFF9AA1A5),
+                  ),
+                ),
+              ],
+            ),
+
+            const Icon(
+              Icons.chevron_right,
+              size: 13,
+              color: Color(0xFF9BA3A7),
+            ),
+          ],
         ),
       ),
+    ),
+  );
+}
+
+
+Widget _buildOrderImage({
+  required String? imageUrl,
+  required IconData icon,
+  required Color iconColor,
+}) {
+  if (imageUrl == null || imageUrl.trim().isEmpty) {
+    return Icon(
+      icon,
+      color: iconColor,
+      size: 22,
     );
   }
+
+  return Image.network(
+    imageUrl,
+    fit: BoxFit.cover,
+    errorBuilder: (context, error, stackTrace) {
+      debugPrint(
+        'DASHBOARD RECENT ORDER IMAGE ERROR: $imageUrl',
+      );
+
+      return Icon(
+        icon,
+        color: iconColor,
+        size: 22,
+      );
+    },
+    loadingBuilder: (context, child, loadingProgress) {
+      if (loadingProgress == null) {
+        return child;
+      }
+
+      return Center(
+        child: SizedBox(
+          width: 16,
+          height: 16,
+          child: CircularProgressIndicator(
+            strokeWidth: 1.5,
+            color: darkGreen,
+          ),
+        ),
+      );
+    },
+  );
+}
 }
