@@ -14,8 +14,8 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
 
   // Replace with your real support details.
   static const String supportPhone = '18003008843';
-  static const String whatsappNumber = '919876543210';
-  static const String supportEmail = 'support@farmdirect.in';
+  static const String whatsappNumber = '916395712645';
+  static const String supportEmail = 'nitinsinghbagri005@gmail.com';
 
   final List<_HelpItem> _items = const [
     _HelpItem(
@@ -371,56 +371,85 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
       ),
     );
   }
-
-  Widget _searchBar() {
-    return Material(
-      elevation: 3,
-      shadowColor: const Color(0x22075B47),
-      borderRadius: BorderRadius.circular(19),
-      child: Container(
-        height: 36,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(19),
-          border: Border.all(color: const Color(0xFFB9D9C4)),
+Widget _searchBar() {
+  return Material(
+    elevation: 3,
+    shadowColor: const Color(0x22075B47),
+    borderRadius: BorderRadius.circular(20),
+    child: Container(
+      height: 40,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: const Color(0xFF8BC5A1),
+          width: 1,
         ),
+      ),
+      child: Center(
         child: TextField(
           controller: _searchController,
           onChanged: _searchChanged,
-          style: const TextStyle(fontSize: 9, color: Color(0xFF36443F)),
+          textInputAction: TextInputAction.search,
+          textAlignVertical: TextAlignVertical.center,
+
+          style: const TextStyle(
+            fontSize: 10,
+            color: Color(0xFF36443F),
+          ),
+
           decoration: InputDecoration(
+            isDense: true,
+
             prefixIcon: const Icon(
               Icons.search_rounded,
-              size: 17,
-              color: Color(0xFF72817B),
+              size: 20,
+              color: Color(0xFF385B54),
             ),
-            suffixIcon: _search.isEmpty
-                ? const Icon(
-                    Icons.mic_none_rounded,
-                    size: 16,
-                    color: Color(0xFF72817B),
-                  )
-                : IconButton(
-                    onPressed: () {
-                      _searchController.clear();
-                      setState(() => _search = '');
-                    },
-                    icon: const Icon(
-                      Icons.close_rounded,
-                      size: 15,
-                      color: Color(0xFF72817B),
-                    ),
-                  ),
+
+            // suffixIcon: _search.isEmpty
+            //     ? const Icon(
+            //         Icons.mic_none_rounded,
+            //         size: 19,
+            //         color: Color(0xFF385B54),
+            //       )
+            //     : IconButton(
+            //         padding: EdgeInsets.zero,
+            //         onPressed: () {
+            //           _searchController.clear();
+
+            //           setState(() {
+            //             _search = '';
+            //           });
+            //         },
+            //         icon: const Icon(
+            //           Icons.close_rounded,
+            //           size: 18,
+            //           color: Color(0xFF65756F),
+            //         ),
+            //       ),
+
             hintText: 'Search for help, FAQs...',
-            hintStyle: const TextStyle(fontSize: 9, color: Color(0xFF8A9691)),
+            hintStyle: const TextStyle(
+              fontSize: 10,
+              color: Color(0xFF7D8985),
+              height: 1.0,
+            ),
+
             border: InputBorder.none,
-            isDense: true,
-            contentPadding: const EdgeInsets.symmetric(vertical: 10),
+            enabledBorder: InputBorder.none,
+            focusedBorder: InputBorder.none,
+
+            contentPadding: const EdgeInsets.symmetric(
+              vertical: 0,
+              horizontal: 0,
+            ),
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _categoryGrid() {
     return GridView.builder(
