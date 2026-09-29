@@ -26,12 +26,19 @@ class ProductScreen extends StatefulWidget {
 class _ProductScreenState extends State<ProductScreen> {
   int selectedIndex = 1;
 
+  // Changes whenever a new product is successfully added.
+  int _productRefreshKey = 0;
+
   @override
   Widget build(BuildContext context) {
     final screens = [
       const SimplePage(title: 'Home'),
 
-      MyProductsScreen(products: const [], onAddProduct: _openAddProduct),
+      MyProductsScreen(
+        key: ValueKey(_productRefreshKey),
+        products: const [],
+        onAddProduct: _openAddProduct,
+      ),
 
       const SimplePage(title: 'Orders'),
       const SimplePage(title: 'Earnings'),
@@ -39,21 +46,27 @@ class _ProductScreenState extends State<ProductScreen> {
     ];
 
     return Scaffold(
-
       body: SafeArea(bottom: false, child: screens[selectedIndex]),
     );
   }
 
   Future<void> _openAddProduct() async {
-    await Navigator.push(
+    final result = await Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const AddProductScreen()),
     );
+
+    // AddProductScreen returns true after successfully
+    // creating the product.
+    if (result == true && mounted) {
+      setState(() {
+        _productRefreshKey++;
+      });
+    }
   }
 }
 
 // TEMPORARY SIMPLE PAGE
-// We can replace these with your real Farmer screens later.
 class SimplePage extends StatelessWidget {
   final String title;
 

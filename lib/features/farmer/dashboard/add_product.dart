@@ -357,15 +357,33 @@ class _AddProductScreenState extends State<AddProductScreen> {
               itemCount: selectedImages.length,
               separatorBuilder: (_, __) => const SizedBox(width: 7),
               itemBuilder: (context, index) {
+                final imageFile = selectedImages[index];
+
                 return Stack(
+                  key: ValueKey(imageFile.path),
                   children: [
                     ClipRRect(
+                      key: ValueKey('image_${imageFile.path}'),
                       borderRadius: BorderRadius.circular(8),
                       child: Image.file(
-                        selectedImages[index],
+                        imageFile,
+                        key: ValueKey(imageFile.path),
                         height: 72,
                         width: 72,
                         fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            height: 72,
+                            width: 72,
+                            color: const Color(0xFFF2F4F3),
+                            alignment: Alignment.center,
+                            child: const Icon(
+                              Icons.broken_image_outlined,
+                              size: 22,
+                              color: AppColors.textGrey,
+                            ),
+                          );
+                        },
                       ),
                     ),
 
@@ -373,11 +391,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                       right: 2,
                       top: 2,
                       child: GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            selectedImages.removeAt(index);
-                          });
-                        },
+                        onTap: () => _removeImage(imageFile.path),
                         child: Container(
                           decoration: const BoxDecoration(
                             color: Colors.black54,
@@ -406,13 +420,52 @@ class _AddProductScreenState extends State<AddProductScreen> {
   // ----------------------------------------------------------
 
   Future<void> _pickImages() async {
-    final images = await picker.pickMultiImage();
+    try {
+      final images = await picker.pickMultiImage();
 
-    if (images.isEmpty) return;
+      if (images.isEmpty || !mounted) return;
+
+      final newFiles = <File>[];
+
+      for (final image in images) {
+        final file = File(image.path);
+
+        // Prevent the same image from being selected twice.
+        final alreadySelected = selectedImages.any(
+          (selected) => selected.path == file.path,
+        );
+
+        if (!alreadySelected) {
+          newFiles.add(file);
+        }
+      }
+
+      if (newFiles.isEmpty) {
+        _showMessage('These images are already selected');
+        return;
+      }
+
+      setState(() {
+        selectedImages.addAll(newFiles);
+      });
+    } catch (e) {
+      debugPrint('IMAGE PICK ERROR: $e');
+
+      if (!mounted) return;
+      _showMessage('Unable to select images');
+    }
+  }
+
+  void _removeImage(String imagePath) {
+    if (!mounted) return;
 
     setState(() {
-      selectedImages.addAll(images.map((image) => File(image.path)));
+      selectedImages.removeWhere(
+        (image) => image.path == imagePath,
+      );
     });
+
+    debugPrint('IMAGE REMOVED: $imagePath');
   }
 
   // ----------------------------------------------------------
@@ -602,11 +655,18 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
       _showMessage('Product saved successfully');
 
-      await Future.delayed(const Duration(milliseconds: 500));
+      // Clear local image state before leaving the screen.
+      if (mounted) {
+        setState(() {
+          selectedImages.clear();
+        });
+      }
+
+      await Future.delayed(const Duration(milliseconds: 400));
 
       if (!mounted) return;
 
-      Navigator.pop(context);
+      Navigator.pop(context,true);
     } catch (e) {
       debugPrint('CREATE PRODUCT ERROR: $e');
 
