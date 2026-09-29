@@ -3,11 +3,13 @@ import 'dart:io';
 import 'package:farmdirect/Authentification/screens/comming_soon.dart';
 import 'package:farmdirect/Authentification/screens/login_screen.dart';
 import 'package:farmdirect/core/provider/farmer_profile_provider.dart';
+import 'package:farmdirect/core/provider/langauge_provider.dart';
 import 'package:farmdirect/core/provider/theme_provider.dart';
 import 'package:farmdirect/features/farmer/dashboard/farmer_profile/about_us_screen.dart';
 import 'package:farmdirect/features/farmer/dashboard/farmer_profile/farm_details_screen.dart';
 import 'package:farmdirect/features/farmer/dashboard/farmer_profile/farm_help_section.dart';
 import 'package:farmdirect/features/farmer/dashboard/farmer_profile/farmer_profile_setting.dart';
+import 'package:farmdirect/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
@@ -15,7 +17,10 @@ import 'package:provider/provider.dart';
 class ProfileScreen extends StatefulWidget {
   final Function(int) onBottomNavTap;
 
-  const ProfileScreen({super.key, required this.onBottomNavTap});
+  const ProfileScreen({
+    super.key,
+    required this.onBottomNavTap,
+  });
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -40,14 +45,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return SafeArea(
       child: Column(
         children: [
-          // ========================================================
-          // PROFILE HEADER
-          // ========================================================
           _buildProfileHeader(),
 
-          // ========================================================
-          // SCROLLABLE PROFILE CONTENT
-          // ========================================================
           Expanded(
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
@@ -58,7 +57,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   // ==================================================
                   // MY PROFILE
                   // ==================================================
-                  _buildSectionTitle('MY PROFILE'),
+
+                  _buildSectionTitle(
+                    AppLocalizations.of(context)!.myProfile,
+                  ),
 
                   const SizedBox(height: 6),
 
@@ -66,12 +68,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     children: [
                       _buildMenuItem(
                         icon: Icons.person_outline,
-                        title: 'Profile Settings',
+                        title: AppLocalizations.of(context)!.profileSettings,
                         onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => const FarmerProfileSettings(),
+                              builder: (_) =>
+                                  const FarmerProfileSettings(),
                             ),
                           );
                         },
@@ -81,12 +84,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                       _buildMenuItem(
                         icon: Icons.eco_outlined,
-                        title: 'Farm Details',
+                        title: AppLocalizations.of(context)!.farmDetails,
                         onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => const FarmDetailsScreen(),
+                              builder: (_) =>
+                                  const FarmDetailsScreen(),
                             ),
                           );
                         },
@@ -96,16 +100,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                       _buildMenuItem(
                         icon: Icons.location_on_outlined,
-                        title: 'Farm Location',
+                        title: AppLocalizations.of(context)!.farmLocation,
                         trailing:
-                            context.watch<ProfileProvider>().location.isEmpty
-                            ? 'Not set'
-                            : context.watch<ProfileProvider>().location,
+                            context
+                                    .watch<ProfileProvider>()
+                                    .location
+                                    .isEmpty
+                                ? AppLocalizations.of(context)!.notSet
+                                : context
+                                    .watch<ProfileProvider>()
+                                    .location,
                         onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => const ComingSoonScreen(),
+                              builder: (_) =>
+                                  const ComingSoonScreen(),
                             ),
                           );
                         },
@@ -118,7 +128,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   // ==================================================
                   // QUICK ACCESS
                   // ==================================================
-                  _buildSectionTitle('QUICK ACCESS '),
+
+                  _buildSectionTitle(
+                    AppLocalizations.of(context)!.quickAccess,
+                  ),
 
                   const SizedBox(height: 6),
 
@@ -126,8 +139,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     children: [
                       _buildMenuItem(
                         icon: Icons.inventory_2_outlined,
-                        title: 'My Products',
-                        trailing: '24 New',
+                        title: AppLocalizations.of(context)!.myProducts,
+                        trailing: '24 ${AppLocalizations.of(context)!.newText}',
                         trailingColor: const Color(0xFF08795D),
                         onTap: () {
                           widget.onBottomNavTap(1);
@@ -138,8 +151,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                       _buildMenuItem(
                         icon: Icons.shopping_bag_outlined,
-                        title: 'My Orders',
-                        trailing: '8 New',
+                        title: AppLocalizations.of(context)!.myOrders,
+                        trailing: '8 ${AppLocalizations.of(context)!.newText}',
                         trailingColor: const Color(0xFF08795D),
                         onTap: () {
                           widget.onBottomNavTap(2);
@@ -150,7 +163,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                       _buildMenuItem(
                         icon: Icons.currency_rupee,
-                        title: 'Earnings & Payouts',
+                        title: AppLocalizations.of(context)!.earningsAndPayouts,
                         trailing: '₹1,45,000',
                         onTap: () {
                           widget.onBottomNavTap(3);
@@ -164,23 +177,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   // ==================================================
                   // APP SETTINGS
                   // ==================================================
-                  _buildSectionTitle('APP SETTINGS'),
+
+                  _buildSectionTitle(
+                    AppLocalizations.of(context)!.appSettings,
+                  ),
 
                   const SizedBox(height: 6),
 
                   _buildMenuGroup(
                     children: [
-                      // ----------------------------------------------
                       // NOTIFICATIONS
-                      // ----------------------------------------------
                       _buildMenuItem(
                         icon: Icons.notifications_none,
-                        title: 'Notifications',
+                        title: AppLocalizations.of(context)!.notifications,
                         onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => const ComingSoonScreen(),
+                              builder: (_) =>
+                                  const ComingSoonScreen(),
                             ),
                           );
                         },
@@ -188,13 +203,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                       _buildDivider(),
 
-                      // ----------------------------------------------
-                      // APP LANGUAGE
-                      // ----------------------------------------------
+                      // LANGUAGE
                       _buildMenuItem(
                         icon: Icons.language,
-                        title: 'App Language',
-                        trailing: 'हिंदी (Hindi)',
+                        title: AppLocalizations.of(context)!.appLanguage,
+                        trailing: _getCurrentLanguageName(),
                         onTap: () {
                           _showLanguageDialog();
                         },
@@ -202,13 +215,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                       _buildDivider(),
 
-                      // ----------------------------------------------
                       // APPEARANCE
-                      // ----------------------------------------------
                       _buildMenuItem(
                         icon: Icons.phone_android_outlined,
-                        title: 'Appearance',
-                        trailing: 'System Default',
+                        title: AppLocalizations.of(context)!.appearance,
+                        trailing: _getCurrentThemeName(),
                         onTap: () {
                           _showAppearanceDialog();
                         },
@@ -216,17 +227,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                       _buildDivider(),
 
-                      // ----------------------------------------------
-                      // HELP & SUPPORT
-                      // ----------------------------------------------
+                      // HELP
                       _buildMenuItem(
                         icon: Icons.help_outline,
-                        title: 'Help & Support',
+                        title: AppLocalizations.of(context)!.helpSupport,
                         onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => const HelpSupportScreen(),
+                              builder: (_) =>
+                                  const HelpSupportScreen(),
                             ),
                           );
                         },
@@ -234,17 +244,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                       _buildDivider(),
 
-                      // ----------------------------------------------
-                      // ABOUT US
-                      // ----------------------------------------------
+                      // ABOUT
                       _buildMenuItem(
                         icon: Icons.info_outline,
-                        title: 'About Us',
+                        title: AppLocalizations.of(context)!.aboutUs,
                         onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => const AboutUsScreen(),
+                              builder: (_) =>
+                                  const AboutUsScreen(),
                             ),
                           );
                         },
@@ -252,12 +261,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                       _buildDivider(),
 
-                      // ----------------------------------------------
                       // LOGOUT
-                      // ----------------------------------------------
                       _buildMenuItem(
                         icon: Icons.logout,
-                        title: 'Logout',
+                        title: AppLocalizations.of(context)!.logout,
                         iconColor: const Color(0xFFE55353),
                         titleColor: const Color(0xFFE55353),
                         showArrow: false,
@@ -281,9 +288,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // ============================================================
   // PROFILE HEADER
   // ============================================================
-  // ============================================================
-  // PROFILE HEADER
-  // ============================================================
+
   Widget _buildProfileHeader() {
     return Consumer<ProfileProvider>(
       builder: (context, profile, child) {
@@ -292,26 +297,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
         final String firstLetter = name.isNotEmpty
             ? name[0].toUpperCase()
             : 'U';
+
         return Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+          padding: const EdgeInsets.symmetric(
+            horizontal: 14,
+            vertical: 9,
+          ),
           color: const Color(0xFF075B47),
-
           child: Row(
             children: [
-              // ====================================================
               // PROFILE IMAGE
-              // ====================================================
               Container(
                 width: 40,
                 height: 40,
                 padding: const EdgeInsets.all(2),
-
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFFB5D56A), width: 2),
+                  border: Border.all(
+                    color: const Color(0xFFB5D56A),
+                    width: 2,
+                  ),
                 ),
-
                 child: ClipOval(
                   child: profile.fullProfileImageUrl.isNotEmpty
                       ? Image.network(
@@ -319,8 +326,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           width: 36,
                           height: 36,
                           fit: BoxFit.cover,
-
-                          errorBuilder: (context, error, stackTrace) {
+                          errorBuilder: (
+                            context,
+                            error,
+                            stackTrace,
+                          ) {
                             return Container(
                               color: const Color(0xFFE8F5E9),
                               alignment: Alignment.center,
@@ -352,9 +362,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
               const SizedBox(width: 10),
 
-              // ====================================================
               // PROFILE NAME
-              // ====================================================
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -385,6 +393,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       },
     );
   }
+
   // ============================================================
   // SECTION TITLE
   // ============================================================
@@ -407,15 +416,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // MENU GROUP
   // ============================================================
 
-  Widget _buildMenuGroup({required List<Widget> children}) {
+  Widget _buildMenuGroup({
+    required List<Widget> children,
+  }) {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFE8ECEF)),
+        border: Border.all(
+          color: const Color(0xFFE8ECEF),
+        ),
       ),
-      child: Column(children: children),
+      child: Column(
+        children: children,
+      ),
     );
   }
 
@@ -442,60 +457,50 @@ class _ProfileScreenState extends State<ProfileScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 9),
           child: Row(
             children: [
-              // ====================================================
-              // ICON
-              // ====================================================
               Container(
                 width: 25,
                 height: 25,
                 decoration: BoxDecoration(
-                  color: (iconColor ?? const Color(0xFF08795D)).withOpacity(
-                    0.08,
-                  ),
+                  color:
+                      (iconColor ?? const Color(0xFF08795D))
+                          .withOpacity(0.08),
                   borderRadius: BorderRadius.circular(7),
                 ),
                 child: Icon(
                   icon,
                   size: 14,
-                  color: iconColor ?? const Color(0xFF08795D),
+                  color: iconColor ??
+                      const Color(0xFF08795D),
                 ),
               ),
 
               const SizedBox(width: 9),
 
-              // ====================================================
-              // TITLE
-              // ====================================================
               Expanded(
                 child: Text(
                   title,
                   style: TextStyle(
                     fontSize: 9.5,
                     fontWeight: FontWeight.w600,
-                    color: titleColor ?? const Color(0xFF38434A),
+                    color: titleColor ??
+                        const Color(0xFF38434A),
                   ),
                 ),
               ),
 
-              // ====================================================
-              // TRAILING TEXT
-              // ====================================================
               if (trailing != null)
                 Text(
                   trailing,
                   style: TextStyle(
                     fontSize: 7.5,
                     fontWeight: FontWeight.w500,
-                    color: trailingColor ?? const Color(0xFF737B82),
+                    color: trailingColor ??
+                        const Color(0xFF737B82),
                   ),
                 ),
 
-              // ====================================================
-              // ARROW
-              // ====================================================
               if (showArrow) ...[
                 const SizedBox(width: 5),
-
                 const Icon(
                   Icons.chevron_right,
                   size: 15,
@@ -524,33 +529,66 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   // ============================================================
+  // CURRENT LANGUAGE
+  // ============================================================
+
+  String _getCurrentLanguageName() {
+    final locale =
+        context.watch<LanguageProvider>().selectedLocale;
+
+    if (locale.languageCode == 'hi') {
+      return AppLocalizations.of(context)!.hindi;
+    }
+
+    return AppLocalizations.of(context)!.english;
+  }
+
+  // ============================================================
   // LANGUAGE DIALOG
   // ============================================================
 
   void _showLanguageDialog() {
+    final l10n = AppLocalizations.of(context)!;
+
     showDialog(
       context: context,
       builder: (dialogContext) {
+        final languageProvider =
+            context.read<LanguageProvider>();
+
         return AlertDialog(
-          title: const Text(
-            'App Language',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+          title: Text(
+            l10n.appLanguage,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+            ),
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
-                title: const Text('English', style: TextStyle(fontSize: 13)),
+                title: Text(
+                  l10n.english,
+                  style: const TextStyle(
+                    fontSize: 13,
+                  ),
+                ),
                 onTap: () {
+                  languageProvider.changeLanguage('en');
                   Navigator.pop(dialogContext);
                 },
               ),
+
               ListTile(
-                title: const Text(
-                  'हिंदी (Hindi)',
-                  style: TextStyle(fontSize: 13),
+                title: Text(
+                  l10n.hindi,
+                  style: const TextStyle(
+                    fontSize: 13,
+                  ),
                 ),
                 onTap: () {
+                  languageProvider.changeLanguage('hi');
                   Navigator.pop(dialogContext);
                 },
               ),
@@ -562,45 +600,82 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   // ============================================================
+  // CURRENT THEME
+  // ============================================================
+
+  String _getCurrentThemeName() {
+    final themeMode =
+        context.watch<ThemeProvider>().themeMode;
+
+    final l10n = AppLocalizations.of(context)!;
+
+    switch (themeMode) {
+      case ThemeMode.light:
+        return l10n.light;
+
+      case ThemeMode.dark:
+        return l10n.dark;
+
+      case ThemeMode.system:
+        return l10n.systemDefault;
+    }
+  }
+
+  // ============================================================
   // APPEARANCE DIALOG
   // ============================================================
 
   void _showAppearanceDialog() {
+    final l10n = AppLocalizations.of(context)!;
+
     showDialog(
       context: context,
       builder: (dialogContext) {
-        final themeProvider = context.read<ThemeProvider>();
+        final themeProvider =
+            context.read<ThemeProvider>();
 
         return AlertDialog(
-          title: const Text("Appearance"),
+          title: Text(l10n.appearance),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
-                leading: const Icon(Icons.light_mode_outlined),
-                title: const Text("Light"),
+                leading: const Icon(
+                  Icons.light_mode_outlined,
+                ),
+                title: Text(l10n.light),
                 onTap: () {
-                  themeProvider.setTheme(ThemeMode.light);
+                  themeProvider.setTheme(
+                    ThemeMode.light,
+                  );
 
                   Navigator.pop(dialogContext);
                 },
               ),
 
               ListTile(
-                leading: const Icon(Icons.dark_mode_outlined),
-                title: const Text("Dark"),
+                leading: const Icon(
+                  Icons.dark_mode_outlined,
+                ),
+                title: Text(l10n.dark),
                 onTap: () {
-                  themeProvider.setTheme(ThemeMode.dark);
+                  themeProvider.setTheme(
+                    ThemeMode.dark,
+                  );
 
                   Navigator.pop(dialogContext);
                 },
               ),
 
               ListTile(
-                leading: const Icon(Icons.settings_outlined),
-                title: const Text("System Default"),
+                leading: const Icon(
+                  Icons.settings_outlined,
+                ),
+                title: Text(l10n.systemDefault),
                 onTap: () {
-                  themeProvider.setTheme(ThemeMode.system);
+                  themeProvider.setTheme(
+                    ThemeMode.system,
+                  );
 
                   Navigator.pop(dialogContext);
                 },
@@ -617,41 +692,54 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // ============================================================
 
   void _showLogoutDialog() {
+    final l10n = AppLocalizations.of(context)!;
+
     showDialog(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text(
-            'Logout',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+          title: Text(
+            l10n.logout,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+            ),
           ),
-          content: const Text(
-            'Are you sure you want to logout?',
-            style: TextStyle(fontSize: 13),
+          content: Text(
+            l10n.areYouSureLogout,
+            style: const TextStyle(
+              fontSize: 13,
+            ),
           ),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.pop(dialogContext);
               },
-              child: const Text('Cancel'),
+              child: Text(l10n.cancel),
             ),
+
             ElevatedButton(
               onPressed: () {
                 Navigator.pop(dialogContext);
 
-                //  actual logout logic here.
+                // Actual logout logic here.
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => LoginPage()),
+                  MaterialPageRoute(
+                    builder: (_) => LoginPage(),
+                  ),
                 );
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFE55353),
+                backgroundColor:
+                    const Color(0xFFE55353),
               ),
-              child: const Text(
-                'Logout',
-                style: TextStyle(color: Colors.white),
+              child: Text(
+                l10n.logout,
+                style: const TextStyle(
+                  color: Colors.white,
+                ),
               ),
             ),
           ],

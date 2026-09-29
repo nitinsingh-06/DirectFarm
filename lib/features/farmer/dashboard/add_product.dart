@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:farmdirect/features/farmer/dashboard/product_screen.dart';
+import 'package:farmdirect/l10n/app_localizations.dart';
 import 'package:farmdirect/services/api_services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -18,8 +19,9 @@ class _AddProductScreenState extends State<AddProductScreen> {
   final priceController = TextEditingController();
   final stockController = TextEditingController();
 
-  String selectedCategory = 'Fruits / फल';
-  String selectedUnit = 'Dozen / दर्जन';
+  // Keep these values language-independent.
+  String selectedCategory = 'fruits';
+  String selectedUnit = 'dozen';
 
   bool certifiedOrganic = true;
 
@@ -36,6 +38,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -50,30 +54,31 @@ class _AddProductScreenState extends State<AddProductScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // PRODUCT NAME
-                    _buildLabel('Product Name'),
+                    _buildLabel(l10n.productName),
 
                     const SizedBox(height: 5),
 
                     _buildTextField(
                       controller: productNameController,
-                      hint: 'Organic Alphonso Mangoes',
+                      hint: l10n.productNameHint,
                     ),
 
                     const SizedBox(height: 12),
 
                     // CATEGORY
-                    _buildLabel('Category'),
+                    _buildLabel(l10n.category),
 
                     const SizedBox(height: 5),
 
                     _buildDropdown(
                       value: selectedCategory,
                       items: const [
-                        'Fruits / फल',
-                        'Vegetables / सब्जियां',
-                        'Grains / अनाज',
-                        'Dairy / डेयरी',
+                        'fruits',
+                        'vegetables',
+                        'grains',
+                        'dairy',
                       ],
+                      itemLabel: _categoryLabel,
                       onChanged: (value) {
                         if (value != null) {
                           setState(() {
@@ -93,7 +98,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              _buildLabel('Price (₹)'),
+                              _buildLabel(l10n.priceRupees),
 
                               const SizedBox(height: 5),
 
@@ -102,8 +107,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
                                 hint: '350',
                                 keyboardType:
                                     const TextInputType.numberWithOptions(
-                                      decimal: true,
-                                    ),
+                                  decimal: true,
+                                ),
                               ),
                             ],
                           ),
@@ -115,18 +120,19 @@ class _AddProductScreenState extends State<AddProductScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              _buildLabel('Per Unit'),
+                              _buildLabel(l10n.perUnit),
 
                               const SizedBox(height: 5),
 
                               _buildDropdown(
                                 value: selectedUnit,
                                 items: const [
-                                  'Dozen / दर्जन',
-                                  'Kg / किलो',
-                                  'Piece / नग',
-                                  'Liter / लीटर',
+                                  'dozen',
+                                  'kg',
+                                  'piece',
+                                  'liter',
                                 ],
+                                itemLabel: _unitLabel,
                                 onChanged: (value) {
                                   if (value != null) {
                                     setState(() {
@@ -143,8 +149,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
                     const SizedBox(height: 12),
 
-                    // TOTAL STOCK - SEPARATE FULL WIDTH ROW
-                    _buildLabel('Total Stock in kg'),
+                    // TOTAL STOCK
+                    _buildLabel(l10n.totalStockKg),
 
                     const SizedBox(height: 5),
 
@@ -159,7 +165,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                     const SizedBox(height: 12),
 
                     // PRODUCT PHOTOS
-                    _buildLabel('Product Photos'),
+                    _buildLabel(l10n.productPhotos),
 
                     const SizedBox(height: 5),
 
@@ -189,13 +195,19 @@ class _AddProductScreenState extends State<AddProductScreen> {
   // ----------------------------------------------------------
 
   Widget _buildHeader() {
+    final l10n = AppLocalizations.of(context)!;
+
     return Container(
       height: 53,
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 14),
       decoration: const BoxDecoration(
         color: Colors.white,
-        border: Border(bottom: BorderSide(color: AppColors.border)),
+        border: Border(
+          bottom: BorderSide(
+            color: AppColors.border,
+          ),
+        ),
       ),
       child: Row(
         children: [
@@ -212,9 +224,9 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
           const SizedBox(width: 10),
 
-          const Text(
-            'Add Product',
-            style: TextStyle(
+          Text(
+            l10n.addProduct,
+            style: const TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.w800,
               color: AppColors.primary,
@@ -254,15 +266,23 @@ class _AddProductScreenState extends State<AddProductScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(
+          color: AppColors.border,
+        ),
       ),
       child: TextField(
         controller: controller,
         keyboardType: keyboardType,
-        style: const TextStyle(fontSize: 11, color: AppColors.textDark),
+        style: const TextStyle(
+          fontSize: 11,
+          color: AppColors.textDark,
+        ),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: const TextStyle(fontSize: 10, color: Color(0xFF8B969D)),
+          hintStyle: const TextStyle(
+            fontSize: 10,
+            color: Color(0xFF8B969D),
+          ),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 11,
@@ -280,15 +300,20 @@ class _AddProductScreenState extends State<AddProductScreen> {
   Widget _buildDropdown({
     required String value,
     required List<String> items,
+    required String Function(String, AppLocalizations) itemLabel,
     required ValueChanged<String?> onChanged,
   }) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Container(
       height: 39,
       padding: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(
+          color: AppColors.border,
+        ),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
@@ -299,11 +324,17 @@ class _AddProductScreenState extends State<AddProductScreen> {
             size: 17,
             color: Color(0xFF68747D),
           ),
-          style: const TextStyle(fontSize: 10, color: AppColors.textDark),
+          style: const TextStyle(
+            fontSize: 10,
+            color: AppColors.textDark,
+          ),
           items: items.map((item) {
             return DropdownMenuItem<String>(
               value: item,
-              child: Text(item, overflow: TextOverflow.ellipsis),
+              child: Text(
+                itemLabel(item, l10n),
+                overflow: TextOverflow.ellipsis,
+              ),
             );
           }).toList(),
           onChanged: onChanged,
@@ -313,10 +344,64 @@ class _AddProductScreenState extends State<AddProductScreen> {
   }
 
   // ----------------------------------------------------------
+  // CATEGORY LABEL
+  // ----------------------------------------------------------
+
+  static String _categoryLabel(
+    String category,
+    AppLocalizations l10n,
+  ) {
+    switch (category) {
+      case 'fruits':
+        return l10n.fruits;
+
+      case 'vegetables':
+        return l10n.vegetables;
+
+      case 'grains':
+        return l10n.grains;
+
+      case 'dairy':
+        return l10n.dairy;
+
+      default:
+        return category;
+    }
+  }
+
+  // ----------------------------------------------------------
+  // UNIT LABEL
+  // ----------------------------------------------------------
+
+  static String _unitLabel(
+    String unit,
+    AppLocalizations l10n,
+  ) {
+    switch (unit) {
+      case 'dozen':
+        return l10n.dozen;
+
+      case 'kg':
+        return l10n.kilogram;
+
+      case 'piece':
+        return l10n.piece;
+
+      case 'liter':
+        return l10n.liter;
+
+      default:
+        return unit;
+    }
+  }
+
+  // ----------------------------------------------------------
   // PHOTO SECTION
   // ----------------------------------------------------------
 
   Widget _buildPhotoSection() {
+    final l10n = AppLocalizations.of(context)!;
+
     return Row(
       children: [
         GestureDetector(
@@ -327,20 +412,25 @@ class _AddProductScreenState extends State<AddProductScreen> {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: AppColors.border),
+              border: Border.all(
+                color: AppColors.border,
+              ),
             ),
-            child: const Column(
+            child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
+                const Icon(
                   Icons.add_photo_alternate_outlined,
                   size: 22,
                   color: AppColors.primary,
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 Text(
-                  'Add Photo',
-                  style: TextStyle(fontSize: 7.5, color: AppColors.textGrey),
+                  l10n.addPhoto,
+                  style: const TextStyle(
+                    fontSize: 7.5,
+                    color: AppColors.textGrey,
+                  ),
                 ),
               ],
             ),
@@ -363,7 +453,9 @@ class _AddProductScreenState extends State<AddProductScreen> {
                   key: ValueKey(imageFile.path),
                   children: [
                     ClipRRect(
-                      key: ValueKey('image_${imageFile.path}'),
+                      key: ValueKey(
+                        'image_${imageFile.path}',
+                      ),
                       borderRadius: BorderRadius.circular(8),
                       child: Image.file(
                         imageFile,
@@ -371,7 +463,11 @@ class _AddProductScreenState extends State<AddProductScreen> {
                         height: 72,
                         width: 72,
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
+                        errorBuilder: (
+                          context,
+                          error,
+                          stackTrace,
+                        ) {
                           return Container(
                             height: 72,
                             width: 72,
@@ -391,7 +487,9 @@ class _AddProductScreenState extends State<AddProductScreen> {
                       right: 2,
                       top: 2,
                       child: GestureDetector(
-                        onTap: () => _removeImage(imageFile.path),
+                        onTap: () => _removeImage(
+                          imageFile.path,
+                        ),
                         child: Container(
                           decoration: const BoxDecoration(
                             color: Colors.black54,
@@ -420,6 +518,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
   // ----------------------------------------------------------
 
   Future<void> _pickImages() async {
+    final l10n = AppLocalizations.of(context)!;
+
     try {
       final images = await picker.pickMultiImage();
 
@@ -430,7 +530,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
       for (final image in images) {
         final file = File(image.path);
 
-        // Prevent the same image from being selected twice.
         final alreadySelected = selectedImages.any(
           (selected) => selected.path == file.path,
         );
@@ -441,7 +540,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
       }
 
       if (newFiles.isEmpty) {
-        _showMessage('These images are already selected');
+        _showMessage(l10n.imagesAlreadySelected);
         return;
       }
 
@@ -452,7 +551,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
       debugPrint('IMAGE PICK ERROR: $e');
 
       if (!mounted) return;
-      _showMessage('Unable to select images');
+
+      _showMessage(l10n.unableToSelectImages);
     }
   }
 
@@ -473,31 +573,43 @@ class _AddProductScreenState extends State<AddProductScreen> {
   // ----------------------------------------------------------
 
   Widget _buildOrganicSwitch() {
+    final l10n = AppLocalizations.of(context)!;
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 11,
+        vertical: 7,
+      ),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(
+          color: AppColors.border,
+        ),
       ),
       child: Row(
         children: [
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Certified Organic',
-                  style: TextStyle(
+                  l10n.certifiedOrganic,
+                  style: const TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
                     color: AppColors.textDark,
                   ),
                 ),
-                SizedBox(height: 2),
+
+                const SizedBox(height: 2),
+
                 Text(
-                  'This product is organically certified',
-                  style: TextStyle(fontSize: 7.5, color: AppColors.textGrey),
+                  l10n.organicDescription,
+                  style: const TextStyle(
+                    fontSize: 7.5,
+                    color: AppColors.textGrey,
+                  ),
                 ),
               ],
             ),
@@ -522,6 +634,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
   // ----------------------------------------------------------
 
   Widget _buildSaveButton() {
+    final l10n = AppLocalizations.of(context)!;
+
     return SizedBox(
       width: double.infinity,
       height: 45,
@@ -530,11 +644,13 @@ class _AddProductScreenState extends State<AddProductScreen> {
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
           elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
         ),
-        child: const Text(
-          'Save Product',
-          style: TextStyle(
+        child: Text(
+          l10n.saveProduct,
+          style: const TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w700,
             color: Colors.white,
@@ -547,92 +663,97 @@ class _AddProductScreenState extends State<AddProductScreen> {
   // ----------------------------------------------------------
   // SAVE PRODUCT
   // ----------------------------------------------------------
+
   Future<void> _saveProduct() async {
+    final l10n = AppLocalizations.of(context)!;
+
     final name = productNameController.text.trim();
     final priceText = priceController.text.trim();
     final stockText = stockController.text.trim();
 
-    // ----------------------------------------------------------
+    // --------------------------------------------------------
     // VALIDATION
-    // ----------------------------------------------------------
+    // --------------------------------------------------------
 
     if (name.isEmpty) {
-      _showMessage('Please enter product name');
+      _showMessage(l10n.pleaseEnterProductName);
       return;
     }
 
     if (priceText.isEmpty) {
-      _showMessage('Please enter price');
+      _showMessage(l10n.pleaseEnterPrice);
       return;
     }
 
     final price = double.tryParse(priceText);
 
     if (price == null || price <= 0) {
-      _showMessage('Please enter a valid price');
+      _showMessage(l10n.pleaseEnterValidPrice);
       return;
     }
 
     if (stockText.isEmpty) {
-      _showMessage('Please enter total stock');
+      _showMessage(l10n.pleaseEnterTotalStock);
       return;
     }
 
     final stock = double.tryParse(stockText);
 
     if (stock == null || stock <= 0) {
-      _showMessage('Please enter a valid stock quantity');
+      _showMessage(l10n.pleaseEnterValidStock);
       return;
     }
 
-    // ----------------------------------------------------------
+    // --------------------------------------------------------
     // FIREBASE USER
-    // ----------------------------------------------------------
+    // --------------------------------------------------------
 
     final firebaseUser = FirebaseAuth.instance.currentUser;
 
     if (firebaseUser == null) {
-      _showMessage('Please login again');
+      _showMessage(l10n.pleaseLoginAgain);
       return;
     }
 
     try {
-      // --------------------------------------------------------
+      // ------------------------------------------------------
       // FIREBASE TOKEN
-      // --------------------------------------------------------
+      // ------------------------------------------------------
 
       final idToken = await firebaseUser.getIdToken();
 
       if (idToken == null || idToken.isEmpty) {
-        _showMessage('Unable to get Firebase token');
+        _showMessage(l10n.unableToGetFirebaseToken);
         return;
       }
 
-      // --------------------------------------------------------
+      // ------------------------------------------------------
       // CATEGORY
-      // --------------------------------------------------------
+      // ------------------------------------------------------
 
       final categoryId = _getCategoryId(selectedCategory);
 
-      // --------------------------------------------------------
+      // ------------------------------------------------------
       // UPLOAD PRIMARY IMAGE
-      // --------------------------------------------------------
+      // ------------------------------------------------------
 
       String? imageUrl;
 
       if (selectedImages.isNotEmpty) {
-        _showMessage('Uploading product image...');
+        _showMessage(l10n.uploadingProductImage);
 
         imageUrl = await ApiService.uploadProductImage(
           imagePath: selectedImages.first.path,
         );
 
-        debugPrint('PRODUCT IMAGE URL: $imageUrl');
+        debugPrint(
+          'PRODUCT IMAGE URL: $imageUrl',
+        );
       }
 
-      // --------------------------------------------------------
+      // ------------------------------------------------------
       // CREATE PRODUCT
-      // --------------------------------------------------------
+      // ------------------------------------------------------
 
       final response = await ApiService.createProduct(
         idToken: idToken,
@@ -645,52 +766,64 @@ class _AddProductScreenState extends State<AddProductScreen> {
         imageUrl: imageUrl,
       );
 
-      debugPrint('PRODUCT CREATED: $response');
+      debugPrint(
+        'PRODUCT CREATED: $response',
+      );
 
-      // --------------------------------------------------------
+      // ------------------------------------------------------
       // SUCCESS
-      // --------------------------------------------------------
+      // ------------------------------------------------------
 
       if (!mounted) return;
 
-      _showMessage('Product saved successfully');
+      _showMessage(l10n.productSavedSuccessfully);
 
-      // Clear local image state before leaving the screen.
       if (mounted) {
         setState(() {
           selectedImages.clear();
         });
       }
 
-      await Future.delayed(const Duration(milliseconds: 400));
+      await Future.delayed(
+        const Duration(milliseconds: 400),
+      );
 
       if (!mounted) return;
 
-      Navigator.pop(context,true);
+      Navigator.pop(context, true);
     } catch (e) {
-      debugPrint('CREATE PRODUCT ERROR: $e');
+      debugPrint(
+        'CREATE PRODUCT ERROR: $e',
+      );
 
       if (!mounted) return;
 
-      _showMessage(e.toString().replaceFirst('Exception: ', ''));
+      // Keep backend/API error as returned by the server.
+      _showMessage(
+        e.toString().replaceFirst(
+          'Exception: ',
+          '',
+        ),
+      );
     }
   }
+
   // ----------------------------------------------------------
   // UNIT
   // ----------------------------------------------------------
 
   String _getShortUnit(String unit) {
     switch (unit) {
-      case 'Dozen / दर्जन':
+      case 'dozen':
         return 'dozen';
 
-      case 'Kg / किलो':
+      case 'kg':
         return 'kg';
 
-      case 'Piece / नग':
+      case 'piece':
         return 'piece';
 
-      case 'Liter / लीटर':
+      case 'liter':
         return 'liter';
 
       default:
@@ -699,24 +832,21 @@ class _AddProductScreenState extends State<AddProductScreen> {
   }
 
   // ----------------------------------------------------------
-  // CATEGORY
-  // ----------------------------------------------------------
-
-  // ----------------------------------------------------------
   // CATEGORY ID
   // ----------------------------------------------------------
+
   int _getCategoryId(String category) {
     switch (category) {
-      case 'Vegetables / सब्जियां':
+      case 'vegetables':
         return 1;
 
-      case 'Fruits / फल':
+      case 'fruits':
         return 2;
 
-      case 'Grains / अनाज':
+      case 'grains':
         return 3;
 
-      case 'Dairy / डेयरी':
+      case 'dairy':
         return 5;
 
       default:
@@ -729,8 +859,12 @@ class _AddProductScreenState extends State<AddProductScreen> {
   // ----------------------------------------------------------
 
   void _showMessage(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+      ),
+    );
   }
 }

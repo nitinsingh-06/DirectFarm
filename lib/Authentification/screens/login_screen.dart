@@ -250,8 +250,9 @@ class _LoginPageState extends State<LoginPage> {
 
                           child: Checkbox(
                             value: true,
-
-                            onChanged: (value) {},
+      
+                            onChanged: (value) {
+                            },
 
                             activeColor: primaryGreen,
 
@@ -372,7 +373,7 @@ class _LoginPageState extends State<LoginPage> {
                       child: Text(
                         'Or continue with',
 
-                        style: TextStyle(fontSize: 9, color: Color(0xFF969CA4)),
+                        style: TextStyle(fontSize: 10, color: Color(0xFF969CA4)),
                       ),
                     ),
 
@@ -451,7 +452,7 @@ class _LoginPageState extends State<LoginPage> {
                         child: RichText(
                           text: const TextSpan(
                             style: TextStyle(
-                              fontSize: 10,
+                              fontSize: 12,
                               color: Color(0xFF858C95),
                             ),
 

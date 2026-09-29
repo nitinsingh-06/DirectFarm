@@ -1,0 +1,114 @@
+{
+  "@@locale": "en",
+
+  "appName": "FarmDirect",
+
+  "home": "Home",
+  "products": "Products",
+  "myProducts": "My Products",
+  "orders": "Orders",
+  "cart": "Cart",
+  "profile": "Profile",
+
+  "addProduct": "Add Product",
+  "editProduct": "Edit Product",
+  "deleteProduct": "Delete Product",
+
+  "productName": "Product Name",
+  "productNameHint": "Organic Alphonso Mangoes",
+  "description": "Description",
+  "price": "Price",
+  "priceRupees": "Price (₹)",
+  "quantity": "Quantity",
+  "available": "Available",
+  "category": "Category",
+  "perUnit": "Per Unit",
+  "totalStockKg": "Total Stock in kg",
+  "productPhotos": "Product Photos",
+
+  "searchProducts": "Search products",
+  "noProductsFound": "No products found",
+
+  "fruits": "Fruits",
+  "vegetables": "Vegetables",
+  "grains": "Grains",
+  "dairy": "Dairy",
+
+  "dozen": "Dozen",
+  "kilogram": "Kg",
+  "piece": "Piece",
+  "liter": "Liter",
+
+  "addPhoto": "Add Photo",
+
+  "certifiedOrganic": "Certified Organic",
+  "organicDescription": "This product is organically certified",
+
+  "accept": "Accept",
+  "reject": "Reject",
+  "cancel": "Cancel",
+  "save": "Save",
+  "update": "Update",
+  "delete": "Delete",
+  "confirm": "Confirm",
+
+  "saveProduct": "Save Product",
+
+  "recentOrders": "Recent Orders",
+  "orderDetails": "Order Details",
+  "orderAccepted": "Order Accepted",
+  "orderRejected": "Order Rejected",
+  "markAsShipped": "Mark as Shipped",
+
+  "total": "Total",
+  "payment": "Payment",
+  "address": "Address",
+
+  "language": "Language",
+  "english": "English",
+  "hindi": "हिंदी",
+
+  "settings": "Settings",
+  "logout": "Logout",
+
+  "imagesAlreadySelected": "These images are already selected",
+  "unableToSelectImages": "Unable to select images",
+
+  "pleaseEnterProductName": "Please enter product name",
+  "pleaseEnterPrice": "Please enter price",
+  "pleaseEnterValidPrice": "Please enter a valid price",
+  "pleaseEnterTotalStock": "Please enter total stock",
+  "pleaseEnterValidStock": "Please enter a valid stock quantity",
+  "pleaseLoginAgain": "Please login again",
+  "unableToGetFirebaseToken": "Unable to get Firebase token",
+  "uploadingProductImage": "Uploading product image...",
+  "productSavedSuccessfully": "Product saved successfully",
+
+
+
+  "myProfile": "MY PROFILE",
+  "profileSettings": "Profile Settings",
+  "farmDetails": "Farm Details",
+  "farmLocation": "Farm Location",
+  "notSet": "Not set",
+
+  "quickAccess": "QUICK ACCESS",
+  "newText": "New",
+  "myOrders": "My Orders",
+  "earningsAndPayouts": "Earnings & Payouts",
+
+  "appSettings": "APP SETTINGS",
+  "notifications": "Notifications",
+  "appLanguage": "App Language",
+  "appearance": "Appearance",
+  "helpSupport": "Help & Support",
+  "aboutUs": "About Us",
+
+  "light": "Light",
+  "dark": "Dark",
+  "systemDefault": "System Default",
+
+  "areYouSureLogout": "Are you sure you want to logout?"
+
+
+}

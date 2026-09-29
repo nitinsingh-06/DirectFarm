@@ -1,0 +1,114 @@
+{
+  "@@locale": "hi",
+
+  "appName": "FarmDirect",
+
+  "home": "होम",
+  "products": "उत्पाद",
+  "myProducts": "मेरे उत्पाद",
+  "orders": "ऑर्डर",
+  "cart": "कार्ट",
+  "profile": "प्रोफ़ाइल",
+
+  "addProduct": "उत्पाद जोड़ें",
+  "editProduct": "उत्पाद संपादित करें",
+  "deleteProduct": "उत्पाद हटाएँ",
+
+  "productName": "उत्पाद का नाम",
+  "productNameHint": "ऑर्गेनिक अल्फांसो आम",
+  "description": "विवरण",
+  "price": "कीमत",
+  "priceRupees": "कीमत (₹)",
+  "quantity": "मात्रा",
+  "available": "उपलब्ध",
+  "category": "श्रेणी",
+  "perUnit": "प्रति इकाई",
+  "totalStockKg": "कुल स्टॉक किलो में",
+  "productPhotos": "उत्पाद की तस्वीरें",
+
+  "searchProducts": "उत्पाद खोजें",
+  "noProductsFound": "कोई उत्पाद नहीं मिला",
+
+  "fruits": "फल",
+  "vegetables": "सब्ज़ियाँ",
+  "grains": "अनाज",
+  "dairy": "डेयरी",
+
+  "dozen": "दर्जन",
+  "kilogram": "किलो",
+  "piece": "नग",
+  "liter": "लीटर",
+
+  "addPhoto": "फोटो जोड़ें",
+
+  "certifiedOrganic": "प्रमाणित जैविक",
+  "organicDescription": "यह उत्पाद जैविक रूप से प्रमाणित है",
+
+  "accept": "स्वीकार करें",
+  "reject": "अस्वीकार करें",
+  "cancel": "रद्द करें",
+  "save": "सहेजें",
+  "update": "अपडेट करें",
+  "delete": "हटाएँ",
+  "confirm": "पुष्टि करें",
+
+  "saveProduct": "उत्पाद सहेजें",
+
+  "recentOrders": "हाल के ऑर्डर",
+  "orderDetails": "ऑर्डर विवरण",
+  "orderAccepted": "ऑर्डर स्वीकार किया गया",
+  "orderRejected": "ऑर्डर अस्वीकार किया गया",
+  "markAsShipped": "शिप किया हुआ चिह्नित करें",
+
+  "total": "कुल",
+  "payment": "भुगतान",
+  "address": "पता",
+
+  "language": "भाषा",
+  "english": "english",
+  "hindi": "हिंदी",
+
+  "settings": "सेटिंग्स",
+  "logout": "लॉग आउट",
+
+  "imagesAlreadySelected": "ये तस्वीरें पहले से चुनी गई हैं",
+  "unableToSelectImages": "तस्वीरें चुनने में असमर्थ",
+
+  "pleaseEnterProductName": "कृपया उत्पाद का नाम दर्ज करें",
+  "pleaseEnterPrice": "कृपया कीमत दर्ज करें",
+  "pleaseEnterValidPrice": "कृपया सही कीमत दर्ज करें",
+  "pleaseEnterTotalStock": "कृपया कुल स्टॉक दर्ज करें",
+  "pleaseEnterValidStock": "कृपया स्टॉक की सही मात्रा दर्ज करें",
+  "pleaseLoginAgain": "कृपया दोबारा लॉगिन करें",
+  "unableToGetFirebaseToken": "Firebase टोकन प्राप्त नहीं हो सका",
+  "uploadingProductImage": "उत्पाद की तस्वीर अपलोड हो रही है...",
+  "productSavedSuccessfully": "उत्पाद सफलतापूर्वक सहेजा गया",
+
+
+  "myProfile": "मेरी प्रोफ़ाइल",
+  "profileSettings": "प्रोफ़ाइल सेटिंग्स",
+  "farmDetails": "खेत का विवरण",
+  "farmLocation": "खेत का स्थान",
+  "notSet": "सेट नहीं है",
+
+  "quickAccess": "त्वरित पहुँच",
+  "newText": "नए",
+  "myOrders": "मेरे ऑर्डर",
+  "earningsAndPayouts": "कमाई और भुगतान",
+
+  "appSettings": "ऐप सेटिंग्स",
+  "notifications": "सूचनाएँ",
+  "appLanguage": "ऐप की भाषा",
+  "appearance": "दिखावट",
+  "helpSupport": "सहायता और समर्थन",
+  "aboutUs": "हमारे बारे में",
+
+  "light": "लाइट",
+  "dark": "डार्क",
+  "systemDefault": "सिस्टम डिफ़ॉल्ट",
+
+  "areYouSureLogout": "क्या आप वाकई लॉग आउट करना चाहते हैं?"
+
+
+
+}
