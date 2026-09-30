@@ -9,6 +9,7 @@ class CategoriesScreen extends StatefulWidget {
 }
 
 class _CategoriesScreenState extends State<CategoriesScreen> {
+  
   // ============================================================
   // STATE
   // ============================================================

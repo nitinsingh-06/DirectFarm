@@ -72,12 +72,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
                     _buildDropdown(
                       value: selectedCategory,
-                      items: const [
-                        'fruits',
-                        'vegetables',
-                        'grains',
-                        'dairy',
-                      ],
+                      items: const ['fruits', 'vegetables', 'grains', 'dairy'],
                       itemLabel: _categoryLabel,
                       onChanged: (value) {
                         if (value != null) {
@@ -107,8 +102,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
                                 hint: '350',
                                 keyboardType:
                                     const TextInputType.numberWithOptions(
-                                  decimal: true,
-                                ),
+                                      decimal: true,
+                                    ),
                               ),
                             ],
                           ),
@@ -126,12 +121,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
                               _buildDropdown(
                                 value: selectedUnit,
-                                items: const [
-                                  'dozen',
-                                  'kg',
-                                  'piece',
-                                  'liter',
-                                ],
+                                items: const ['dozen', 'kg', 'piece', 'liter'],
                                 itemLabel: _unitLabel,
                                 onChanged: (value) {
                                   if (value != null) {
@@ -203,11 +193,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 14),
       decoration: const BoxDecoration(
         color: Colors.white,
-        border: Border(
-          bottom: BorderSide(
-            color: AppColors.border,
-          ),
-        ),
+        border: Border(bottom: BorderSide(color: AppColors.border)),
       ),
       child: Row(
         children: [
@@ -266,23 +252,15 @@ class _AddProductScreenState extends State<AddProductScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: AppColors.border,
-        ),
+        border: Border.all(color: AppColors.border),
       ),
       child: TextField(
         controller: controller,
         keyboardType: keyboardType,
-        style: const TextStyle(
-          fontSize: 11,
-          color: AppColors.textDark,
-        ),
+        style: const TextStyle(fontSize: 11, color: AppColors.textDark),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: const TextStyle(
-            fontSize: 10,
-            color: Color(0xFF8B969D),
-          ),
+          hintStyle: const TextStyle(fontSize: 10, color: Color(0xFF8B969D)),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 11,
@@ -311,9 +289,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: AppColors.border,
-        ),
+        border: Border.all(color: AppColors.border),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
@@ -324,10 +300,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
             size: 17,
             color: Color(0xFF68747D),
           ),
-          style: const TextStyle(
-            fontSize: 10,
-            color: AppColors.textDark,
-          ),
+          style: const TextStyle(fontSize: 10, color: AppColors.textDark),
           items: items.map((item) {
             return DropdownMenuItem<String>(
               value: item,
@@ -347,10 +320,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
   // CATEGORY LABEL
   // ----------------------------------------------------------
 
-  static String _categoryLabel(
-    String category,
-    AppLocalizations l10n,
-  ) {
+  static String _categoryLabel(String category, AppLocalizations l10n) {
     switch (category) {
       case 'fruits':
         return l10n.fruits;
@@ -373,10 +343,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
   // UNIT LABEL
   // ----------------------------------------------------------
 
-  static String _unitLabel(
-    String unit,
-    AppLocalizations l10n,
-  ) {
+  static String _unitLabel(String unit, AppLocalizations l10n) {
     switch (unit) {
       case 'dozen':
         return l10n.dozen;
@@ -398,29 +365,26 @@ class _AddProductScreenState extends State<AddProductScreen> {
   // ----------------------------------------------------------
   // PHOTO SECTION
   // ----------------------------------------------------------
-
   Widget _buildPhotoSection() {
     final l10n = AppLocalizations.of(context)!;
 
     return Row(
       children: [
         GestureDetector(
-          onTap: _pickImages,
+          onTap: _showImageSourceDialog,
           child: Container(
             height: 72,
             width: 72,
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: AppColors.border,
-              ),
+              border: Border.all(color: AppColors.border),
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Icon(
-                  Icons.add_photo_alternate_outlined,
+                  Icons.add_a_photo_outlined,
                   size: 22,
                   color: AppColors.primary,
                 ),
@@ -453,21 +417,13 @@ class _AddProductScreenState extends State<AddProductScreen> {
                   key: ValueKey(imageFile.path),
                   children: [
                     ClipRRect(
-                      key: ValueKey(
-                        'image_${imageFile.path}',
-                      ),
                       borderRadius: BorderRadius.circular(8),
                       child: Image.file(
                         imageFile,
-                        key: ValueKey(imageFile.path),
                         height: 72,
                         width: 72,
                         fit: BoxFit.cover,
-                        errorBuilder: (
-                          context,
-                          error,
-                          stackTrace,
-                        ) {
+                        errorBuilder: (context, error, stackTrace) {
                           return Container(
                             height: 72,
                             width: 72,
@@ -487,14 +443,13 @@ class _AddProductScreenState extends State<AddProductScreen> {
                       right: 2,
                       top: 2,
                       child: GestureDetector(
-                        onTap: () => _removeImage(
-                          imageFile.path,
-                        ),
+                        onTap: () => _removeImage(imageFile.path),
                         child: Container(
                           decoration: const BoxDecoration(
                             color: Colors.black54,
                             shape: BoxShape.circle,
                           ),
+                          padding: const EdgeInsets.all(1),
                           child: const Icon(
                             Icons.close,
                             size: 14,
@@ -511,6 +466,161 @@ class _AddProductScreenState extends State<AddProductScreen> {
         ),
       ],
     );
+  }
+
+  void _showImageSourceDialog() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+
+                const SizedBox(height: 18),
+
+                const Text(
+                  'Add Product Photo',
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.primary,
+                  ),
+                ),
+
+                const SizedBox(height: 6),
+
+                const Text(
+                  'Choose how you want to add the product photo',
+                  style: TextStyle(fontSize: 11, color: AppColors.textGrey),
+                  textAlign: TextAlign.center,
+                ),
+
+                const SizedBox(height: 20),
+
+                Row(
+                  children: [
+                    Expanded(
+                      child: _imageSourceButton(
+                        icon: Icons.camera_alt_rounded,
+                        title: 'Take Photo',
+                        onTap: () {
+                          Navigator.pop(context);
+                          _takePhoto();
+                        },
+                      ),
+                    ),
+
+                    const SizedBox(width: 12),
+
+                    Expanded(
+                      child: _imageSourceButton(
+                        icon: Icons.photo_library_rounded,
+                        title: 'Gallery',
+                        onTap: () {
+                          Navigator.pop(context);
+                          _pickImages();
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // ----------------------------------------------------------
+  // IMAGE SOURCE BUTTONS
+  // ----------------------------------------------------------
+  Widget _imageSourceButton({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF7FAF8),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, size: 28, color: AppColors.primary),
+
+            const SizedBox(height: 8),
+
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textDark,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _takePhoto() async {
+    final l10n = AppLocalizations.of(context)!;
+
+    try {
+      final image = await picker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 80,
+        maxWidth: 1600,
+        maxHeight: 1600,
+      );
+
+      if (image == null || !mounted) return;
+
+      final file = File(image.path);
+
+      final alreadySelected = selectedImages.any(
+        (selected) => selected.path == file.path,
+      );
+
+      if (alreadySelected) {
+        _showMessage(l10n.imagesAlreadySelected);
+        return;
+      }
+
+      setState(() {
+        selectedImages.add(file);
+      });
+
+      debugPrint('CAMERA IMAGE ADDED: ${file.path}');
+    } catch (e) {
+      debugPrint('CAMERA ERROR: $e');
+
+      if (!mounted) return;
+
+      _showMessage('Unable to open camera: $e');
+    }
   }
 
   // ----------------------------------------------------------
@@ -560,9 +670,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
     if (!mounted) return;
 
     setState(() {
-      selectedImages.removeWhere(
-        (image) => image.path == imagePath,
-      );
+      selectedImages.removeWhere((image) => image.path == imagePath);
     });
 
     debugPrint('IMAGE REMOVED: $imagePath');
@@ -576,16 +684,11 @@ class _AddProductScreenState extends State<AddProductScreen> {
     final l10n = AppLocalizations.of(context)!;
 
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 11,
-        vertical: 7,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: AppColors.border,
-        ),
+        border: Border.all(color: AppColors.border),
       ),
       child: Row(
         children: [
@@ -644,9 +747,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
           elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
         child: Text(
           l10n.saveProduct,
@@ -746,9 +847,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
           imagePath: selectedImages.first.path,
         );
 
-        debugPrint(
-          'PRODUCT IMAGE URL: $imageUrl',
-        );
+        debugPrint('PRODUCT IMAGE URL: $imageUrl');
       }
 
       // ------------------------------------------------------
@@ -766,9 +865,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
         imageUrl: imageUrl,
       );
 
-      debugPrint(
-        'PRODUCT CREATED: $response',
-      );
+      debugPrint('PRODUCT CREATED: $response');
 
       // ------------------------------------------------------
       // SUCCESS
@@ -784,27 +881,18 @@ class _AddProductScreenState extends State<AddProductScreen> {
         });
       }
 
-      await Future.delayed(
-        const Duration(milliseconds: 400),
-      );
+      await Future.delayed(const Duration(milliseconds: 400));
 
       if (!mounted) return;
 
       Navigator.pop(context, true);
     } catch (e) {
-      debugPrint(
-        'CREATE PRODUCT ERROR: $e',
-      );
+      debugPrint('CREATE PRODUCT ERROR: $e');
 
       if (!mounted) return;
 
       // Keep backend/API error as returned by the server.
-      _showMessage(
-        e.toString().replaceFirst(
-          'Exception: ',
-          '',
-        ),
-      );
+      _showMessage(e.toString().replaceFirst('Exception: ', ''));
     }
   }
 
@@ -861,10 +949,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
   void _showMessage(String message) {
     if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-      ),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 }

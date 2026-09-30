@@ -1,3 +1,6 @@
 {
-    "cmake.sourceDirectory": "E:/farmdirect/linux"
+    "cmake.sourceDirectory": "E:/farmdirect/linux",
+    "cSpell.words": [
+        "उत्पाद"
+    ]
 }

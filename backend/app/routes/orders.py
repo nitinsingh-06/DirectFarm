@@ -404,6 +404,158 @@ def create_order(
         "delivery_date": delivery_date,
         "delivery_slot": delivery_slot,
     }
+    
+    
+    
+    
+    # ============================================================
+# GET BUYER ORDERS
+# ============================================================
+
+@router.get("/me")
+def get_my_orders(
+    id_token: str = "",
+    db: Session = Depends(get_db),
+):
+    # --------------------------------------------------------
+    # 1. VERIFY FIREBASE TOKEN
+    # --------------------------------------------------------
+
+    try:
+        decoded_token = verify_firebase_token(id_token)
+
+    except Exception:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid Firebase token",
+        )
+
+    firebase_uid = decoded_token.get("uid")
+
+    if not firebase_uid:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid Firebase token",
+        )
+
+    # --------------------------------------------------------
+    # 2. FIND USER
+    # --------------------------------------------------------
+
+    user = (
+        db.query(User)
+        .filter(User.firebase_uid == firebase_uid)
+        .first()
+    )
+
+    if not user:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found",
+        )
+
+    # --------------------------------------------------------
+    # 3. ONLY BUYERS
+    # --------------------------------------------------------
+
+    if user.role != "buyer":
+        raise HTTPException(
+            status_code=403,
+            detail="Only buyers can view buyer orders",
+        )
+
+    # --------------------------------------------------------
+    # 4. GET ORDERS
+    # --------------------------------------------------------
+
+    orders = (
+        db.query(Order)
+        .filter(Order.user_id == user.user_id)
+        .order_by(Order.order_id.desc())
+        .all()
+    )
+
+    # --------------------------------------------------------
+    # 5. BUILD RESPONSE
+    # --------------------------------------------------------
+
+    result = []
+
+    for order in orders:
+
+        order_items = (
+            db.query(OrderItem)
+            .filter(OrderItem.order_id == order.order_id)
+            .all()
+        )
+
+        items = []
+
+        for item in order_items:
+
+            items.append({
+                "order_item_id": item.order_item_id,
+                "product_id": item.product_id,
+                "farmer_id": item.farmer_id,
+
+                "product_name": item.product_name,
+                "price": float(item.price),
+                "unit": item.unit,
+                "quantity": item.quantity,
+
+                "total_price": float(
+                    item.total_price
+                    if item.total_price is not None
+                    else item.price * item.quantity
+                ),
+
+                "image_url": item.image_url,
+                "farm": item.farm,
+                "location": item.location,
+
+                "status": item.status,
+            })
+
+        result.append({
+            "order_id": order.order_id,
+            "order_number": order.order_number,
+
+            "status": order.status,
+
+            "subtotal": float(order.subtotal or 0),
+            "delivery_fee": float(order.delivery_fee or 0),
+            "discount": float(order.discount or 0),
+            "total_amount": float(order.total_amount or 0),
+
+            "payment_method": order.payment_method,
+            "payment_status": order.payment_status,
+
+            "address_id": order.address_id,
+
+            "created_at": (
+                order.created_at.isoformat()
+                if order.created_at
+                else None
+            ),
+
+            "updated_at": (
+                order.updated_at.isoformat()
+                if order.updated_at
+                else None
+            ),
+
+            "items": items,
+        })
+
+    # --------------------------------------------------------
+    # 6. RETURN RESPONSE
+    # --------------------------------------------------------
+
+    return {
+        "message": "Orders fetched successfully",
+        "count": len(result),
+        "orders": result,
+    }
 
 # ============================================================
 # GET FARMER ORDERS
