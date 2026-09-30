@@ -136,3 +136,5 @@ class ProductResponse(BaseModel):
     image_url: str | None
 
     is_available: bool | None
+    
+    images: list[str] = []

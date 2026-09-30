@@ -10,7 +10,7 @@ class HomeScreen extends StatefulWidget {
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
-}
+} 
 
 class _HomeScreenState extends State<HomeScreen> {
   String _selectedLocation = 'Select location';
@@ -333,7 +333,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
 
                 GestureDetector(
-                  onTap: () {},
+                  onTap: () {
+                    
+                  },
 
                   child: const Text(
                     "See All",

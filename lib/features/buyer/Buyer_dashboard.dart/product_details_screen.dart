@@ -1,3 +1,4 @@
+import 'package:farmdirect/config/api_config.dart';
 import 'package:farmdirect/core/provider/card_provider.dart';
 import 'package:farmdirect/features/buyer_farmer_profile/farmer_profile_view.dart';
 import 'package:flutter/material.dart';
@@ -46,6 +47,18 @@ class ProductDetailsScreen extends StatefulWidget {
 }
 
 class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
+  final PageController _imagePageController = PageController();
+
+  int _currentImageIndex = 0;
+
+  List<String> get _productImages {
+    // If you already have multiple images in widget.images,
+    // use that list here.
+    //
+    // For now, fallback to the single widget.image.
+    return [widget.image];
+  }
+
   int quantity = 1;
   bool isFavorite = false;
 
@@ -234,8 +247,13 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   // =================================================================
   // PRODUCT IMAGE
   // =================================================================
+  // =================================================================
+  // PRODUCT IMAGE SLIDER
+  // =================================================================
 
   Widget _buildProductImage() {
+    final images = _productImages;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12),
 
@@ -243,34 +261,33 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         borderRadius: BorderRadius.circular(13),
 
         child: SizedBox(
-          height: 190,
+          height: 240,
           width: double.infinity,
 
           child: Stack(
             children: [
-              // IMAGE
-              Positioned.fill(
-                child: Image.network(
-                  widget.image,
-                  fit: BoxFit.cover,
+              // =====================================================
+              // IMAGE SLIDER
+              // =====================================================
+              PageView.builder(
+                controller: _imagePageController,
 
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      color: const Color(0xFFEAF2ED),
+                itemCount: images.length,
 
-                      child: const Center(
-                        child: Icon(
-                          Icons.image_outlined,
-                          size: 50,
-                          color: Color(0xFF8FA39A),
-                        ),
-                      ),
-                    );
-                  },
-                ),
+                onPageChanged: (index) {
+                  setState(() {
+                    _currentImageIndex = index;
+                  });
+                },
+
+                itemBuilder: (context, index) {
+                  return _buildNetworkImage(images[index]);
+                },
               ),
 
+              // =====================================================
               // FRESH LABEL
+              // =====================================================
               Positioned(
                 left: 10,
                 top: 10,
@@ -297,15 +314,63 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                 ),
               ),
 
-              // IMAGE COUNT
+              // =====================================================
+              // LEFT ARROW
+              // =====================================================
+              if (_currentImageIndex > 0)
+                Positioned(
+                  left: 10,
+                  top: 0,
+                  bottom: 0,
+
+                  child: Center(
+                    child: _sliderButton(
+                      icon: Icons.chevron_left_rounded,
+
+                      onTap: () {
+                        _imagePageController.previousPage(
+                          duration: const Duration(milliseconds: 250),
+                          curve: Curves.easeInOut,
+                        );
+                      },
+                    ),
+                  ),
+                ),
+
+              // =====================================================
+              // RIGHT ARROW
+              // =====================================================
+              if (_currentImageIndex < images.length - 1)
+                Positioned(
+                  right: 10,
+                  top: 0,
+                  bottom: 0,
+
+                  child: Center(
+                    child: _sliderButton(
+                      icon: Icons.chevron_right_rounded,
+
+                      onTap: () {
+                        _imagePageController.nextPage(
+                          duration: const Duration(milliseconds: 250),
+                          curve: Curves.easeInOut,
+                        );
+                      },
+                    ),
+                  ),
+                ),
+
+              // =====================================================
+              // IMAGE COUNTER
+              // =====================================================
               Positioned(
                 right: 9,
                 bottom: 9,
 
                 child: Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
+                    horizontal: 9,
+                    vertical: 5,
                   ),
 
                   decoration: BoxDecoration(
@@ -313,9 +378,10 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
 
-                  child: const Text(
-                    "1/5",
-                    style: TextStyle(
+                  child: Text(
+                    "${_currentImageIndex + 1}/${images.length}",
+
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 8,
                       fontWeight: FontWeight.w600,
@@ -330,13 +396,103 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     );
   }
 
+  Widget _buildNetworkImage(String imageUrl) {
+    String finalUrl = imageUrl.trim();
+
+    if (finalUrl.startsWith('/')) {
+      finalUrl = '${ApiConfig.baseUrl}$finalUrl';
+    } else if (!finalUrl.startsWith('http://') &&
+        !finalUrl.startsWith('https://')) {
+      finalUrl = '${ApiConfig.baseUrl}/$finalUrl';
+    }
+
+    debugPrint("PRODUCT DETAILS IMAGE: $finalUrl");
+
+    return Image.network(
+      finalUrl,
+
+      width: double.infinity,
+      height: double.infinity,
+
+      fit: BoxFit.cover,
+
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) {
+          return child;
+        }
+
+        return Container(
+          color: const Color(0xFFEAF2ED),
+
+          child: const Center(
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: Color(0xFF087C59),
+            ),
+          ),
+        );
+      },
+
+      errorBuilder: (context, error, stackTrace) {
+        debugPrint("PRODUCT IMAGE FAILED: $finalUrl");
+
+        return Container(
+          color: const Color(0xFFEAF2ED),
+
+          child: const Center(
+            child: Icon(
+              Icons.image_outlined,
+              size: 50,
+              color: Color(0xFF8FA39A),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _sliderButton({required IconData icon, required VoidCallback onTap}) {
+    return Material(
+      color: Colors.transparent,
+
+      child: InkWell(
+        onTap: onTap,
+
+        borderRadius: BorderRadius.circular(30),
+
+        child: Container(
+          width: 34,
+          height: 34,
+
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.90),
+            shape: BoxShape.circle,
+
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.15),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+
+          child: Icon(icon, size: 24, color: const Color(0xFF087C59)),
+        ),
+      ),
+    );
+  }
+
+  // =================================================================
+  // THUMBNAILS
+  // =================================================================
   // =================================================================
   // THUMBNAILS
   // =================================================================
 
   Widget _buildThumbnails() {
     return SizedBox(
-      height: 58,
+      height: 66,
 
       child: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
@@ -344,45 +500,114 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         scrollDirection: Axis.horizontal,
 
         children: [
-          _thumbnail(widget.image, true),
-          _thumbnail(widget.image, false),
-          _thumbnail(widget.image, false),
-          _thumbnail(widget.image, false),
+          _thumbnail(widget.image, _currentImageIndex == 0, 0),
+
+          // Temporary additional thumbnails.
+          // Replace these with real image URLs when your backend
+          // supports multiple product images.
+          _thumbnail(widget.image, _currentImageIndex == 1, 1),
+
+          _thumbnail(widget.image, _currentImageIndex == 2, 2),
+
+          _thumbnail(widget.image, _currentImageIndex == 3, 3),
         ],
       ),
     );
   }
 
-  Widget _thumbnail(String image, bool selected) {
-    return Container(
-      width: 57,
-      height: 43,
+  // =================================================================
+  // SINGLE THUMBNAIL
+  // =================================================================
 
-      margin: const EdgeInsets.only(right: 7),
+  Widget _thumbnail(String image, bool selected, int index) {
+    String finalUrl = image.trim();
 
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(6),
+    // Backend returns:
+    // /uploads/products/example.jpg
+    //
+    // Convert it to:
+    // http://YOUR-IP:8000/uploads/products/example.jpg
 
-        border: Border.all(
-          color: selected ? const Color(0xFF087C59) : const Color(0xFFE0E6E3),
+    if (finalUrl.startsWith('/')) {
+      finalUrl = '${ApiConfig.baseUrl}$finalUrl';
+    } else if (!finalUrl.startsWith('http://') &&
+        !finalUrl.startsWith('https://')) {
+      finalUrl = '${ApiConfig.baseUrl}/$finalUrl';
+    }
 
-          width: selected ? 2 : 1,
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _currentImageIndex = index;
+        });
+
+        if (_imagePageController.hasClients) {
+          _imagePageController.animateToPage(
+            index,
+
+            duration: const Duration(milliseconds: 250),
+
+            curve: Curves.easeInOut,
+          );
+        }
+      },
+
+      child: Container(
+        width: 57,
+        height: 48,
+
+        margin: const EdgeInsets.only(right: 7),
+
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(7),
+
+          border: Border.all(
+            color: selected ? const Color(0xFF087C59) : const Color(0xFFE0E6E3),
+
+            width: selected ? 2 : 1,
+          ),
         ),
-      ),
 
-      clipBehavior: Clip.antiAlias,
+        clipBehavior: Clip.antiAlias,
 
-      child: Image.asset(
-        image,
-        fit: BoxFit.cover,
+        child: Image.network(
+          finalUrl,
 
-        errorBuilder: (context, error, stackTrace) {
-          return const Icon(Icons.image_outlined, color: Color(0xFF9BA6A1));
-        },
+          fit: BoxFit.cover,
+
+          loadingBuilder: (context, child, loadingProgress) {
+            if (loadingProgress == null) {
+              return child;
+            }
+
+            return const Center(
+              child: SizedBox(
+                width: 16,
+                height: 16,
+
+                child: CircularProgressIndicator(
+                  strokeWidth: 1.5,
+                  color: Color(0xFF087C59),
+                ),
+              ),
+            );
+          },
+
+          errorBuilder: (context, error, stackTrace) {
+            debugPrint('THUMBNAIL IMAGE FAILED: $finalUrl');
+
+            return const Center(
+              child: Icon(
+                Icons.image_outlined,
+                size: 22,
+                color: Color(0xFF9BA6A1),
+              ),
+            );
+          },
+        ),
       ),
     );
   }
-
   // =================================================================
   // PRODUCT INFORMATION
   // =================================================================
