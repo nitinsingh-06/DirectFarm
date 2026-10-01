@@ -1,9 +1,9 @@
 import 'package:farmdirect/features/farmer/dashboard/FARMER%20ORDER/farmer_order_management_screen.dart';
-import 'package:farmdirect/features/farmer/dashboard/farmer_earning_screen.dart';
 import 'package:farmdirect/features/farmer/dashboard/farmer_home_screen.dart';
 import 'package:farmdirect/features/farmer/dashboard/farmer_profile_screen.dart';
 import 'package:farmdirect/features/farmer/dashboard/farmer_ratings_screen.dart';
 import 'package:farmdirect/features/farmer/dashboard/product_screen.dart';
+import 'package:farmdirect/features/farmer/earnings/earnings_screen.dart';
 import 'package:flutter/material.dart';
 
 class FarmerDashboard extends StatefulWidget {
