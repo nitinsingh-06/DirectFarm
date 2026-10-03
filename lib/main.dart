@@ -17,40 +17,26 @@ import 'package:provider/provider.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(
-          create: (_) => ProfileProvider()..loadProfile(),
-        ),
+        ChangeNotifierProvider(create: (_) => ProfileProvider()..loadProfile()),
 
-        ChangeNotifierProvider(
-          create: (_) => CartProvider(),
-        ),
+        ChangeNotifierProvider(create: (_) => CartProvider()),
 
         ChangeNotifierProvider(
           create: (_) => BuyerProfileProvider()..loadProfile(),
         ),
 
-        ChangeNotifierProvider(
-          create: (_) => ThemeProvider(),
-        ),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
 
-        ChangeNotifierProvider(
-          create: (_) => BuyerProductProvider(),
-        ),
+        ChangeNotifierProvider(create: (_) => BuyerProductProvider()),
 
-        ChangeNotifierProvider(
-          create: (_) => LanguageProvider(),
-        ),
+        ChangeNotifierProvider(create: (_) => LanguageProvider()),
 
-        ChangeNotifierProvider(
-          create: (_) => AddressProvider(),
-        ),
+        ChangeNotifierProvider(create: (_) => AddressProvider()),
       ],
       child: const MyApp(),
     ),
@@ -80,10 +66,7 @@ class MyApp extends StatelessWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
 
-      supportedLocales: const [
-        Locale('en'),
-        Locale('hi'),
-      ],
+      supportedLocales: const [Locale('en'), Locale('hi')],
 
       // -----------------------------
       // THEME
